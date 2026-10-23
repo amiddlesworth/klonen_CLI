@@ -1,25 +1,26 @@
 {
  "programs_in_registry": 244,
- "programs_with_staff": 14,
- "people": 151,
- "excluded_non_coaches": 5,
- "people_with_prior_stop": 95,
- "tenures": 634,
- "coaching_tenures": 497,
- "coaching_tenures_with_start_year": 343,
- "organizations": 495,
+ "programs_with_staff": 196,
+ "people": 2178,
+ "excluded_non_coaches": 118,
+ "people_with_prior_stop": 1255,
+ "tenures": 8397,
+ "coaching_tenures": 6822,
+ "coaching_tenures_with_start_year": 4593,
+ "organizations": 2097,
  "org_match": {
-  "exact": 394,
-  "new": 177,
-  "new-reused": 50,
-  "fuzzy": 3
+  "exact": 6260,
+  "new": 1464,
+  "new-reused": 614,
+  "fuzzy": 59,
+  "ambiguous": 5
  },
- "edges_worked_under": 85,
- "edges_worked_alongside": 341,
+ "edges_worked_under": 1393,
+ "edges_worked_alongside": 4633,
  "bio_quality": {
-  "thin": 40,
-  "full": 68,
-  "none": 43
+  "full": 1113,
+  "thin": 363,
+  "none": 702
  },
  "current_season": 2026
 }

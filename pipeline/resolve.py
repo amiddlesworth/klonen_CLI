@@ -41,12 +41,45 @@ def slugify(s: str) -> str:
 
 
 def norm_org(s: str) -> str:
-    s = s.lower().replace("&", " and ")
+    s = s.lower().replace("&", " and ").replace("'", "").replace("\u2019", "")
+    s = re.sub(r"\bu\.\s?s\.\s", "united states ", s)
     s = re.sub(r"\buniv\b\.?", "university", s)
     s = re.sub(r"\bst\.\s", "saint ", s) if re.match(r"^st\.\s", s) else s
     s = re.sub(r"[^a-z0-9 ]+", " ", s)
     s = re.sub(r"\b(the|of|at|football|program|team)\b", " ", s)
     return re.sub(r"\s+", " ", s).strip()
+
+
+# Names the alias rules cannot derive: extracted spelling -> NCAA official name
+MANUAL_ALIASES = {
+    "Hobart College": "Hobart and William Smith Colleges",
+    "Hobart": "Hobart and William Smith Colleges",
+    "University of Wisconsin-Stout": "University of Wisconsin-Stout Polytechnic",
+    "UW-Stout": "University of Wisconsin-Stout Polytechnic",
+    "Catholic University of America": "Catholic University",
+    "The Catholic University of America": "Catholic University",
+    "Sewanee: The University of the South": "University of the South",
+    "Sewanee": "University of the South",
+    "William Paterson University": "William Paterson University of New Jersey",
+    "Buffalo State University": "Buffalo State, State University of New York",
+    "Buffalo State College": "Buffalo State, State University of New York",
+    "Buffalo State": "Buffalo State, State University of New York",
+    "University at Buffalo": "University at Buffalo, the State University of New York",
+    "University of Buffalo": "University at Buffalo, the State University of New York",
+    "United States Coast Guard Academy": "U.S. Coast Guard Academy",
+    "Coast Guard Academy": "U.S. Coast Guard Academy",
+    "United States Merchant Marine Academy": "U.S. Merchant Marine Academy",
+    "Merchant Marine Academy": "U.S. Merchant Marine Academy",
+    "TCNJ": "The College of New Jersey",
+    "RPI": "Rensselaer Polytechnic Institute",
+    "WPI": "Worcester Polytechnic Institute",
+    "MIT": "Massachusetts Institute of Technology",
+    "College of William & Mary": "William & Mary",
+    "College of William and Mary": "William & Mary",
+    "Rutgers University": "Rutgers, The State University of New Jersey, New Brunswick",
+    "Rutgers": "Rutgers, The State University of New Jersey, New Brunswick",
+    "Marist College": "Marist University",
+}
 
 
 def level_of(member: dict) -> str:
@@ -125,7 +158,7 @@ def bio_excerpt(bio_file: Path | None, max_len: int = 280) -> str | None:
 class OrgIndex:
     def __init__(self, registry: list[dict], members: list[dict]):
         self.orgs: dict[str, dict] = {}
-        self.by_norm: dict[str, str] = {}
+        self.by_norm: dict[str, list[str]] = {}
         self.names: list[str] = []
         reg_by_ncaa = {p["ncaa_org_id"]: p for p in registry}
         for m in members:
@@ -143,15 +176,29 @@ class OrgIndex:
             }
             self.orgs[oid] = org
             for alias in self._aliases(m["nameOfficial"], short, m["memberOrgAddress"]["state"]):
-                self.by_norm.setdefault(alias, oid)
+                ids = self.by_norm.setdefault(alias, [])
+                if oid not in ids:
+                    ids.append(oid)
+        for alias, official in MANUAL_ALIASES.items():
+            hit = [o["id"] for o in self.orgs.values() if o["name"] == official]
+            if hit:
+                self.by_norm[norm_org(alias)] = hit
         self.names = list(self.by_norm)
         self._slugs = {o["slug"] for o in self.orgs.values()}
         self.stats = Counter()
 
     @staticmethod
     def _aliases(official: str, short: str, state: str) -> set[str]:
-        out = {norm_org(official), norm_org(short)}
-        o = norm_org(official)
+        base = re.sub(r"\s*\(.*?\)", "", official).strip()  # "Central College (Iowa)" -> "Central College"
+        out = {norm_org(official), norm_org(short), norm_org(base), norm_org(re.sub(r"\s*\(.*?\)", "", short))}
+        if "," in base:  # "Buffalo State, State University of New York" -> "Buffalo State"
+            out.add(norm_org(base.split(",")[0]))
+        o = norm_org(base)
+        m = re.match(r"state university new york (at )?(.+)$", o)
+        if m:
+            x = m.group(2)
+            out |= {f"suny {x}", f"{x} state", f"suny college {x}", f"state university new york college {x}", f"{x}"}
+        o = norm_org(base)
         # "university wisconsin whitewater" -> "wisconsin whitewater", "uw whitewater"
         m = re.match(r"university (\w+) (\w+)$", o)
         if m:
@@ -164,7 +211,20 @@ class OrgIndex:
         if o.startswith("university "):
             out.add(o[len("university "):])
         out.add(f"{norm_org(short)} {state.lower()}")
+        out.add(f"{norm_org(base)} {state.lower()}")  # "King's College (Pa.)" -> "kings college pa"
+        stripped = re.sub(r" (of )?(pennsylvania|new jersey|new york|illinois)$", "", norm_org(base))
+        out.add(stripped)  # "East Stroudsburg University of Pennsylvania" -> "east stroudsburg university"
         return {a for a in out if len(a) > 2}
+
+    def _pick(self, ids: list[str], level: str | None) -> str:
+        if len(ids) == 1:
+            return ids[0]
+        same = [i for i in ids if self.orgs[i]["level"] == level]
+        if len(same) == 1:
+            return same[0]
+        reg = [i for i in (same or ids) if self.orgs[i]["inRegistry"]]
+        self.stats["ambiguous"] += 1
+        return (reg or same or ids)[0]
 
     def resolve(self, raw: str, level: str | None) -> str:
         n = norm_org(raw)
@@ -175,13 +235,13 @@ class OrgIndex:
         for key in (n, n_state):
             if key in self.by_norm:
                 self.stats["exact"] += 1
-                return self.by_norm[key]
+                return self._pick(self.by_norm[key], level)
         is_college_level = level and (level.startswith("NCAA") or level in ("unknown",))
         if is_college_level or re.search(r"university|college|institute|academy", n):
             best = difflib.get_close_matches(n_state, self.names, n=1, cutoff=0.9)
             if best:
                 self.stats["fuzzy"] += 1
-                return self.by_norm[best[0]]
+                return self._pick(self.by_norm[best[0]], level)
         # Unmatched: a lightweight org keyed by its normalized name
         oid = "org-" + slugify(n_state or raw)[:80]
         if oid not in self.orgs:

@@ -6,7 +6,7 @@ import { getFeed, getCarouselStats, getDatasetStats } from "../src/lib/queries/f
 import { listJobs } from "../src/lib/queries/jobs";
 
 async function main() {
-  const p = await getProfile("bill-khayat");
+  const p = await getProfile(process.argv[2] ?? "bill-khayat");
   console.log("profile", p?.person.fullName, p?.stats, p?.experience.map((g) => `${g.org.shortName} ${g.startYear}-${g.endYear ?? "now"} (${g.roles.length})`).slice(0, 4));
   const t = await getTree(p!.person.id);
   console.log("tree", { mentors: t.mentors.length, mentees: t.mentees.length, peers: t.peers.length }, t.mentees.slice(0, 2).map((m) => m.person.fullName));

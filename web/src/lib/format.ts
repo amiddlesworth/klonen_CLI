@@ -167,3 +167,20 @@ export function orgInitials(shortName: string, name?: string | null): string {
   if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
   return (words[0][0] + words[1][0]).toUpperCase();
 }
+
+/** "https://www.goboxers.com/sports/..." -> "goboxers.com" (the label of a SourceLink). */
+export function sourceDomain(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
+/** Full level name for chip titles: "NCAA D-III" -> "NCAA Division III". */
+export function levelFull(level: string | null | undefined): string | null {
+  if (!level) return null;
+  if (/^high school$/i.test(level)) return "High school";
+  if (/^pro/i.test(level)) return "Professional or semi-pro";
+  return level.replace(/\bD-(I{1,3})\b/, "Division $1");
+}

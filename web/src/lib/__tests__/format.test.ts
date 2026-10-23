@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   hueFor,
   initials,
+  levelFull,
   levelShort,
   orgInitials,
   salaryRange,
@@ -9,6 +10,7 @@ import {
   seasonRange,
   seasonRangeCompact,
   seasonRangeMulti,
+  sourceDomain,
   tintFor,
   titleShort,
 } from "../format";
@@ -86,5 +88,10 @@ describe("DESIGN.md §2.3 / §6 helpers", () => {
     expect(orgInitials("Pacific (OR)", "Pacific University (Oregon)")).toBe("PU");
     expect(orgInitials("Lewis & Clark", "Lewis & Clark College")).toBe("LC");
     expect(orgInitials("Oberlin")).toBe("OB");
+  });
+  it("labels sources and levels", () => {
+    expect(sourceDomain("https://www.goboxers.com/sports/football/roster/coaches/ian-falconer/1")).toBe("goboxers.com");
+    expect(levelFull("NCAA D-III")).toBe("NCAA Division III");
+    expect(levelFull("NCAA D-I FCS")).toBe("NCAA Division I FCS");
   });
 });
