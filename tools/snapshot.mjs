@@ -9,6 +9,7 @@
 //   The first entry becomes index.html.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { chromium } from 'playwright';
 
 const [, , base, out, listFile] = process.argv;
 const pages = JSON.parse(readFileSync(listFile, 'utf8'));
@@ -36,34 +37,57 @@ async function inlineCss(href) {
   return css;
 }
 
-let sharedCssWritten = false;
-for (const [i, p] of pages.entries()) {
-  const headers = p.as ? { cookie: `cn_demo_session=${p.as}` } : {};
-  const res = await fetch(new URL(p.path, base), { headers, redirect: 'follow' });
-  let html = await res.text();
-  // Collect stylesheets into one shared file.
+// Pages stream content through React Suspense; the swap from skeleton to content
+// runs in inline scripts. Render each page in a real browser, wait for the stream
+// to finish, and keep the final DOM.
+const browser = await chromium.launch();
+const contexts = {};
+async function ctxFor(as) {
+  const key = as ?? 'none';
+  if (!contexts[key]) {
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    if (as) await c.addCookies([{ name: 'cn_demo_session', value: as, domain: new URL(base).hostname, path: '/' }]);
+    contexts[key] = c;
+  }
+  return contexts[key];
+}
+
+let cssPromise = null;
+async function snapOne(p, i) {
+  const page = await (await ctxFor(p.as)).newPage();
+  const res = await page.goto(new URL(p.path, base).toString(), { waitUntil: 'networkidle' });
+  await page.waitForFunction(() => !document.querySelector('template[id^="B:"]'), null, { timeout: 15000 }).catch(() => {});
+  let html = '<!doctype html>' + (await page.evaluate(() => document.documentElement.outerHTML));
+  await page.close();
+  // Collect stylesheets into one shared file (once).
   const hrefs = [...html.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"[^>]*>/g)].map((m) => m[1]);
-  if (!sharedCssWritten && hrefs.length) {
-    const css = (await Promise.all(hrefs.map(inlineCss))).join('\n');
-    writeFileSync(join(out, 'app.css'), css);
-    sharedCssWritten = true;
+  if (!cssPromise && hrefs.length) {
+    cssPromise = Promise.all(hrefs.map(inlineCss)).then((parts) => writeFileSync(join(out, 'app.css'), parts.join('\n')));
   }
   html = html.replace(/<link[^>]+rel="stylesheet"[^>]*>/g, '');
   html = html.replace(/<link[^>]+rel="(preload|modulepreload|prefetch)"[^>]*>/g, '');
   html = html.replace(/<script[\s\S]*?<\/script>/g, '');
   html = html.replace('</head>', '<link rel="stylesheet" href="app.css"><meta name="robots" content="noindex"></head>');
-  // Rewrite internal links.
   html = html.replace(/href="(\/[^"]*)"/g, (_m, href) => {
     const path = href.split('#')[0];
     const hash = href.includes('#') ? '#' + href.split('#')[1] : '';
     const target = known.get(path) ?? known.get(path.split('?')[0]);
     return `href="${target ? target + hash : 'not-in-demo.html'}"`;
   });
-  // Forms cannot submit in a static snapshot.
   html = html.replace(/<form([^>]*)>/g, '<form$1 onsubmit="return false">');
   writeFileSync(join(out, fileFor(p.path, i)), html);
-  process.stdout.write(`${i + 1}/${pages.length} ${p.path} -> ${fileFor(p.path, i)} (${res.status})\n`);
+  process.stdout.write(`${i + 1}/${pages.length} ${p.path} -> ${fileFor(p.path, i)} (${res?.status()})\n`);
 }
+
+// Six pages at a time; each page is independent.
+let next = 0;
+await Promise.all(Array.from({ length: 6 }, async () => {
+  while (next < pages.length) {
+    const i = next++;
+    try { await snapOne(pages[i], i); } catch (e) { process.stdout.write(`${i + 1}/${pages.length} ${pages[i].path} FAILED ${e.message}\n`); }
+  }
+}));
+await cssPromise;
 
 writeFileSync(
   join(out, 'not-in-demo.html'),
@@ -73,4 +97,5 @@ writeFileSync(
 <p style="margin:0 0 16px;color:#666">The demo includes a curated set of pages. The full app runs locally with the complete dataset.</p>
 <a href="index.html">Back to the demo</a></div></body></html>`,
 );
+await browser.close();
 console.log('done:', pages.length, 'pages');
