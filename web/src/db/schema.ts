@@ -68,7 +68,8 @@ export const people = pgTable(
     unit: unit("unit"),
     almaMater: text("alma_mater"),
     hometown: text("hometown"),
-    about: text("about"),
+    about: text("about"), // written by the coach after claiming; never generated
+    bioExcerpt: text("bio_excerpt"), // short verbatim quote from the source bio, shown with attribution
     bioQuality: bioQuality("bio_quality"),
     sourceUrl: text("source_url"),
     claimed: boolean("claimed").notNull().default(false),

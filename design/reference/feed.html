@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet">
+<script>/* Theme follows the OS; #dark or #light forces one.
+   Capture aid (DESIGN.md §9): automated browsers (navigator.webdriver) pin the phone tab bar to the end of the
+   document so full-page screenshots don't draw it mid-page; add #fold to see the real fixed bar. */
+(function(){var d=document.documentElement,h=location.hash.slice(1).split(',');
+h.forEach(function(x){if(x==='dark'||x==='light')d.setAttribute('data-theme',x);});
+if(navigator.webdriver&&h.indexOf('fold')<0)d.classList.add('capture-full');})();</script>
+<title>Home · {brand}</title>
+<meta name="description" content="Coaching moves, jobs and milestones across Division III football.">
+<style>
+/* ==========================================================================
+   Design system: reference tokens + shared components (product name lives only in BRAND)
+   Source of truth: docs/DESIGN.md. Keep this block identical in every mockup.
+   ========================================================================== */
+:root {
+  --font-sans: "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --canvas: #F7F7F5;
+  --surface: #FFFFFF;
+  --surface-2: #F9F9F8;
+  --hover: #F3F3F1;
+  --pressed: #ECECE9;
+  --border: #E6E6E3;
+  --divider: #EFEFEC;
+  --border-strong: #D3D3CF;
+  --control: #8C8983;
+  --fg-1: #1A1A18;
+  --fg-2: #5C5B57;
+  --fg-3: #6F6E69;
+  --fg-disabled: #A3A19B;
+  --accent: #4352D1;
+  --accent-hover: #3A47B8;
+  --accent-pressed: #323E9F;
+  --accent-subtle: #EEF0FC;
+  --on-accent: #FFFFFF;
+  --link: #4352D1;
+  --focus: #4352D1;
+  --danger: #B42318;
+  --danger-subtle: #FDECEA;
+  --badge-bg: #1A1A18;
+  --badge-fg: #FFFFFF;
+  --org-bg: #F0F0EE;
+  --org-fg: #45443F;
+  --lvl-head: #1A1A18;
+  --lvl-coord: #62615C;
+  --lvl-pos: #AEABA5;
+  --bar: #5C5B57;
+  --track: #EFEFEC;
+  --av1-bg: #E5E9F0; --av1-fg: #3B4A63;
+  --av2-bg: #E3EDE6; --av2-fg: #2F5A3F;
+  --av3-bg: #F1EADF; --av3-fg: #6A4C1F;
+  --av4-bg: #F3E5E3; --av4-fg: #7A3A33;
+  --av5-bg: #EDE6F0; --av5-fg: #5A3D6B;
+  --av6-bg: #DFEDEE; --av6-fg: #1F5A5F;
+  --overlay: rgba(14, 14, 13, .48);
+  --shadow-pop: 0 0 0 1px rgba(26, 26, 24, .06), 0 8px 24px -6px rgba(26, 26, 24, .16);
+  --shadow-btn: 0 1px 1px rgba(26, 26, 24, .04);
+
+  --radius-xs: 4px; --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px;
+  --nav-h: 52px; --mtop-h: 48px; --tabbar-h: 56px;
+  --page-max: 1200px; --rail-left: 232px; --rail-feed: 304px; --rail-profile: 320px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --canvas: #0E0E0D; --surface: #161615; --surface-2: #1B1B19; --hover: #21211E; --pressed: #292926;
+    --border: #2A2A27; --divider: #222220; --border-strong: #3A3A36; --control: #706F69;
+    --fg-1: #EDEDEA; --fg-2: #A9A8A2; --fg-3: #8C8B85; --fg-disabled: #5F5E59;
+    --accent: #4F5DDB; --accent-hover: #4553D2; --accent-pressed: #3C49C0; --accent-subtle: #1C1F3A; --on-accent: #FFFFFF;
+    --link: #8F9AFF; --focus: #8F9AFF; --danger: #F97066; --danger-subtle: #3A1D1B;
+    --badge-bg: #EDEDEA; --badge-fg: #161615; --org-bg: #1F1F1D; --org-fg: #C9C8C2;
+    --lvl-head: #EDEDEA; --lvl-coord: #9C9B95; --lvl-pos: #55544F; --bar: #A9A8A2; --track: #292926;
+    --av1-bg: #222833; --av1-fg: #AFC0DA; --av2-bg: #1D2A22; --av2-fg: #A3CCAF; --av3-bg: #2E2719; --av3-fg: #DDC59A;
+    --av4-bg: #33201E; --av4-fg: #E3AFA7; --av5-bg: #2B2131; --av5-fg: #CDB3DC; --av6-bg: #172A2C; --av6-fg: #9ACED2;
+    --overlay: rgba(0, 0, 0, .64);
+    --shadow-pop: 0 0 0 1px rgba(255, 255, 255, .06), 0 8px 24px -6px rgba(0, 0, 0, .6);
+    --shadow-btn: none;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --canvas: #0E0E0D; --surface: #161615; --surface-2: #1B1B19; --hover: #21211E; --pressed: #292926;
+  --border: #2A2A27; --divider: #222220; --border-strong: #3A3A36; --control: #706F69;
+  --fg-1: #EDEDEA; --fg-2: #A9A8A2; --fg-3: #8C8B85; --fg-disabled: #5F5E59;
+  --accent: #4F5DDB; --accent-hover: #4553D2; --accent-pressed: #3C49C0; --accent-subtle: #1C1F3A; --on-accent: #FFFFFF;
+  --link: #8F9AFF; --focus: #8F9AFF; --danger: #F97066; --danger-subtle: #3A1D1B;
+  --badge-bg: #EDEDEA; --badge-fg: #161615; --org-bg: #1F1F1D; --org-fg: #C9C8C2;
+  --lvl-head: #EDEDEA; --lvl-coord: #9C9B95; --lvl-pos: #55544F; --bar: #A9A8A2; --track: #292926;
+  --av1-bg: #222833; --av1-fg: #AFC0DA; --av2-bg: #1D2A22; --av2-fg: #A3CCAF; --av3-bg: #2E2719; --av3-fg: #DDC59A;
+  --av4-bg: #33201E; --av4-fg: #E3AFA7; --av5-bg: #2B2131; --av5-fg: #CDB3DC; --av6-bg: #172A2C; --av6-fg: #9ACED2;
+  --overlay: rgba(0, 0, 0, .64);
+  --shadow-pop: 0 0 0 1px rgba(255, 255, 255, .06), 0 8px 24px -6px rgba(0, 0, 0, .6);
+  --shadow-btn: none;
+  color-scheme: dark;
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-sans); font-size: 14px; line-height: 20px; color: var(--fg-1); background: var(--canvas);
+  font-optical-sizing: auto; font-feature-settings: "cv11"; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh; display: flex; flex-direction: column;
+}
+a { color: inherit; text-decoration: none; }
+p, li, h1, h2, h3, h4 { text-wrap: pretty; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+input { font: inherit; }
+ul, ol { list-style: none; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.nw { white-space: nowrap; }
+.trunc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+.link { color: var(--link); font-weight: 500; }
+.link:hover { text-decoration: underline; text-underline-offset: 2px; }
+.ul-hover:hover { text-decoration: underline; text-underline-offset: 2px; }
+/* Source links: link color, external icon, always underlined in banners and prose */
+.src-link { color: var(--link); font-weight: 500; display: inline-flex; align-items: center; gap: 3px; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+.src-link:hover { text-decoration-thickness: 2px; }
+.inf { text-decoration: underline dotted var(--fg-3); text-underline-offset: 3px; text-decoration-thickness: 1.5px; cursor: help; }
+
+/* Icons: Lucide, 24px grid, stroked */
+.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.i-12 { width: 12px; height: 12px; stroke-width: 2; }
+.i-14 { width: 14px; height: 14px; stroke-width: 1.9; }
+.i-20 { width: 20px; height: 20px; }
+.i-22 { width: 22px; height: 22px; stroke-width: 1.6; }
+
+/* ---------- Count badge (ink, never Iris) ---------- */
+.count { position: absolute; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--badge-bg); color: var(--badge-fg);
+  font-size: 12px; font-weight: 600; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px var(--surface); font-variant-numeric: tabular-nums; }
+
+/* ---------- Top nav (>= 721px) ---------- */
+.topnav { position: sticky; top: 0; z-index: 30; height: var(--nav-h); background: var(--surface); border-bottom: 1px solid var(--border); }
+.topnav-in { max-width: var(--page-max); height: 100%; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 650; letter-spacing: -0.015em; white-space: nowrap; }
+.mark { width: 24px; height: 24px; border-radius: 6px; background: var(--fg-1); color: var(--surface); display: grid; place-items: center; flex: none; }
+.search { display: flex; align-items: center; gap: 8px; width: 280px; height: 32px; padding: 0 6px 0 10px; border-radius: var(--radius-sm);
+  background: var(--hover); border: 1px solid transparent; color: var(--fg-3); transition: border-color .12s, background-color .12s; }
+.search:hover { border-color: var(--border); }
+.search:focus-within { background: var(--surface); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
+.search input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; color: var(--fg-1); font-size: 13px; }
+.search input::placeholder { color: var(--fg-3); }
+.kbd { font-size: 12px; line-height: 16px; min-width: 18px; text-align: center; padding: 0 4px; border-radius: 4px; color: var(--fg-3); background: var(--surface); box-shadow: inset 0 0 0 1px var(--border-strong); }
+.nav { margin-left: auto; display: flex; align-items: stretch; height: 100%; }
+.nav-item { position: relative; min-width: 64px; padding: 0 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  font-size: 12px; line-height: 16px; font-weight: 500; color: var(--fg-2); transition: color .12s; white-space: nowrap; }
+.nav-item:hover { color: var(--fg-1); }
+.nav-item .ico { position: relative; display: grid; }
+.nav-item .count { top: -6px; left: 12px; }
+.nav-item[aria-current="page"] { color: var(--fg-1); }
+.nav-item[aria-current="page"]::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px; border-radius: 2px 2px 0 0; background: var(--fg-1); }
+.vsep { width: 1px; height: 32px; align-self: center; background: var(--border); margin: 0 8px; flex: none; }
+.nav-item .av { margin: 0 auto; }
+.nav-item .me-l { display: inline-flex; align-items: center; gap: 2px; }
+
+/* ---------- Buttons ---------- */
+.btn { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: var(--radius-sm);
+  border: 1px solid transparent; font-size: 13px; font-weight: 500; line-height: 1; white-space: nowrap; cursor: pointer;
+  transition: background-color .12s, border-color .12s, color .12s; }
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:active { background: var(--accent-pressed); }
+.btn-secondary { background: var(--surface); color: var(--fg-1); border-color: var(--control); box-shadow: var(--shadow-btn); }
+.btn-secondary:hover { background: var(--hover); }
+.btn-secondary:active { background: var(--pressed); }
+.btn-ghost { color: var(--fg-2); }
+.btn-ghost:hover { background: var(--hover); color: var(--fg-1); }
+.btn-ghost:active { background: var(--pressed); }
+.btn:disabled, .btn[aria-disabled="true"] { background: var(--hover); color: var(--fg-disabled); border-color: transparent; box-shadow: none; cursor: not-allowed; }
+.btn-sm { height: 28px; padding: 0 10px; }
+.btn-icon { width: 32px; padding: 0; }
+.btn-sm.btn-icon { width: 28px; }
+/* Every small control gets a >= 44px hit area on touch */
+@media (pointer: coarse) { .btn-sm::before, .btn-icon::before { content: ""; position: absolute; inset: -8px; } }
+
+/* ---------- Chips ---------- */
+.chip { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 6px; border-radius: var(--radius-xs); background: var(--hover);
+  color: var(--fg-2); font-size: 12px; line-height: 16px; font-weight: 500; white-space: nowrap; vertical-align: 1px; }
+.chip-abbr { letter-spacing: .02em; font-weight: 600; }
+.chip-outline { background: transparent; box-shadow: inset 0 0 0 1px var(--control); }
+.chip-sample { background: transparent; border: 1px dashed var(--control); color: var(--fg-2); }
+
+/* ---------- Cards ---------- */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.card-pad { padding: 20px 24px; }
+.card-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.card-title { font-size: 16px; line-height: 24px; font-weight: 600; letter-spacing: -0.01em; }
+.card-meta { font-size: 13px; line-height: 18px; color: var(--fg-3); }
+.card-link { font-size: 13px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; padding: 3px 0; margin: -3px 0; }
+.rail-card { padding: 16px; }
+.rail-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.rail-title { font-size: 14px; line-height: 20px; font-weight: 600; }
+.rail-sub { font-size: 12px; line-height: 16px; color: var(--fg-3); margin-top: 2px; }
+.footnote { font-size: 12px; line-height: 16px; color: var(--fg-3); }
+
+/* ---------- Avatars (people = circles) and org tiles (organizations = rounded squares) ---------- */
+.av { flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--av-bg); color: var(--av-fg); font-weight: 600; letter-spacing: .01em; user-select: none; }
+.c1 { --av-bg: var(--av1-bg); --av-fg: var(--av1-fg); } .c2 { --av-bg: var(--av2-bg); --av-fg: var(--av2-fg); }
+.c3 { --av-bg: var(--av3-bg); --av-fg: var(--av3-fg); } .c4 { --av-bg: var(--av4-bg); --av-fg: var(--av4-fg); }
+.c5 { --av-bg: var(--av5-bg); --av-fg: var(--av5-fg); } .c6 { --av-bg: var(--av6-bg); --av-fg: var(--av6-fg); }
+/* Person named in a source but without a profile: no tint, dashed ring */
+.av-none { --av-bg: var(--surface); --av-fg: var(--fg-3); outline: 1px dashed var(--control); outline-offset: -1px; }
+.av-24 { width: 24px; height: 24px; font-size: 10px; }
+.av-28 { width: 28px; height: 28px; font-size: 11px; }
+.av-32 { width: 32px; height: 32px; font-size: 12px; }
+.av-36 { width: 36px; height: 36px; font-size: 13px; }
+.av-40 { width: 40px; height: 40px; font-size: 14px; }
+.av-48 { width: 48px; height: 48px; font-size: 17px; }
+.av-56 { width: 56px; height: 56px; font-size: 20px; }
+.av-80 { width: 80px; height: 80px; font-size: 27px; letter-spacing: 0; }
+.org { flex: none; display: grid; place-items: center; background: var(--org-bg); color: var(--org-fg); font-weight: 600; box-shadow: inset 0 0 0 1px var(--border); letter-spacing: .02em; }
+.org-24 { width: 24px; height: 24px; border-radius: 5px; font-size: 9px; }
+.org-32 { width: 32px; height: 32px; border-radius: 6px; font-size: 11px; }
+.org-40 { width: 40px; height: 40px; border-radius: 8px; font-size: 13px; }
+
+/* ---------- Segmented control ---------- */
+.seg { display: inline-flex; gap: 2px; padding: 2px; border-radius: var(--radius-sm); background: var(--hover); }
+.seg button { height: 28px; padding: 0 12px; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 13px; font-weight: 500; color: var(--fg-2); white-space: nowrap; transition: color .12s, background-color .12s; }
+.seg button:hover { color: var(--fg-1); }
+.seg button[aria-selected="true"] { background: var(--surface); color: var(--fg-1); box-shadow: 0 0 0 1px var(--border), 0 1px 2px rgba(26, 26, 24, .06); }
+
+/* ---------- People rows ---------- */
+.prow { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.prow-text { flex: 1; min-width: 0; }
+.prow-name { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--fg-1); }
+a.prow:hover .prow-name, .prow-name a:hover, a.prow-name:hover { text-decoration: underline; text-underline-offset: 2px; }
+/* 24px targets for name links outside sentences */
+a.prow-name, .prow-name a, .xg-name a, .prog-name a, .ph-title a, .dg-org a, .mini-name a, .job-title a { padding-block: 4px; margin-block: -4px; }
+.prow-sub { font-size: 13px; line-height: 18px; color: var(--fg-2); }
+.ctx { display: flex; align-items: flex-start; gap: 4px; font-size: 12px; line-height: 16px; color: var(--fg-3); margin-top: 2px; }
+.ctx .i { margin-top: 2px; color: var(--fg-2); }
+.rail-list { margin-top: 4px; }
+.rail-list > li { padding: 12px 0; border-top: 1px solid var(--divider); }
+.rail-list > li:first-child { border-top: 0; }
+.rail-list .prow-name { font-size: 13px; line-height: 18px; }
+.rail-list .prow-sub { font-size: 12px; line-height: 16px; }
+
+/* ---------- Rail footer ---------- */
+.legal { padding: 4px 4px 0; font-size: 12px; line-height: 24px; color: var(--fg-3); }
+.legal a:hover { color: var(--fg-1); text-decoration: underline; }
+.legal .row { display: flex; flex-wrap: wrap; gap: 0 12px; }
+
+/* ---------- Phone chrome (<= 720px) ---------- */
+.mtop, .tabbar { display: none; }
+.nav-search { display: none !important; }
+@media (max-width: 1279px) { .search { width: 256px; } }
+/* Tablet: the search field becomes a labelled nav item that opens the search overlay; wordmark collapses to the mark */
+@media (min-width: 721px) and (max-width: 1080px) {
+  .topnav .search { display: none; }
+  .nav-search { display: flex !important; }
+  .nav { margin-left: auto; }
+  .nav-item { min-width: 56px; padding: 0 6px; }
+}
+@media (min-width: 721px) and (max-width: 900px) {
+  .brand-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@media (max-width: 720px) {
+  .topnav { display: none; }
+  .mtop { display: flex; align-items: center; gap: 8px; position: sticky; top: 0; z-index: 30; height: var(--mtop-h); padding: 0 8px;
+    background: var(--surface); border-bottom: 1px solid var(--border); }
+  .mtop .search { position: relative; flex: 1; width: auto; min-width: 0; height: 40px; }
+  .mtop .search::before { content: ""; position: absolute; inset: -2px 0; }  /* 44px hit area */
+  .mtop .search input { font-size: 16px; width: 0; }
+  .mtop .kbd { display: none; }
+  .mtop-btn { position: relative; width: 44px; height: 44px; display: grid; place-items: center; flex: none; border-radius: var(--radius-sm); color: var(--fg-2); }
+  .mtop-btn .count { top: 4px; left: 24px; }
+  .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; z-index: 30; left: 0; right: 0; bottom: 0;
+    height: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--surface); border-top: 1px solid var(--border); }
+  .tab { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-width: 0;
+    font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: -0.01em; color: var(--fg-2); white-space: nowrap; }
+  .tab .ico { position: relative; display: grid; }
+  .tab .count { top: -5px; left: 14px; }
+  .tab[aria-current="page"] { color: var(--fg-1); font-weight: 600; }
+  .tab[aria-current="page"] .i { stroke-width: 2.1; }
+  body { padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); }
+  .card { border-radius: 0; border-left: 0; border-right: 0; }
+  .card-pad { padding: 16px; }
+  .btn { height: 40px; }
+  .btn-icon, .btn-sm.btn-icon { width: 40px; }
+  .btn::before { content: ""; position: absolute; inset: -2px; }  /* 44px hit area */
+  .seg button { position: relative; height: 40px; }
+  .seg button::before { content: ""; position: absolute; inset: -2px 0; }
+  /* Capture aid (see DESIGN.md §9): automated full-page screenshots pin the tab bar to the end of the document */
+  html.capture-full body { position: relative; }
+  html.capture-full .tabbar { position: absolute; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+
+/* ==========================================================================
+   Home feed /feed
+   ========================================================================== */
+.fpage { flex: 1; width: 100%; max-width: var(--page-max); margin: 0 auto; padding: 20px 24px 48px;
+  display: grid; grid-template-columns: var(--rail-left) minmax(0, 1fr) var(--rail-feed); gap: 24px; align-items: start; }
+.lrail, .center, .rrail { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.lrail, .rrail { position: sticky; top: calc(var(--nav-h) + 20px); }
+
+/* Mini profile */
+.mini { padding: 16px; }
+.mini-name { margin-top: 12px; font-size: 15px; line-height: 20px; font-weight: 600; letter-spacing: -0.01em; }
+.mini-name a:hover { text-decoration: underline; text-underline-offset: 2px; }
+.mini-title { margin-top: 2px; font-size: 13px; line-height: 18px; color: var(--fg-2); }
+.mini-org { margin-top: 8px; display: flex; align-items: center; gap: 8px; font-size: 12px; line-height: 16px; color: var(--fg-2); }
+.mini-hr { height: 1px; background: var(--divider); margin: 12px -16px; }
+.kv { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 13px; line-height: 24px; color: var(--fg-2); }
+.kv b { font-weight: 600; color: var(--fg-1); font-variant-numeric: tabular-nums; }
+a.kv:hover { color: var(--fg-1); }
+.oto { display: flex; align-items: center; gap: 8px; margin: -4px -8px; padding: 4px 8px; border-radius: var(--radius-sm); }
+.oto:hover { background: var(--hover); }
+.oto-text { flex: 1; min-width: 0; }
+.oto-label { font-size: 13px; line-height: 18px; font-weight: 500; }
+.oto-state { display: flex; align-items: center; gap: 4px; font-size: 12px; line-height: 16px; color: var(--fg-3); }
+.shortcuts { padding: 8px; }
+.shortcuts a { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 8px; border-radius: var(--radius-sm); font-size: 13px; color: var(--fg-2); }
+.shortcuts a:hover { background: var(--hover); color: var(--fg-1); }
+.shortcuts a span:first-of-type { flex: 1; }
+.shortcuts .n { font-size: 12px; color: var(--fg-3); font-variant-numeric: tabular-nums; }
+
+/* Toolbar */
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.scope { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 8px 0 10px; border-radius: var(--radius-sm); font-size: 13px; color: var(--fg-2); }
+.scope:hover { background: var(--hover); color: var(--fg-1); }
+.scope b { font-weight: 500; color: var(--fg-1); }
+
+/* Feed item */
+.fi { overflow: hidden; }
+.fi-why { display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-bottom: 1px solid var(--divider); font-size: 12px; line-height: 16px; color: var(--fg-2); }
+.fi-why b { font-weight: 600; color: var(--fg-1); }
+.fi-why .i { color: var(--fg-2); }
+.fi-in { padding: 16px 16px 0; }
+.fi-h { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; column-gap: 12px; align-items: start; }
+.fi-line { font-size: 14px; line-height: 20px; font-weight: 400; text-wrap: balance; }
+.fi-line a { font-weight: 600; }
+.fi-line a:hover { text-decoration: underline; text-underline-offset: 2px; }
+.fi-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0 6px; margin-top: 2px; font-size: 12px; line-height: 16px; color: var(--fg-3); }
+.fi-kind { display: inline-flex; align-items: center; gap: 4px; color: var(--fg-2); font-weight: 500; }
+.fi-src { display: inline-flex; align-items: center; gap: 3px; padding: 4px 0; margin: -4px 0; color: var(--link); font-weight: 500; }
+.fi-src:hover { text-decoration: underline; text-underline-offset: 2px; }
+.fi-h > .btn-icon { margin: -6px -8px 0 0; color: var(--fg-2); }
+.fi-body { margin: 12px 0 0 52px; }
+.fi-note { margin-top: 10px; }
+.fi-facts { margin-top: 10px; font-size: 13px; line-height: 18px; color: var(--fg-2); }
+
+/* Move record: the last 2–3 stints, oldest first, ending on the new role */
+.rec { position: relative; }
+.rec li { position: relative; display: grid; grid-template-columns: 56px 16px minmax(0, 1fr); align-items: baseline; padding: 3px 0; font-size: 13px; line-height: 20px; color: var(--fg-2); }
+.rec-y { font-size: 12px; font-weight: 500; color: var(--fg-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rec li::before { content: ""; position: absolute; left: 60px; top: 10px; width: 7px; height: 7px; border-radius: 50%; background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--control); }
+.rec li:not(:last-child)::after { content: ""; position: absolute; left: 63px; top: 19px; bottom: -9px; border-left: 1px solid var(--border-strong); }
+.rec-r { grid-column: 3; min-width: 0; }
+.rec li.now { color: var(--fg-1); }
+.rec li.now .rec-y { color: var(--fg-1); font-weight: 600; }
+.rec li.now::before { background: var(--fg-1); box-shadow: none; }
+.rec li.now b { font-weight: 600; }
+
+.quote { margin-top: 12px; padding: 2px 0 2px 12px; border-left: 2px solid var(--border-strong); }
+.quote p { font-size: 13px; line-height: 20px; color: var(--fg-1); }
+.quote cite { display: block; margin-top: 2px; font-style: normal; font-size: 12px; line-height: 16px; color: var(--fg-3); }
+
+/* Grouped hires: people rows separated by dividers, no inner box */
+.glist li { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-top: 1px solid var(--divider); }
+.glist li:first-child { border-top: 0; padding-top: 2px; }
+.glist .prow-name { font-size: 13px; line-height: 18px; }
+.glist .prow-sub { font-size: 12px; line-height: 16px; color: var(--fg-1); }
+
+/* Milestone: a stat band, no inner box */
+.ms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--divider); border-bottom: 1px solid var(--divider); }
+.ms > div { padding: 10px 12px 10px 0; }
+.ms > div + div { padding-left: 16px; border-left: 1px solid var(--divider); }
+.ms b { display: block; font-size: 20px; line-height: 28px; font-weight: 600; letter-spacing: -0.015em; font-variant-numeric: tabular-nums; }
+.ms span { display: block; font-size: 12px; line-height: 16px; color: var(--fg-2); }
+
+/* Action bar: four fixed slots on every person item; label always visible */
+.fi-actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 12px; padding: 4px 8px; border-top: 1px solid var(--divider); }
+.fi-actions .btn { height: 40px; padding: 0 8px; color: var(--fg-2); }
+.fi-actions .btn:hover { color: var(--fg-1); }
+
+/* Job item */
+.job .fi-in { padding-bottom: 16px; }
+.job-title { font-size: 15px; line-height: 20px; font-weight: 600; letter-spacing: -0.01em; margin-top: 2px; }
+.job-title a:hover { text-decoration: underline; text-underline-offset: 2px; }
+.job-sub { font-size: 13px; line-height: 18px; color: var(--fg-2); margin-top: 2px; }
+.job-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.job-net { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 12px; line-height: 16px; color: var(--fg-2); }
+.stack { display: flex; gap: 4px; }
+.job-actions { display: flex; gap: 8px; }
+
+/* Transactions digest */
+.dg { padding: 16px; }
+.dg-list li { padding: 12px 0; border-top: 1px solid var(--divider); }
+.dg-list li:first-child { border-top: 0; padding-top: 4px; }
+.dg-org { display: flex; align-items: center; gap: 6px; font-size: 13px; line-height: 20px; font-weight: 600; }
+.dg-org a:hover { text-decoration: underline; text-underline-offset: 2px; }
+.dg-list p { margin-top: 2px; font-size: 13px; line-height: 20px; color: var(--fg-1); }
+.dg-list p a.p { font-weight: 600; }
+.dg-list p a.p:hover { text-decoration: underline; text-underline-offset: 2px; }
+.dg-meta { display: flex; flex-wrap: wrap; gap: 0 6px; margin-top: 2px; font-size: 12px; line-height: 16px; color: var(--fg-3); }
+.dg-f { padding-top: 12px; border-top: 1px solid var(--divider); }
+.dg-f .btn { width: 100%; }
+
+/* Carousel tracker */
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); margin: 12px -16px 0; border-top: 1px solid var(--divider); border-bottom: 1px solid var(--divider); }
+.kpi { padding: 10px 16px 12px; min-width: 0; }
+.kpi + .kpi { border-left: 1px solid var(--divider); }
+.kpi b { display: block; font-size: 20px; line-height: 28px; font-weight: 600; letter-spacing: -0.015em; font-variant-numeric: tabular-nums; }
+.kpi > span { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 12px; line-height: 16px; color: var(--fg-2); }
+a.kpi:hover > span { color: var(--fg-1); text-decoration: underline; text-underline-offset: 2px; }
+.kpi .chip-sample { height: 18px; padding: 0 4px; }
+.box { width: 100%; margin-top: 12px; border-collapse: collapse; font-size: 13px; line-height: 18px; }
+.box caption { text-align: left; }
+.box th { padding: 0 0 6px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--fg-3); text-align: right; border-bottom: 1px solid var(--divider); }
+.box th:first-child { text-align: left; }
+.box td { padding: 5px 0; text-align: right; font-variant-numeric: tabular-nums; font-weight: 500; }
+.box td:first-child { text-align: left; font-weight: 400; white-space: nowrap; }
+.box .bar-c { width: 38%; padding: 0 12px; }
+.box .bar { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
+.box .bar i { display: block; height: 100%; border-radius: 3px; background: var(--bar); }
+.box td.n { width: 40px; }
+.box tr.you td { font-weight: 600; border-top: 1px solid var(--divider); padding-top: 8px; }
+.box tr.you .bar i { background: var(--accent); }
+.box tr.you .yours { font-weight: 400; color: var(--fg-3); }
+.tracker-f { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--divider); }
+
+/* People you may know */
+.pymk .prow { align-items: flex-start; }
+.pymk .invite { margin-top: 8px; }
+
+/* Phone-only tracker summary */
+.mtracker { display: none; }
+
+@media (max-width: 1080px) {
+  .fpage { grid-template-columns: minmax(0, 1fr) 280px; }
+  .lrail { display: none; }
+}
+@media (max-width: 720px) {
+  .fpage { display: block; padding: 0 0 16px; }
+  .center { gap: 8px; }
+  .rrail { display: none; }
+  .toolbar { padding: 12px 16px 4px; }
+  .toolbar .seg { display: grid; grid-template-columns: repeat(4, 1fr); flex: 1; }
+  .toolbar .seg button { padding: 0 4px; }
+  .toolbar .scope { display: none; }
+  .mtracker { display: flex; align-items: center; gap: 12px; padding: 12px 16px; min-height: 64px; }
+  .mtracker-text { flex: 1; min-width: 0; }
+  .mtracker-k { display: flex; flex-wrap: wrap; gap: 0 12px; margin-top: 2px; font-size: 13px; line-height: 18px; color: var(--fg-2); }
+  .mtracker-k b { color: var(--fg-1); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .fi-h > .btn-icon { width: 44px; height: 44px; margin: -12px -14px 0 0; }
+  .fi-body { margin-left: 0; }
+  .rec li { grid-template-columns: 52px 16px minmax(0, 1fr); }
+  .rec li::before { left: 56px; }
+  .rec li:not(:last-child)::after { left: 59px; }
+  .fi-actions { padding: 2px 0; }
+  .fi-actions .btn { height: 52px; flex-direction: column; gap: 2px; padding: 0 2px; font-size: 12px; line-height: 16px; }
+  .ms > div + div { padding-left: 12px; }
+  .ms b { font-size: 18px; line-height: 24px; }
+  .job .fi-h { grid-template-columns: 40px minmax(0, 1fr); }
+  .job-actions { grid-column: 1 / -1; margin-top: 12px; }
+  .job-actions .btn { height: 44px; }
+  .job-actions .btn:not(.btn-icon) { flex: 1; order: -1; }
+  .job-actions .btn-icon { width: 44px; }
+  .dg-f .btn { height: 44px; }
+}
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <!-- Lucide icons (ISC license), lucide.dev. Stroke set by .i -->
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-briefcase" viewBox="0 0 24 24"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+  <symbol id="i-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+  <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-chev-d" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-arrow-r" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+  <symbol id="i-tree" viewBox="0 0 24 24"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></symbol>
+  <symbol id="i-cap" viewBox="0 0 24 24"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></symbol>
+  <symbol id="i-handshake" viewBox="0 0 24 24"><path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/><path d="m21 3 1 11h-2"/><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/><path d="M3 4h8"/></symbol>
+  <symbol id="i-comment" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-quote" viewBox="0 0 24 24"><path d="M17 6H3"/><path d="M21 12H8"/><path d="M21 18H8"/><path d="M3 12v6"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></symbol>
+  <symbol id="i-login" viewBox="0 0 24 24"><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></symbol>
+</svg>
+
+<header class="topnav">
+  <div class="topnav-in">
+    <a class="brand" href="#"><span class="mark" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4.5v2.5M3.5 10V7h7v3"/><circle cx="7" cy="2.75" r="1.75" fill="currentColor" stroke="none"/><circle cx="3.5" cy="11.25" r="1.75" fill="currentColor" stroke="none"/><circle cx="10.5" cy="11.25" r="1.75" fill="currentColor" stroke="none"/></svg></span><span class="brand-name" data-brand></span></a>
+    <label class="search"><svg class="i"><use href="#i-search"/></svg><input type="search" placeholder="Search coaches and programs" aria-label="Search coaches and programs"><span class="kbd" aria-hidden="true">/</span></label>
+    <nav class="nav" aria-label="Primary">
+      <a class="nav-item nav-search" href="#"><span class="ico"><svg class="i i-20"><use href="#i-search"/></svg></span><span>Search</span></a>
+      <a class="nav-item" href="#" aria-current="page"><span class="ico"><svg class="i i-20"><use href="#i-home"/></svg></span><span>Home</span></a>
+      <a class="nav-item" href="#"><span class="ico"><svg class="i i-20"><use href="#i-users"/></svg></span><span>Network</span></a>
+      <a class="nav-item" href="#"><span class="ico"><svg class="i i-20"><use href="#i-briefcase"/></svg></span><span>Jobs</span></a>
+      <a class="nav-item" href="#" aria-label="Messaging, 2 unread"><span class="ico"><svg class="i i-20"><use href="#i-inbox"/></svg><span class="count" aria-hidden="true">2</span></span><span>Messaging</span></a>
+      <a class="nav-item" href="#" aria-label="Notifications, 5 new"><span class="ico"><svg class="i i-20"><use href="#i-bell"/></svg><span class="count" aria-hidden="true">5</span></span><span>Notifications</span></a>
+      <a class="nav-item" href="#" aria-haspopup="menu" aria-label="Me menu"><span class="ico"><span class="av av-24 c5" aria-hidden="true">JL</span></span><span class="me-l">Me<svg class="i i-12"><use href="#i-chev-d"/></svg></span></a>
+      <span class="vsep" aria-hidden="true"></span>
+      <a class="nav-item" href="#"><span class="ico"><svg class="i i-20"><use href="#i-grid"/></svg></span><span>For employers</span></a>
+    </nav>
+  </div>
+</header>
+<header class="mtop">
+  <a class="mtop-btn" href="#" aria-label="Me menu"><span class="av av-32 c5" aria-hidden="true">JL</span></a>
+  <label class="search"><svg class="i"><use href="#i-search"/></svg><input type="search" placeholder="Search coaches, programs" aria-label="Search coaches and programs"></label>
+  <a class="mtop-btn" href="#" aria-label="Messaging, 2 unread" title="Messaging"><svg class="i i-22"><use href="#i-inbox"/></svg><span class="count" aria-hidden="true">2</span></a>
+</header>
+
+<div class="fpage">
+  <!-- Left rail: mini profile -->
+  <aside class="lrail" aria-label="Your profile">
+    <section class="card mini">
+      <span class="av av-48 c5" aria-hidden="true">JL</span>
+      <div class="mini-name"><a href="#">Justin Leatherman</a></div>
+      <div class="mini-title">Special Teams Coordinator / Defensive Backs Coach</div>
+      <div class="mini-org"><span class="org org-24" aria-hidden="true">PU</span>Pacific University (Oregon)</div>
+      <div class="mini-hr"></div>
+      <a class="kv" href="#"><span>Profile viewers</span><b>38</b></a>
+      <a class="kv" href="#"><span>Search appearances</span><b>112</b></a>
+      <div class="footnote" style="margin-top:2px">Past 7 days · demo data</div>
+      <div class="mini-hr"></div>
+      <a class="oto" href="#">
+        <div class="oto-text">
+          <div class="oto-label">Open to opportunities</div>
+          <div class="oto-state"><svg class="i i-12" aria-hidden="true"><use href="#i-lock"/></svg>Off · only you see this</div>
+        </div>
+        <svg class="i" style="color:var(--fg-3)" aria-hidden="true"><use href="#i-chev-r"/></svg>
+      </a>
+    </section>
+    <nav class="card shortcuts" aria-label="Shortcuts">
+      <a href="#"><svg class="i" aria-hidden="true"><use href="#i-tree"/></svg><span>My coaching tree</span><span class="n">6</span></a>
+      <a href="#"><svg class="i" aria-hidden="true"><use href="#i-building"/></svg><span>Programs I follow</span><span class="n">4</span></a>
+      <a href="#"><svg class="i" aria-hidden="true"><use href="#i-bookmark"/></svg><span>Saved jobs</span><span class="n">1</span></a>
+    </nav>
+  </aside>
+
+  <!-- Center feed -->
+  <main class="center">
+    <h1 class="sr">Home feed</h1>
+    <div class="toolbar">
+      <div class="seg" role="tablist" aria-label="Filter feed">
+        <button role="tab" aria-selected="true">All</button>
+        <button role="tab" aria-selected="false">Moves</button>
+        <button role="tab" aria-selected="false">Jobs</button>
+        <button role="tab" aria-selected="false">Milestones</button>
+      </div>
+      <button class="scope" aria-haspopup="menu">Showing <b>Division III</b><svg class="i i-14" aria-hidden="true"><use href="#i-chev-d"/></svg></button>
+    </div>
+
+    <a class="card mtracker" href="#">
+      <div class="mtracker-text">
+        <div class="rail-title">Carousel tracker · 2026</div>
+        <div class="mtracker-k"><span><b>20</b> hires</span><span><b>8</b> promotions</span><span><b>3</b> sample jobs</span></div>
+      </div>
+      <svg class="i" style="color:var(--fg-3)" aria-hidden="true"><use href="#i-chev-r"/></svg>
+    </a>
+
+    <!-- 1. Hire with a real prior career: move record + staff-bio quote -->
+    <article class="card fi" aria-labelledby="f1">
+      <div class="fi-in">
+        <div class="fi-h">
+          <span class="av av-40 c1" aria-hidden="true">TK</span>
+          <div>
+            <h2 class="fi-line" id="f1"><a href="#">Tanner Kingsley</a> joined <a href="#">MIT</a> as offensive coordinator and quarterbacks coach</h2>
+            <div class="fi-meta"><span class="fi-kind"><svg class="i i-12" aria-hidden="true"><use href="#i-login"/></svg>New hire</span><span>·</span><span>NEWMAC</span><span>·</span><span class="num">2026 season</span><span>·</span><a class="fi-src" href="#">mitathletics.com<svg class="i i-12" aria-hidden="true"><use href="#i-ext"/></svg></a></div>
+          </div>
+          <button class="btn btn-ghost btn-icon" aria-label="More options" title="More options"><svg class="i" aria-hidden="true"><use href="#i-more"/></svg></button>
+        </div>
+        <div class="fi-body">
+          <ol class="rec" aria-label="Recent coaching record">
+            <li><span class="rec-y"><span class="inf" title="Inferred from “from 2021 to 2025” in his MIT bio">2021–24</span></span><span class="rec-r">Offensive coordinator, quarterbacks · Anna Maria College</span></li>
+            <li><span class="rec-y"><span class="inf" title="Inferred from “led the AMCats … 2025”">2025</span></span><span class="rec-r">Head coach · Anna Maria College</span></li>
+            <li class="now"><span class="rec-y">2026</span><span class="rec-r"><b>Offensive coordinator, quarterbacks</b> · MIT</span></li>
+          </ol>
+          <blockquote class="quote"><p>“Kingsley led the AMCats to a share of the 2025 MASCAC regular season championship.”</p><cite>From his MIT staff bio</cite></blockquote>
+          <p class="footnote fi-note">Dotted years are inferred from his bio, not stated in it.</p>
+        </div>
+      </div>
+      <div class="fi-actions" role="group" aria-label="Actions">
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-handshake"/></svg><span>Congratulate</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-comment"/></svg><span>Comment</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg><span>Message</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-share"/></svg><span>Share</span></button>
+      </div>
+    </article>
+
+    <!-- 2. Your program -->
+    <article class="card fi" aria-labelledby="f2">
+      <div class="fi-why"><svg class="i i-12" aria-hidden="true"><use href="#i-building"/></svg><b>Pacific (OR)</b><span>·</span><span>your program</span></div>
+      <div class="fi-in">
+        <div class="fi-h">
+          <span class="av av-40 c4" aria-hidden="true">RM</span>
+          <div>
+            <h2 class="fi-line" id="f2"><a href="#">Rylan Ma'ae</a> joined <a href="#">Pacific (OR)</a> as defensive assistant intern</h2>
+            <div class="fi-meta"><span class="fi-kind"><svg class="i i-12" aria-hidden="true"><use href="#i-login"/></svg>New hire</span><span>·</span><span>NWC</span><span>·</span><span class="num">2026 season</span><span>·</span><a class="fi-src" href="#">goboxers.com<svg class="i i-12" aria-hidden="true"><use href="#i-ext"/></svg></a></div>
+          </div>
+          <button class="btn btn-ghost btn-icon" aria-label="More options" title="More options"><svg class="i" aria-hidden="true"><use href="#i-more"/></svg></button>
+        </div>
+        <div class="fi-body">
+          <ol class="rec" aria-label="Recent record">
+            <li><span class="rec-y">2021–22</span><span class="rec-r">Linebacker (player) · New Mexico Military Institute</span></li>
+            <li><span class="rec-y">2024–25</span><span class="rec-r">Linebacker (player) · Pacific (OR)</span></li>
+            <li class="now"><span class="rec-y">2026</span><span class="rec-r"><b>Defensive assistant intern</b> · Pacific (OR)</span></li>
+          </ol>
+        </div>
+      </div>
+      <div class="fi-actions" role="group" aria-label="Actions">
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-handshake"/></svg><span>Congratulate</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-comment"/></svg><span>Comment</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg><span>Message</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-share"/></svg><span>Share</span></button>
+      </div>
+    </article>
+
+    <!-- 3. Promotion -->
+    <article class="card fi" aria-labelledby="f3">
+      <div class="fi-in">
+        <div class="fi-h">
+          <span class="av av-40 c6" aria-hidden="true">ZD</span>
+          <div>
+            <h2 class="fi-line" id="f3"><a href="#">Zac Dysert</a> was promoted to associate head coach for offense at <a href="#">Brevard College</a></h2>
+            <div class="fi-meta"><span class="fi-kind"><svg class="i i-12" aria-hidden="true"><use href="#i-up"/></svg>Promotion</span><span>·</span><span>USA South</span><span>·</span><span class="num">2026 season</span><span>·</span><a class="fi-src" href="#">bctornados.com<svg class="i i-12" aria-hidden="true"><use href="#i-ext"/></svg></a></div>
+          </div>
+          <button class="btn btn-ghost btn-icon" aria-label="More options" title="More options"><svg class="i" aria-hidden="true"><use href="#i-more"/></svg></button>
+        </div>
+        <div class="fi-body">
+          <ol class="rec" aria-label="Roles at Brevard">
+            <li><span class="rec-y">2024</span><span class="rec-r">Futures head coach, senior offensive analyst</span></li>
+            <li><span class="rec-y">2025</span><span class="rec-r">Pass game coordinator, quarterbacks</span></li>
+            <li class="now"><span class="rec-y">2026</span><span class="rec-r"><b>Associate head coach for offense, quarterbacks</b></span></li>
+          </ol>
+          <p class="fi-facts">NFL quarterback <span class="num">2013–2017</span> · Miami (Ohio) quarterback <span class="num">2009–2012</span></p>
+        </div>
+      </div>
+      <div class="fi-actions" role="group" aria-label="Actions">
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-handshake"/></svg><span>Congratulate</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-comment"/></svg><span>Comment</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg><span>Message</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-share"/></svg><span>Share</span></button>
+      </div>
+    </article>
+
+    <!-- 4. Job (sample) -->
+    <article class="card fi job" aria-labelledby="f4">
+      <div class="fi-in">
+        <div class="fi-h">
+          <span class="org org-40" aria-hidden="true">WU</span>
+          <div>
+            <div class="fi-meta" style="margin-top:0"><span class="fi-kind"><svg class="i i-12" aria-hidden="true"><use href="#i-briefcase"/></svg>Job</span><span>·</span><span>Matches your position group</span></div>
+            <h2 class="job-title" id="f4"><a href="#">Defensive Backs Coach</a></h2>
+            <p class="job-sub">Whitworth University · Spokane, WA · NWC · Full-time</p>
+            <div class="job-chips"><span class="chip chip-sample">Sample listing</span><span class="chip">Position coach</span><span class="chip">D-III</span></div>
+            <div class="job-net">
+              <span class="stack"><span class="av av-24 c1" aria-hidden="true">JB</span><span class="av av-24 c2" aria-hidden="true">NB</span></span>
+              <span>Your colleagues John Bates and Nic Brockhoff played here</span>
+            </div>
+          </div>
+          <div class="job-actions">
+            <button class="btn btn-secondary btn-icon" aria-label="Save job" title="Save job"><svg class="i" aria-hidden="true"><use href="#i-bookmark"/></svg></button>
+            <a class="btn btn-secondary" href="#">View job</a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 5. Program item: grouped hires -->
+    <article class="card fi" aria-labelledby="f5">
+      <div class="fi-why"><svg class="i i-12" aria-hidden="true"><use href="#i-building"/></svg><b>NEWMAC</b><span>·</span><span>a conference you follow</span></div>
+      <div class="fi-in">
+        <div class="fi-h">
+          <span class="org org-40" aria-hidden="true">NU</span>
+          <div>
+            <h2 class="fi-line" id="f5"><a href="#">Norwich University</a> named new offensive and defensive coordinators</h2>
+            <div class="fi-meta"><span class="fi-kind"><svg class="i i-12" aria-hidden="true"><use href="#i-login"/></svg>2 new hires</span><span>·</span><span>NEWMAC</span><span>·</span><span class="num">2026 season</span><span>·</span><a class="fi-src" href="#">norwichathletics.com<svg class="i i-12" aria-hidden="true"><use href="#i-ext"/></svg></a></div>
+          </div>
+          <button class="btn btn-ghost btn-icon" aria-label="More options" title="More options"><svg class="i" aria-hidden="true"><use href="#i-more"/></svg></button>
+        </div>
+        <div class="fi-body">
+          <ul class="glist">
+            <li><span class="av av-32 c2" aria-hidden="true">RH</span><div class="prow-text">
+              <a class="prow-name" href="#">Ryan Heasley</a><div class="prow-sub">Asst. Head Coach for Offense / OC / Offensive Line</div>
+              <div class="ctx"><span>Previously OC and offensive line coach at St. John Fisher, <span class="num nw">2022–2024</span></span></div></div>
+              <button class="btn btn-secondary btn-sm btn-icon" aria-label="Connect with Ryan Heasley" title="Connect"><svg class="i i-14" aria-hidden="true"><use href="#i-user-plus"/></svg></button></li>
+            <li><span class="av av-32 c6" aria-hidden="true">KE</span><div class="prow-text">
+              <a class="prow-name" href="#">Keith Emery</a><div class="prow-sub">Asst. Head Coach for Defense / DC / Inside Linebackers</div>
+              <div class="ctx"><span>Previously head coach at Western New England</span></div></div>
+              <button class="btn btn-secondary btn-sm btn-icon" aria-label="Connect with Keith Emery" title="Connect"><svg class="i i-14" aria-hidden="true"><use href="#i-user-plus"/></svg></button></li>
+          </ul>
+        </div>
+      </div>
+      <div class="fi-actions" role="group" aria-label="Actions">
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-handshake"/></svg><span>Congratulate</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-comment"/></svg><span>Comment</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg><span>Follow</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-share"/></svg><span>Share</span></button>
+      </div>
+    </article>
+
+    <!-- 6. Hire, alma-mater context -->
+    <article class="card fi" aria-labelledby="f6">
+      <div class="fi-why"><svg class="i i-12" aria-hidden="true"><use href="#i-cap"/></svg><b>Portland State</b><span>·</span><span>alum, like you</span></div>
+      <div class="fi-in">
+        <div class="fi-h">
+          <span class="av av-40 c3" aria-hidden="true">JH</span>
+          <div>
+            <h2 class="fi-line" id="f6"><a href="#">Jarren Horton</a> joined <a href="#">Brevard College</a> as associate head coach for defense and defensive coordinator</h2>
+            <div class="fi-meta"><span class="fi-kind"><svg class="i i-12" aria-hidden="true"><use href="#i-login"/></svg>New hire</span><span>·</span><span>USA South</span><span>·</span><span class="num">2026 season</span><span>·</span><a class="fi-src" href="#">bctornados.com<svg class="i i-12" aria-hidden="true"><use href="#i-ext"/></svg></a></div>
+          </div>
+          <button class="btn btn-ghost btn-icon" aria-label="More options" title="More options"><svg class="i" aria-hidden="true"><use href="#i-more"/></svg></button>
+        </div>
+        <div class="fi-body">
+          <ol class="rec" aria-label="Recent coaching record">
+            <li><span class="rec-y">2022–24</span><span class="rec-r">Defensive coordinator, assistant head coach · Pittsburgh Maulers (USFL)</span></li>
+            <li><span class="rec-y">2025</span><span class="rec-r">Defensive coordinator · Memphis Showboats (UFL)</span></li>
+            <li class="now"><span class="rec-y">2026</span><span class="rec-r"><b>Associate head coach for defense, defensive coordinator</b> · Brevard College</span></li>
+          </ol>
+        </div>
+      </div>
+      <div class="fi-actions" role="group" aria-label="Actions">
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-handshake"/></svg><span>Congratulate</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-comment"/></svg><span>Comment</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg><span>Message</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-share"/></svg><span>Share</span></button>
+      </div>
+    </article>
+
+    <!-- 7. Milestone -->
+    <article class="card fi" aria-labelledby="f7">
+      <div class="fi-in">
+        <div class="fi-h">
+          <span class="av av-40 c2" aria-hidden="true">JD</span>
+          <div>
+            <h2 class="fi-line" id="f7"><a href="#">Joe Doyle</a> is in his 42nd season on the <a href="#">Williams College</a> staff</h2>
+            <div class="fi-meta"><span class="fi-kind"><svg class="i i-12" aria-hidden="true"><use href="#i-flag"/></svg>Milestone</span><span>·</span><span>NESCAC</span><span>·</span><span class="num">2026 season</span><span>·</span><a class="fi-src" href="#">ephsports.williams.edu<svg class="i i-12" aria-hidden="true"><use href="#i-ext"/></svg></a></div>
+          </div>
+          <button class="btn btn-ghost btn-icon" aria-label="More options" title="More options"><svg class="i" aria-hidden="true"><use href="#i-more"/></svg></button>
+        </div>
+        <div class="fi-body">
+          <div class="ms">
+            <div><b>42</b><span>Seasons at Williams</span></div>
+            <div><b>1985</b><span>Joined Bob Odell's staff</span></div>
+            <div><b>17</b><span>Years as Hoosac Valley HS head coach</span></div>
+          </div>
+          <p class="fi-facts">Has coached linebackers, defensive line, offensive line, running backs and special teams; now an operations volunteer.</p>
+        </div>
+      </div>
+      <div class="fi-actions" role="group" aria-label="Actions">
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-handshake"/></svg><span>Congratulate</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-comment"/></svg><span>Comment</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg><span>Message</span></button>
+        <button class="btn btn-ghost"><svg class="i" aria-hidden="true"><use href="#i-share"/></svg><span>Share</span></button>
+      </div>
+    </article>
+
+    <!-- 8. Transactions digest for the long tail -->
+    <section class="card dg" aria-labelledby="f8">
+      <div class="card-h"><h2 class="card-title" id="f8">More staff moves</h2><span class="card-meta">2026 season · Division III</span></div>
+      <ul class="dg-list">
+        <li><div class="dg-org"><a href="#">Buena Vista</a><abbr class="chip chip-abbr" title="American Rivers Conference" style="text-decoration:none">ARC</abbr></div>
+          <p>Named <a class="p" href="#">Adrian Saterstad</a> offensive line coach; he was assistant defensive line coach at Michigan Tech in 2025.</p>
+          <div class="dg-meta"><span>New hire</span><span>·</span><a class="fi-src" href="#">bvuathletics.com<svg class="i i-12" aria-hidden="true"><use href="#i-ext"/></svg></a></div></li>
+        <li><div class="dg-org"><a href="#">Grinnell</a><abbr class="chip chip-abbr" title="Midwest Conference" style="text-decoration:none">MWC</abbr></div>
+          <p>Named <a class="p" href="#">Owen Tuckey</a> offensive line coach; he coached the lines at Gogebic, a Michigan high school co-op, from 2023 to 2025.</p>
+          <div class="dg-meta"><span>New hire</span><span>·</span><a class="fi-src" href="#">pioneers.grinnell.edu<svg class="i i-12" aria-hidden="true"><use href="#i-ext"/></svg></a></div></li>
+        <li><div class="dg-org"><a href="#">Kean</a><abbr class="chip chip-abbr" title="New Jersey Athletic Conference" style="text-decoration:none">NJAC</abbr></div>
+          <p>Named <a class="p" href="#">Sean Reda</a> offensive quality control and assistant wide receivers coach; he was a student defensive analyst at Delaware.</p>
+          <div class="dg-meta"><span>New hire</span><span>·</span><a class="fi-src" href="#">keanathletics.com<svg class="i i-12" aria-hidden="true"><use href="#i-ext"/></svg></a></div></li>
+        <li><div class="dg-org"><a href="#">Williams</a><abbr class="chip chip-abbr" title="New England Small College Athletic Conference" style="text-decoration:none">NESCAC</abbr></div>
+          <p>Named <a class="p" href="#">Quinn Girard</a> secondary coach; he coached cornerbacks at Union in 2025.</p>
+          <div class="dg-meta"><span>New hire</span><span>·</span><a class="fi-src" href="#">ephsports.williams.edu<svg class="i i-12" aria-hidden="true"><use href="#i-ext"/></svg></a></div></li>
+        <li><div class="dg-org"><a href="#">Wilkes</a><abbr class="chip chip-abbr" title="Landmark Conference" style="text-decoration:none">Landmark</abbr></div>
+          <p>Promoted <a class="p" href="#">Devon Fink</a> to special teams coordinator and defensive backs coach, his fifth season on staff.</p>
+          <div class="dg-meta"><span>Promotion</span><span>·</span><a class="fi-src" href="#">gowilkesu.com<svg class="i i-12" aria-hidden="true"><use href="#i-ext"/></svg></a></div></li>
+      </ul>
+      <div class="dg-f"><button class="btn btn-secondary">Show more moves</button></div>
+    </section>
+  </main>
+
+  <!-- Right rail -->
+  <aside class="rrail" aria-label="Carousel and suggestions">
+    <section class="card rail-card" aria-labelledby="r-tracker">
+      <div class="rail-h"><h2 class="rail-title" id="r-tracker">Carousel tracker</h2><span class="chip num">2026</span></div>
+      <p class="rail-sub">Division III · 14 programs with staff data</p>
+      <div class="kpis">
+        <a class="kpi" href="#"><b>20</b><span>Hires</span></a>
+        <a class="kpi" href="#"><b>8</b><span>Promotions</span></a>
+        <a class="kpi" href="#"><b>3</b><span>Open jobs <span class="chip chip-sample">Sample</span></span></a>
+      </div>
+      <table class="box">
+        <caption class="sr">2026 hires and promotions by conference: top five, plus your conference</caption>
+        <thead><tr><th scope="col">Conference</th><th class="bar-c" aria-hidden="true"></th><th scope="col">Hires</th><th scope="col"><abbr title="Promotions" style="text-decoration:none">Prom.</abbr></th></tr></thead>
+        <tbody>
+          <tr><td>USA South</td><td class="bar-c" aria-hidden="true"><div class="bar"><i style="width:100%"></i></div></td><td class="n">5</td><td class="n">5</td></tr>
+          <tr><td>Landmark</td><td class="bar-c" aria-hidden="true"><div class="bar"><i style="width:60%"></i></div></td><td class="n">3</td><td class="n">2</td></tr>
+          <tr><td>NEWMAC</td><td class="bar-c" aria-hidden="true"><div class="bar"><i style="width:60%"></i></div></td><td class="n">3</td><td class="n">0</td></tr>
+          <tr><td>NJAC</td><td class="bar-c" aria-hidden="true"><div class="bar"><i style="width:60%"></i></div></td><td class="n">3</td><td class="n">0</td></tr>
+          <tr><td>NESCAC</td><td class="bar-c" aria-hidden="true"><div class="bar"><i style="width:40%"></i></div></td><td class="n">2</td><td class="n">0</td></tr>
+          <tr class="you"><td>NWC <span class="yours">· yours</span></td><td class="bar-c" aria-hidden="true"><div class="bar"><i style="width:20%"></i></div></td><td class="n">1</td><td class="n">0</td></tr>
+        </tbody>
+      </table>
+      <div class="tracker-f"><a class="link card-link" href="#">All moves<svg class="i i-14" aria-hidden="true"><use href="#i-arrow-r"/></svg></a></div>
+    </section>
+
+    <section class="card rail-card pymk" aria-labelledby="r-pymk">
+      <h2 class="rail-title" id="r-pymk">People you may know</h2>
+      <p class="rail-sub">Through your staff and schools</p>
+      <ul class="rail-list">
+        <li><div class="prow"><span class="av av-36 c3" aria-hidden="true">JH</span><div class="prow-text">
+          <a class="prow-name trunc" href="#" style="display:block">Jarren Horton</a><div class="prow-sub trunc">Assoc. HC – Defense / DC · Brevard</div>
+          <div class="ctx"><svg class="i i-12" aria-hidden="true"><use href="#i-cap"/></svg><span>Portland State alum, like you</span></div></div>
+          <button class="btn btn-secondary btn-sm btn-icon" aria-label="Connect with Jarren Horton" title="Connect"><svg class="i i-14" aria-hidden="true"><use href="#i-user-plus"/></svg></button></div></li>
+        <li><div class="prow"><span class="av av-36 c2" aria-hidden="true">CS</span><div class="prow-text">
+          <a class="prow-name trunc" href="#" style="display:block">Chris Symington</a><div class="prow-sub trunc">Senior OC / RB · Brevard</div>
+          <div class="ctx"><svg class="i i-12" aria-hidden="true"><use href="#i-tree"/></svg><span>Via Rob Hutchins · coached him at Colorado</span></div></div>
+          <button class="btn btn-secondary btn-sm btn-icon" aria-label="Connect with Chris Symington" title="Connect"><svg class="i i-14" aria-hidden="true"><use href="#i-user-plus"/></svg></button></div></li>
+        <li><div class="prow"><span class="av av-36 c5" aria-hidden="true">IF</span><div class="prow-text">
+          <a class="prow-name trunc" href="#" style="display:block">Ian Falconer</a><div class="prow-sub trunc">Head Football Coach · Pacific (OR)</div>
+          <div class="ctx"><svg class="i i-12" aria-hidden="true"><use href="#i-info"/></svg><span>Your head coach · hasn't claimed his profile</span></div>
+          <button class="btn btn-secondary btn-sm invite"><svg class="i i-14" aria-hidden="true"><use href="#i-send"/></svg>Invite to claim</button></div></div></li>
+      </ul>
+    </section>
+
+    <footer class="legal">
+      <div class="row"><a href="#">About</a><a href="#">Data sources</a><a href="#">Accessibility</a><a href="#">Privacy</a><a href="#">Terms</a></div>
+      <div><span data-brand></span> © 2026</div>
+    </footer>
+  </aside>
+</div>
+
+<nav class="tabbar" aria-label="Primary">
+  <a class="tab" href="#" aria-current="page"><span class="ico"><svg class="i i-22"><use href="#i-home"/></svg></span><span>Home</span></a>
+  <a class="tab" href="#"><span class="ico"><svg class="i i-22"><use href="#i-users"/></svg></span><span>Network</span></a>
+  <a class="tab" href="#"><span class="ico"><svg class="i i-22"><use href="#i-briefcase"/></svg></span><span>Jobs</span></a>
+  <a class="tab" href="#" aria-label="Notifications, 5 new"><span class="ico"><svg class="i i-22"><use href="#i-bell"/></svg><span class="count" aria-hidden="true">5</span></span><span>Notifications</span></a>
+  <a class="tab" href="#" aria-label="Me menu"><span class="ico"><span class="av av-24 c5" aria-hidden="true">JL</span></span><span>Me</span></a>
+</nav>
+<script>
+/* The product name lives here and nowhere else (web/src/lib/brand.ts in the app). */
+const BRAND = { name: "Coach Network" };
+document.querySelectorAll("[data-brand]").forEach((el) => (el.textContent = BRAND.name));
+document.title = document.title.replace("{brand}", BRAND.name);
+</script>
+</body>
+</html>

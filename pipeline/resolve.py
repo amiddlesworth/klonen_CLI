@@ -91,6 +91,36 @@ def classify(role: str, as_player: bool) -> tuple[str, str | None]:
 EXCLUDE_TITLES = re.compile(r"student manager|student assistant manager|team manager|^manager$|student worker|intern \(student\)", re.I)
 
 
+# ------------------------------------------------------------------ bio excerpt
+LABEL_LINE = re.compile(r"^(title|phone|email|e-mail|alma mater|hometown|education|experience|career|coaching career|playing career|highlights|at a glance|personal)\b.*:?$|:$", re.I)
+YEAR_LINE = re.compile(r"^(\d{4}|[\u2022\-*])")
+
+
+def bio_excerpt(bio_file: Path | None, max_len: int = 280) -> str | None:
+    """First narrative sentence(s) of a bio, verbatim, at most max_len characters."""
+    if not bio_file or not bio_file.exists():
+        return None
+    text = bio_file.read_text()
+    body = text.split("\n---\n", 1)[1] if "\n---\n" in text else text
+    for line in body.split("\n"):
+        line = line.strip()
+        if len(line) < 90 or LABEL_LINE.search(line) or YEAR_LINE.match(line) or "@" in line:
+            continue
+        if not re.search(r"\b[a-z]{2,} [a-z]{2,} [a-z]{2,}\b", line):  # prose, not a run of titles
+            continue
+        sentences = re.split(r"(?<=[.!?])\s+(?=[A-Z\"\u201c])", line)
+        out = ""
+        for sent in sentences:
+            if len(out) + len(sent) + 1 > max_len:
+                break
+            out = f"{out} {sent}".strip()
+        if not out:
+            cut = line[:max_len].rsplit(" ", 1)[0]
+            out = cut.rstrip(",;:") + "\u2026"
+        return out
+    return None
+
+
 # ------------------------------------------------------------------ organizations
 class OrgIndex:
     def __init__(self, registry: list[dict], members: list[dict]):
@@ -211,7 +241,8 @@ def main(extract_dir: Path) -> None:
         people.append({
             "id": pid, "slug": slug, "fullName": name, "firstName": parts[0], "lastName": parts[-1] if len(parts) > 1 else None,
             "currentOrgId": prog["id"], "currentTitle": title or None, "roleGroup": rg, "unit": un,
-            "almaMater": c.get("alma_mater"), "hometown": None, "about": None, "bioQuality": c.get("bio_quality"),
+            "almaMater": c.get("alma_mater"), "hometown": None, "about": None,
+            "bioExcerpt": bio_excerpt(ROOT / bios[url]["file"]) if url in bios else None, "bioQuality": c.get("bio_quality"),
             "sourceUrl": url, "claimed": False, "isDemo": False,
         })
         has_current = False

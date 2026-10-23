@@ -1,0 +1,700 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet">
+<script>/* Theme: follows the OS; #dark or #light in the URL forces one; #fullpage is a capture aid for full-length screenshots. */
+(function(){var d=document.documentElement;location.hash.slice(1).split(',').forEach(function(h){if(h==='dark'||h==='light')d.setAttribute('data-theme',h);if(h==='fullpage')d.classList.add('fullpage');});})();</script>
+<title>Ian Falconer · {brand}</title>
+<meta name="description" content="Ian Falconer, Head Football Coach at Pacific University (Oregon). Coaching career, coaching tree and education.">
+<style>
+/* ==========================================================================
+   Direction C "Modern product" - shared tokens + components
+   Source of truth: design/proposals/c-product/DESIGN.md
+   ========================================================================== */
+:root {
+  --font: "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Neutrals: near-monochrome with a 1-2% warm tint */
+  --canvas: #F7F7F5;
+  --surface: #FFFFFF;
+  --surface-2: #F9F9F8;
+  --hover: #F3F3F1;
+  --pressed: #ECECE9;
+  --border: #E6E6E3;
+  --divider: #EFEFEC;
+  --border-strong: #D3D3CF;
+  --control: #949089;
+  --fg-1: #1A1A18;
+  --fg-2: #5C5B57;
+  --fg-3: #6F6E69;
+
+  /* The one accent: Iris */
+  --accent: #4352D1;
+  --accent-hover: #3A47B8;
+  --accent-subtle: #EEF0FC;
+  --on-accent: #FFFFFF;
+  --link: #4352D1;
+
+  /* Identity + data */
+  --org-bg: #F0F0EE; --org-fg: #45443F;
+  --bar: #5C5B57; --track: #EFEFEC;
+  --av1-bg: #E5E9F0; --av1-fg: #3B4A63;
+  --av2-bg: #E3EDE6; --av2-fg: #2F5A3F;
+  --av3-bg: #F1EADF; --av3-fg: #6A4C1F;
+  --av4-bg: #F3E5E3; --av4-fg: #7A3A33;
+  --av5-bg: #EDE6F0; --av5-fg: #5A3D6B;
+  --av6-bg: #DFEDEE; --av6-fg: #1F5A5F;
+
+  --shadow-pop: 0 0 0 1px rgba(26,26,24,.06), 0 8px 24px -6px rgba(26,26,24,.16);
+  --shadow-btn: 0 1px 1px rgba(26,26,24,.04);
+
+  --r-xs: 4px; --r-sm: 6px; --r-md: 8px; --r-lg: 12px;
+  --nav-h: 52px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --canvas: #0E0E0D; --surface: #161615; --surface-2: #1A1A19; --hover: #1F1F1D; --pressed: #262624;
+    --border: #2A2A27; --divider: #222220; --border-strong: #3A3A36; --control: #6E6D67;
+    --fg-1: #EDEDEA; --fg-2: #A9A8A2; --fg-3: #8C8B85;
+    --accent: #4F5DDB; --accent-hover: #4553D2; --accent-subtle: #1C1F3A; --on-accent: #FFFFFF; --link: #8F9AFF;
+    --org-bg: #1F1F1D; --org-fg: #C9C8C2; --bar: #A9A8A2; --track: #262624;
+    --av1-bg: #222833; --av1-fg: #AFC0DA; --av2-bg: #1D2A22; --av2-fg: #A3CCAF; --av3-bg: #2E2719; --av3-fg: #DDC59A;
+    --av4-bg: #33201E; --av4-fg: #E3AFA7; --av5-bg: #2B2131; --av5-fg: #CDB3DC; --av6-bg: #172A2C; --av6-fg: #9ACED2;
+    --shadow-pop: 0 0 0 1px rgba(255,255,255,.06), 0 8px 24px -6px rgba(0,0,0,.6);
+    --shadow-btn: none;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --canvas: #0E0E0D; --surface: #161615; --surface-2: #1A1A19; --hover: #1F1F1D; --pressed: #262624;
+  --border: #2A2A27; --divider: #222220; --border-strong: #3A3A36; --control: #6E6D67;
+  --fg-1: #EDEDEA; --fg-2: #A9A8A2; --fg-3: #8C8B85;
+  --accent: #4F5DDB; --accent-hover: #4553D2; --accent-subtle: #1C1F3A; --on-accent: #FFFFFF; --link: #8F9AFF;
+  --org-bg: #1F1F1D; --org-fg: #C9C8C2; --bar: #A9A8A2; --track: #262624;
+  --av1-bg: #222833; --av1-fg: #AFC0DA; --av2-bg: #1D2A22; --av2-fg: #A3CCAF; --av3-bg: #2E2719; --av3-fg: #DDC59A;
+  --av4-bg: #33201E; --av4-fg: #E3AFA7; --av5-bg: #2B2131; --av5-fg: #CDB3DC; --av6-bg: #172A2C; --av6-fg: #9ACED2;
+  --shadow-pop: 0 0 0 1px rgba(255,255,255,.06), 0 8px 24px -6px rgba(0,0,0,.6);
+  --shadow-btn: none;
+  color-scheme: dark;
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font); font-size: 14px; line-height: 20px; color: var(--fg-1);
+  background: var(--canvas); font-optical-sizing: auto; font-feature-settings: "cv11";
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility;
+}
+a { color: inherit; text-decoration: none; }
+p, li, h1, h2, h3 { text-wrap: pretty; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+input { font: inherit; }
+ul { list-style: none; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.num { font-variant-numeric: tabular-nums; }
+.link { color: var(--link); font-weight: 500; }
+.link:hover { text-decoration: underline; text-underline-offset: 2px; }
+.ul-hover:hover { text-decoration: underline; text-underline-offset: 2px; }
+.trunc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.sep { color: var(--fg-3); padding: 0 1px; }
+
+/* Icons: Lucide, 24px grid, stroked */
+.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.i-12 { width: 12px; height: 12px; stroke-width: 2; }
+.i-14 { width: 14px; height: 14px; stroke-width: 1.9; }
+.i-20 { width: 20px; height: 20px; }
+
+/* ---------- Top nav (desktop) ---------- */
+.topnav { position: sticky; top: 0; z-index: 30; height: var(--nav-h); background: var(--surface); border-bottom: 1px solid var(--border); }
+.topnav-in { max-width: 1200px; height: 100%; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; gap: 20px; }
+.brand { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 650; letter-spacing: -0.015em; color: var(--fg-1); white-space: nowrap; }
+.mark { width: 22px; height: 22px; border-radius: 6px; background: var(--fg-1); color: var(--surface); display: grid; place-items: center; flex: none; }
+.search { display: flex; align-items: center; gap: 8px; width: 296px; height: 32px; padding: 0 6px 0 10px; border-radius: var(--r-sm);
+  background: var(--hover); border: 1px solid transparent; color: var(--fg-3); font-size: 13px; transition: border-color .12s, background-color .12s; }
+.search:hover { border-color: var(--border); }
+.search:focus-within { background: var(--surface); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
+.search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--fg-1); font-size: 13px; }
+.search input::placeholder { color: var(--fg-3); }
+.kbd { font-size: 11px; line-height: 16px; min-width: 18px; text-align: center; padding: 0 4px; border-radius: 4px; color: var(--fg-3);
+  background: var(--surface); box-shadow: inset 0 0 0 1px var(--border-strong); }
+.nav { margin-left: auto; display: flex; align-items: center; height: 100%; gap: 2px; }
+.nav-item { position: relative; height: 100%; display: flex; align-items: center; gap: 6px; padding: 0 10px; font-size: 13px; font-weight: 500; color: var(--fg-2); transition: color .12s; }
+.nav-item:hover { color: var(--fg-1); }
+.nav-item[aria-current="page"] { color: var(--fg-1); }
+.nav-item[aria-current="page"]::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 2px; border-radius: 2px 2px 0 0; background: var(--fg-1); }
+.icon-btn { position: relative; width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--r-sm); color: var(--fg-2); transition: background-color .12s, color .12s; }
+.icon-btn:hover { background: var(--hover); color: var(--fg-1); }
+.icon-btn.sm { width: 28px; height: 28px; }
+.dot-count { position: absolute; top: 2px; right: 1px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--accent); color: var(--on-accent);
+  font-size: 10px; font-weight: 600; line-height: 16px; text-align: center; box-shadow: 0 0 0 2px var(--surface); font-variant-numeric: tabular-nums; }
+.vsep { width: 1px; height: 20px; background: var(--border); margin: 0 6px; flex: none; }
+.me { display: flex; align-items: center; gap: 4px; height: 32px; padding: 0 4px 0 2px; border-radius: var(--r-sm); color: var(--fg-3); }
+.me:hover { background: var(--hover); }
+.employers { font-size: 13px; font-weight: 500; color: var(--fg-2); padding: 0 8px; height: 32px; display: flex; align-items: center; border-radius: var(--r-sm); white-space: nowrap; }
+.employers:hover { color: var(--fg-1); background: var(--hover); }
+
+/* ---------- Buttons ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: var(--r-sm);
+  border: 1px solid transparent; font-size: 13px; font-weight: 500; line-height: 1; white-space: nowrap; cursor: pointer;
+  transition: background-color .12s, border-color .12s, color .12s; }
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-secondary { background: var(--surface); color: var(--fg-1); border-color: var(--border-strong); box-shadow: var(--shadow-btn); }
+.btn-secondary:hover { background: var(--hover); }
+.btn-ghost { color: var(--fg-2); }
+.btn-ghost:hover { background: var(--hover); color: var(--fg-1); }
+.btn-sm { height: 28px; padding: 0 10px; }
+.btn-icon { width: 32px; padding: 0; }
+.btn-sm.btn-icon { width: 28px; }
+
+/* ---------- Chips / badges ---------- */
+.chip { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 6px; border-radius: var(--r-xs); background: var(--hover);
+  color: var(--fg-2); font-size: 12px; line-height: 16px; font-weight: 500; white-space: nowrap; }
+.chip-outline { background: transparent; box-shadow: inset 0 0 0 1px var(--border-strong); }
+.chip-sample { background: transparent; border: 1px dashed var(--control); color: var(--fg-2); height: 20px; }
+.chip-abbr { letter-spacing: .02em; font-weight: 600; }
+
+/* ---------- Cards ---------- */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); }
+.card-pad { padding: 20px 24px; }
+.card-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.card-title { font-size: 16px; line-height: 24px; font-weight: 600; letter-spacing: -0.01em; }
+.card-meta { font-size: 13px; line-height: 18px; color: var(--fg-3); }
+.rail-card { padding: 16px; }
+.rail-title { font-size: 14px; line-height: 20px; font-weight: 600; }
+.rail-sub { font-size: 12px; line-height: 16px; color: var(--fg-3); margin-top: 2px; }
+.footnote { font-size: 12px; line-height: 16px; color: var(--fg-3); }
+
+/* ---------- Avatars (people = circles) + org tiles (organizations = squares) ---------- */
+.av { flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--av-bg); color: var(--av-fg); font-weight: 600; letter-spacing: .01em; user-select: none; }
+.c1 { --av-bg: var(--av1-bg); --av-fg: var(--av1-fg); } .c2 { --av-bg: var(--av2-bg); --av-fg: var(--av2-fg); }
+.c3 { --av-bg: var(--av3-bg); --av-fg: var(--av3-fg); } .c4 { --av-bg: var(--av4-bg); --av-fg: var(--av4-fg); }
+.c5 { --av-bg: var(--av5-bg); --av-fg: var(--av5-fg); } .c6 { --av-bg: var(--av6-bg); --av-fg: var(--av6-fg); }
+.av-24 { width: 24px; height: 24px; font-size: 10px; }
+.av-28 { width: 28px; height: 28px; font-size: 11px; }
+.av-32 { width: 32px; height: 32px; font-size: 12px; }
+.av-36 { width: 36px; height: 36px; font-size: 13px; }
+.av-40 { width: 40px; height: 40px; font-size: 14px; }
+.av-48 { width: 48px; height: 48px; font-size: 17px; }
+.av-64 { width: 64px; height: 64px; font-size: 22px; }
+.av-80 { width: 80px; height: 80px; font-size: 27px; letter-spacing: 0; }
+.org { flex: none; display: grid; place-items: center; background: var(--org-bg); color: var(--org-fg); font-weight: 600; box-shadow: inset 0 0 0 1px var(--border); letter-spacing: .02em; }
+.org-24 { width: 24px; height: 24px; border-radius: 5px; font-size: 9px; }
+.org-32 { width: 32px; height: 32px; border-radius: 6px; font-size: 11px; }
+.org-40 { width: 40px; height: 40px; border-radius: 8px; font-size: 13px; }
+
+/* ---------- Segmented control ---------- */
+.seg { display: inline-flex; gap: 2px; padding: 2px; border-radius: var(--r-sm); background: var(--hover); }
+.seg button { height: 28px; padding: 0 10px; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 13px; font-weight: 500; color: var(--fg-2); white-space: nowrap; transition: color .12s, background-color .12s; }
+.seg button:hover { color: var(--fg-1); }
+.seg button[aria-selected="true"] { background: var(--surface); color: var(--fg-1); box-shadow: 0 0 0 1px var(--border), 0 1px 2px rgba(26,26,24,.06); }
+.seg .count { font-size: 12px; color: var(--fg-3); font-variant-numeric: tabular-nums; }
+
+/* ---------- People rows ---------- */
+.prow { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.prow-text { flex: 1; min-width: 0; }
+.prow-name { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--fg-1); }
+.prow-sub { font-size: 13px; line-height: 18px; color: var(--fg-2); }
+.prow-ctx { display: flex; align-items: flex-start; gap: 4px; font-size: 12px; line-height: 16px; color: var(--fg-3); margin-top: 2px; }
+.prow-ctx .i { margin-top: 2px; }
+.rail-list > li { padding: 12px 0; border-top: 1px solid var(--divider); }
+.rail-list > li:first-child { border-top: 0; padding-top: 12px; }
+.rail-list .prow { align-items: flex-start; }
+.rail-list .prow-name { font-size: 13px; line-height: 18px; }
+.rail-list .prow-sub { font-size: 12px; line-height: 16px; }
+
+/* ---------- Rail footer ---------- */
+.legal { padding: 4px 4px 0; font-size: 12px; line-height: 20px; color: var(--fg-3); }
+.legal a:hover { color: var(--fg-1); }
+.legal .row { display: flex; flex-wrap: wrap; gap: 0 12px; }
+
+/* ---------- Phone chrome ---------- */
+.mtop, .tabbar { display: none; }
+@media (max-width: 720px) {
+  .topnav { display: none; }
+  .mtop { display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 30; height: 48px; padding: 0 16px;
+    background: var(--surface); border-bottom: 1px solid var(--border); }
+  .mtop .search { flex: 1; width: auto; height: 32px; }
+  .mtop .kbd { display: none; }
+  .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; z-index: 30; left: 0; right: 0; bottom: 0;
+    height: calc(56px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--surface); border-top: 1px solid var(--border); }
+  .tab { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; line-height: 12px; font-weight: 500; color: var(--fg-3); }
+  .tab .i { width: 22px; height: 22px; stroke-width: 1.6; }
+  .tab[aria-current="page"] { color: var(--fg-1); font-weight: 600; }
+  .tab[aria-current="page"] .i { stroke-width: 2.1; }
+  .tab .dot-count { top: 5px; right: calc(50% - 20px); }
+  body { padding-bottom: 56px; }
+  .card { border-radius: 0; border-left: 0; border-right: 0; }
+  .card-pad { padding: 16px; }
+  /* Capture aid only (#fullpage): full-length screenshots pin the bar to the end of the document */
+  html.fullpage body { position: relative; min-height: 100vh; }
+  html.fullpage .tabbar { position: absolute; }
+}
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ---------- Profile page ---------- */
+.page { max-width: 1200px; margin: 0 auto; padding: 24px 24px 48px; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; align-items: start; }
+.main, .rail { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.rail { position: sticky; top: calc(var(--nav-h) + 24px); }
+
+/* Header card */
+.ph { padding: 24px 24px 0; }
+.ph-top { display: flex; align-items: flex-start; gap: 20px; }
+.ph-id { flex: 1; min-width: 0; padding-top: 2px; }
+.ph-name { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -0.02em; }
+.ph-title { margin-top: 2px; font-size: 15px; line-height: 22px; }
+.ph-title a:hover { text-decoration: underline; text-underline-offset: 2px; }
+.ph-meta { margin-top: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 13px; line-height: 20px; color: var(--fg-2); }
+.ph-meta .loc { display: inline-flex; align-items: center; gap: 4px; margin-right: 4px; }
+.ph-actions { display: flex; gap: 8px; flex: none; }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 20px; border-top: 1px solid var(--divider); }
+.stat { padding: 14px 16px 16px 0; }
+.stat + .stat { padding-left: 20px; border-left: 1px solid var(--divider); }
+.stat-v { font-size: 20px; line-height: 28px; font-weight: 600; letter-spacing: -0.015em; font-variant-numeric: tabular-nums; }
+.stat-l { font-size: 12px; line-height: 16px; color: var(--fg-2); }
+a.stat:hover .stat-l { color: var(--fg-1); text-decoration: underline; text-underline-offset: 2px; }
+
+/* Source banner (unclaimed) */
+.src { display: flex; align-items: center; gap: 12px; margin: 0 -24px; padding: 10px 24px; background: var(--surface-2); border-top: 1px solid var(--divider);
+  border-radius: 0 0 7px 7px; font-size: 13px; line-height: 20px; color: var(--fg-2); }
+.src > .i { color: var(--fg-3); }
+.src-text { flex: 1; min-width: 0; }
+.src-text a { color: var(--fg-1); font-weight: 500; display: inline-flex; align-items: center; gap: 3px; }
+.src-text a:hover { text-decoration: underline; text-underline-offset: 2px; }
+.src-claim { display: flex; align-items: center; gap: 10px; flex: none; }
+
+/* About */
+.about p { font-size: 14px; line-height: 22px; max-width: 68ch; }
+.about .footnote { margin-top: 12px; display: flex; align-items: center; gap: 6px; }
+
+/* Experience: grouped by organization, ledger of seasons on the right */
+.xg { display: grid; grid-template-columns: 40px minmax(0, 1fr); column-gap: 12px; padding: 16px 0; border-top: 1px solid var(--divider); }
+.xg:first-child { border-top: 0; padding-top: 4px; }
+.xg-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; min-width: 0; }
+.xg-main { min-width: 0; }
+.xg-name { font-size: 14px; line-height: 20px; font-weight: 600; }
+.xg-name a:hover { text-decoration: underline; text-underline-offset: 2px; }
+.xg-sub { font-size: 13px; line-height: 18px; color: var(--fg-2); margin-top: 1px; }
+.ledger { display: flex; align-items: flex-start; gap: 16px; flex: none; }
+.span { width: 112px; text-align: right; }
+.range { font-size: 13px; line-height: 20px; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dur { font-size: 12px; line-height: 16px; color: var(--fg-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.inf { text-decoration: underline dotted var(--control); text-underline-offset: 3px; text-decoration-thickness: 1.5px; cursor: help; }
+.gantt { position: relative; width: 100px; height: 6px; margin-top: 7px; border-radius: 3px; background: var(--track); }
+.gantt i { position: absolute; top: 0; bottom: 0; border-radius: 3px; background: var(--control); }
+.gantt i.now { background: var(--fg-1); }
+
+.roles { grid-column: 1 / -1; margin-top: 8px; }
+.role { position: relative; display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; column-gap: 12px; padding: 8px 0; }
+.role::before { content: ""; position: absolute; left: 16px; top: 14px; width: 8px; height: 8px; border-radius: 50%; background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--control); }
+.role.now::before { background: var(--fg-1); box-shadow: none; }
+.role:not(:last-child)::after { content: ""; position: absolute; left: 19.5px; top: 26px; bottom: -10px; border-left: 1px solid var(--border-strong); }
+.role.away::after { border-left-style: dashed; border-left-color: var(--control); }
+.role-text { grid-column: 2; min-width: 0; }
+.role-title { font-size: 14px; line-height: 20px; font-weight: 500; }
+.role-sub { font-size: 13px; line-height: 18px; color: var(--fg-2); }
+.role .span { grid-column: 3; padding-right: 0; }
+.away-note { font-size: 12px; line-height: 16px; color: var(--fg-3); margin-top: 6px; }
+
+.ev { margin-top: 6px; }
+.role > .ev { grid-column: 2; }
+.ev summary { list-style: none; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; line-height: 16px; color: var(--fg-3); cursor: pointer; border-radius: 4px; }
+.ev summary::-webkit-details-marker { display: none; }
+.ev summary:hover { color: var(--fg-1); }
+.ev[open] summary .i-chev { transform: rotate(90deg); }
+.ev .i-chev { transition: transform .12s; }
+.ev blockquote { margin-top: 6px; padding: 2px 0 2px 12px; border-left: 2px solid var(--border-strong); font-size: 13px; line-height: 20px; color: var(--fg-2); max-width: 60ch; }
+.ev cite { display: block; font-style: normal; font-size: 12px; color: var(--fg-3); margin-top: 2px; }
+.ev cite a:hover { color: var(--fg-1); text-decoration: underline; }
+.x-legend { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding-top: 12px; margin-top: 4px; border-top: 1px solid var(--divider); }
+.x-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.key-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--fg-1); }
+.key-dot.past { background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--control); }
+.key-dash { width: 1px; height: 12px; border-left: 1px dashed var(--control); margin: 0 3px; }
+.key-gantt { position: relative; width: 24px; height: 6px; border-radius: 3px; background: var(--track); }
+.key-gantt i { position: absolute; left: 33%; width: 40%; top: 0; bottom: 0; border-radius: 3px; background: var(--control); }
+@media (max-width: 1080px) { .key-gantt-wrap { display: none !important; } }
+.key-inf { text-decoration: underline dotted var(--control); text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
+
+/* Single-row entries (playing career, education) */
+.entry { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; column-gap: 12px; align-items: start; }
+
+/* Coaching tree preview */
+.tree-tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+.tlist { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
+.tlist li { padding: 12px 0; border-top: 1px solid var(--divider); }
+.tlist .together { flex: none; text-align: right; }
+.tree-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--divider); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1080px) {
+  .page { grid-template-columns: minmax(0, 1fr) 280px; }
+  .gantt { display: none; }
+  .tlist { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .page { display: block; padding: 0 0 24px; }
+  .main, .rail { gap: 8px; }
+  .rail { position: static; margin-top: 8px; }
+  .ph { padding: 16px 16px 0; }
+  .ph-top { flex-direction: column; gap: 12px; }
+  .ph-top .av-80 { width: 64px; height: 64px; font-size: 22px; }
+  .ph-name { font-size: 20px; line-height: 28px; }
+  .ph-actions { width: 100%; }
+  .ph-actions .btn:not(.btn-icon) { flex: 1; height: 36px; }
+  .ph-actions .btn-icon { width: 36px; height: 36px; }
+  .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 16px; }
+  .stat { padding: 12px 8px 12px 0; }
+  .stat + .stat { padding-left: 12px; }
+  .stat.first-season { display: none; }
+  .stat-v { font-size: 18px; line-height: 24px; }
+  .src { margin: 0 -16px; padding: 12px 16px; flex-wrap: wrap; align-items: flex-start; border-radius: 0; }
+  .src-text { flex-basis: calc(100% - 28px); }
+  .src-claim { width: 100%; padding-left: 28px; justify-content: space-between; }
+  .xg-h { flex-direction: column; gap: 2px; }
+  .ledger { gap: 0; }
+  .span { width: auto; text-align: left; display: flex; gap: 6px; align-items: baseline; }
+  .span .dur::before { content: "·"; margin-right: 6px; color: var(--fg-3); }
+  .role { grid-template-columns: 40px minmax(0, 1fr); }
+  .role .span { grid-column: 2; margin-top: 2px; }
+  .entry { grid-template-columns: 40px minmax(0, 1fr); }
+  .entry > .span { grid-column: 2; margin-top: 2px; }
+  .tree-tools { flex-direction: column; align-items: stretch; }
+  .tree-tools .seg { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+  .tree-tools .seg button { padding: 0 6px; }
+  .tree-tools .seg .lbl-long { display: none; }
+  .rail .also { display: none; }
+  .conf-l { display: none; }
+  .legal { padding: 8px 16px 0; }
+}
+@media (min-width: 721px) { .seg .lbl-short, .conf-s { display: none; } }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <!-- Lucide icons (ISC license), lucide.dev. Paths copied verbatim; stroke set by .i -->
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-briefcase" viewBox="0 0 24 24"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></symbol>
+  <symbol id="i-msg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+  <symbol id="i-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+  <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-chev-d" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-arrow-r" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+  <symbol id="i-tree" viewBox="0 0 24 24"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></symbol>
+  <symbol id="i-cap" viewBox="0 0 24 24"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></symbol>
+  <symbol id="i-thumb" viewBox="0 0 24 24"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-quote" viewBox="0 0 24 24"><path d="M17 6H3"/><path d="M21 12H8"/><path d="M21 18H8"/><path d="M3 12v6"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></symbol>
+  <symbol id="i-login" viewBox="0 0 24 24"><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+</svg>
+
+<header class="topnav">
+  <div class="topnav-in">
+    <a class="brand" href="#" aria-label="Home"><span class="mark" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4.5v2.5M3.5 10V7h7v3"/><circle cx="7" cy="2.75" r="1.75" fill="currentColor" stroke="none"/><circle cx="3.5" cy="11.25" r="1.75" fill="currentColor" stroke="none"/><circle cx="10.5" cy="11.25" r="1.75" fill="currentColor" stroke="none"/></svg></span><span data-brand></span></a>
+    <label class="search"><svg class="i"><use href="#i-search"/></svg><input type="search" placeholder="Search coaches and programs" aria-label="Search coaches and programs"><span class="kbd">/</span></label>
+    <nav class="nav" aria-label="Primary">
+      <a class="nav-item" href="#"><svg class="i"><use href="#i-home"/></svg>Home</a>
+      <a class="nav-item" href="#"><svg class="i"><use href="#i-users"/></svg>Network</a>
+      <a class="nav-item" href="#"><svg class="i"><use href="#i-briefcase"/></svg>Jobs</a>
+      <a class="icon-btn" href="#" aria-label="Messaging, 2 unread" title="Messaging"><svg class="i i-20"><use href="#i-msg"/></svg><span class="dot-count">2</span></a>
+      <a class="icon-btn" href="#" aria-label="Notifications, 5 new" title="Notifications"><svg class="i i-20"><use href="#i-bell"/></svg><span class="dot-count">5</span></a>
+      <span class="vsep"></span>
+      <a class="employers" href="#">For employers</a>
+      <button class="me" aria-label="Me menu"><span class="av av-28 c5" role="img" aria-label="Justin Leatherman">JL</span><svg class="i i-14"><use href="#i-chev-d"/></svg></button>
+    </nav>
+  </div>
+</header>
+<header class="mtop">
+  <button aria-label="Me menu"><span class="av av-28 c5" role="img" aria-label="Justin Leatherman">JL</span></button>
+  <label class="search"><svg class="i"><use href="#i-search"/></svg><input type="search" placeholder="Search coaches and programs" aria-label="Search coaches and programs"></label>
+  <a class="icon-btn" href="#" aria-label="Messaging, 2 unread"><svg class="i i-20"><use href="#i-msg"/></svg><span class="dot-count">2</span></a>
+</header>
+
+<div class="page">
+  <main class="main">
+
+    <!-- Header card -->
+    <section class="card" aria-labelledby="p-name">
+      <div class="ph">
+        <div class="ph-top">
+          <span class="av av-80 c5" role="img" aria-label="Ian Falconer">IF</span>
+          <div class="ph-id">
+            <h1 class="ph-name" id="p-name">Ian Falconer <span class="chip chip-outline" title="Built from public sources. Not yet claimed by Ian.">Unclaimed</span></h1>
+            <p class="ph-title">Head Football Coach at <a href="#">Pacific University (Oregon)</a></p>
+            <div class="ph-meta">
+              <span class="loc"><svg class="i i-14"><use href="#i-pin"/></svg>Forest Grove, OR</span>
+              <span class="chip chip-abbr" title="Northwest Conference">NWC</span>
+              <span class="chip" title="NCAA Division III">NCAA D-III</span>
+            </div>
+          </div>
+          <div class="ph-actions">
+            <button class="btn btn-primary"><svg class="i"><use href="#i-user-plus"/></svg>Connect</button>
+            <button class="btn btn-secondary">Message</button>
+            <button class="btn btn-secondary btn-icon" aria-label="More actions"><svg class="i"><use href="#i-more"/></svg></button>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><div class="stat-v">25</div><div class="stat-l">Seasons coached</div></div>
+          <div class="stat"><div class="stat-v">4</div><div class="stat-l">Coaching stops</div></div>
+          <a class="stat" href="#tree"><div class="stat-v">7</div><div class="stat-l">In coaching tree</div></a>
+          <div class="stat first-season"><div class="stat-v">2002</div><div class="stat-l">First season</div></div>
+        </div>
+
+        <div class="src" role="note">
+          <svg class="i"><use href="#i-info"/></svg>
+          <p class="src-text">Built from public sources: <a href="#">goboxers.com coach bio<svg class="i i-12"><use href="#i-ext"/></svg></a> and the Pacific staff directory.</p>
+          <div class="src-claim"><span>Is this you?</span><button class="btn btn-secondary btn-sm"><svg class="i i-14"><use href="#i-shield"/></svg>Claim profile</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="card card-pad about" aria-labelledby="h-about">
+      <div class="card-h"><h2 class="card-title" id="h-about">About</h2></div>
+      <p>Head coach at Pacific since 2020, after ten seasons as the Boxers' offensive line coach that began when the program restarted in 2010. Before Pacific he was offensive coordinator and offensive line coach at Lewis &amp; Clark (2006–2009) and spent two seasons at Oberlin as offensive line coach, assistant head coach and recruiting coordinator. He started coaching at West Linn High School in 2002, and was a four-year offensive line standout at Portland State.</p>
+      <p class="footnote"><svg class="i i-12"><use href="#i-quote"/></svg>Summarized from the public bio. Ian can edit this after claiming the profile.</p>
+    </section>
+
+    <!-- Experience -->
+    <section class="card card-pad" aria-labelledby="h-exp">
+      <div class="card-h"><h2 class="card-title" id="h-exp">Experience</h2><span class="card-meta num">4 programs · 25 seasons</span></div>
+
+      <div class="xgroups">
+        <!-- Pacific: role progression inside one group -->
+        <div class="xg">
+          <span class="org org-40" aria-hidden="true">PU</span>
+          <div class="xg-h">
+            <div class="xg-main">
+              <div class="xg-name"><a href="#">Pacific University (Oregon)</a></div>
+              <div class="xg-sub">NCAA D-III · <span class="conf-l">Northwest Conference</span><span class="conf-s">NWC</span> · Forest Grove, OR</div>
+            </div>
+            <div class="ledger">
+              <div class="gantt" title="2010–2026 within a 2002–2026 career"><i style="left:32%;width:40%"></i><i class="now" style="left:72%;width:28%"></i></div>
+              <div class="span"><div class="range">2010–Present</div><div class="dur">17 seasons</div></div>
+            </div>
+          </div>
+          <div class="roles">
+            <div class="role now">
+              <div class="role-text">
+                <div class="role-title">Head Football Coach</div>
+                <div class="role-sub">Took over following the 2019 season</div>
+              </div>
+              <div class="span"><div class="range"><span class="inf" title="Start inferred: took over following the 2019 season">2020</span>–Present</div><div class="dur">7 seasons</div></div>
+            </div>
+            <div class="role">
+              <div class="role-text">
+                <div class="role-title">Offensive Line Coach</div>
+                <div class="role-sub">Assistant coach · joined the restarted program's first staff</div>
+              </div>
+              <div class="span"><div class="range">2010–2019</div><div class="dur">10 seasons</div></div>
+              <details class="ev" open>
+                  <summary><svg class="i i-12 i-chev"><use href="#i-chev-r"/></svg>Evidence</summary>
+                  <blockquote>“Joined Pacific coaching staff in 2010 when program was restarted.”<cite>goboxers.com · <a href="#">Ian Falconer bio</a></cite></blockquote>
+                </details>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lewis & Clark: two stints, time away shown as a dashed rail -->
+        <div class="xg">
+          <span class="org org-40" aria-hidden="true">LC</span>
+          <div class="xg-h">
+            <div class="xg-main">
+              <div class="xg-name"><a href="#">Lewis &amp; Clark College</a></div>
+              <div class="xg-sub">NCAA D-III · <span class="conf-l">Northwest Conference</span><span class="conf-s">NWC</span> · Portland, OR</div>
+            </div>
+            <div class="ledger">
+              <div class="gantt" title="2003 and 2006–2009"><i style="left:4%;width:4%"></i><i style="left:16%;width:16%"></i></div>
+              <div class="span"><div class="range">2003–2009</div><div class="dur">5 seasons · 2 stints</div></div>
+            </div>
+          </div>
+          <div class="roles">
+            <div class="role away">
+              <div class="role-text">
+                <div class="role-title">Offensive Coordinator &amp; Offensive Line Coach</div>
+                <div class="role-sub">Coordinator</div>
+              </div>
+              <div class="span"><div class="range">2006–2009</div><div class="dur">4 seasons</div></div>
+            </div>
+            <div class="role">
+              <div class="role-text">
+                <div class="role-title">Tight Ends Coach &amp; Recruiting Coordinator</div>
+                <div class="role-sub">Position coach</div>
+              </div>
+              <div class="span"><div class="range">2003</div><div class="dur">1 season</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Oberlin: single role, LinkedIn-style collapsed group -->
+        <div class="xg">
+          <span class="org org-40" aria-hidden="true">OC</span>
+          <div class="xg-h">
+            <div class="xg-main">
+              <div class="xg-name">Offensive Line Coach</div>
+              <div class="xg-sub"><a class="ul-hover" href="#" style="color:var(--fg-1)">Oberlin College</a> · NCAA D-III · NCAC · Oberlin, OH</div>
+              <div class="xg-sub" style="color:var(--fg-3)">Also assistant head coach, strength &amp; conditioning, recruiting coordinator</div>
+            </div>
+            <div class="ledger">
+              <div class="gantt" title="2004–2005"><i style="left:8%;width:8%"></i></div>
+              <div class="span"><div class="range"><span class="inf" title="Inferred from &quot;two years&quot; between the 2003 and 2006 Lewis &amp; Clark stints">2004–2005</span></div><div class="dur">2 seasons</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- West Linn HS -->
+        <div class="xg">
+          <span class="org org-40" aria-hidden="true">WL</span>
+          <div class="xg-h">
+            <div class="xg-main">
+              <div class="xg-name">Assistant Offensive Line Coach</div>
+              <div class="xg-sub"><span style="color:var(--fg-1)">West Linn High School</span> · High school · West Linn, OR</div>
+            </div>
+            <div class="ledger">
+              <div class="gantt" title="2002"><i style="left:0;width:4%"></i></div>
+              <div class="span"><div class="range">2002</div><div class="dur">1 season</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="x-legend footnote">
+        <span><i class="key-dot"></i>Current</span>
+        <span><i class="key-dot past"></i>Past role</span>
+        <span><i class="key-dash"></i>Time away</span>
+        <span><span class="key-inf">2004</span>Year inferred from bio</span>
+        <span class="key-gantt-wrap"><i class="key-gantt"><i></i></i>Share of career, 2002–2026</span>
+      </div>
+    </section>
+
+    <!-- Playing career -->
+    <section class="card card-pad" aria-labelledby="h-play">
+      <div class="card-h"><h2 class="card-title" id="h-play">Playing career</h2></div>
+      <div class="entry">
+        <span class="org org-40" aria-hidden="true">PS</span>
+        <div>
+          <div class="xg-name">Portland State University</div>
+          <div class="xg-sub">Offensive lineman (center) · NCAA D-I FCS</div>
+        </div>
+        <div class="span"><div class="range">4 seasons</div><div class="dur">Years not listed</div></div>
+      </div>
+    </section>
+
+    <!-- Coaching tree preview -->
+    <section class="card card-pad" id="tree" aria-labelledby="h-tree">
+      <div class="card-h"><h2 class="card-title" id="h-tree">Coaching tree</h2><a class="link" href="#" style="font-size:13px;display:inline-flex;align-items:center;gap:4px">Explore tree<svg class="i i-14"><use href="#i-arrow-r"/></svg></a></div>
+      <div class="tree-tools">
+        <div class="seg" role="tablist" aria-label="Tree relationship">
+          <button role="tab" aria-selected="false"><span class="lbl-long">Worked under</span><span class="lbl-short">Mentors</span><span class="count">1</span></button>
+          <button role="tab" aria-selected="false"><span class="lbl-long">Worked alongside</span><span class="lbl-short">Peers</span><span class="count">1</span></button>
+          <button role="tab" aria-selected="true"><span class="lbl-long">Coached under Ian</span><span class="lbl-short">Mentees</span><span class="count">6</span></button>
+        </div>
+      </div>
+      <ul class="tlist" role="tabpanel">
+        <li class="prow"><span class="av av-36 c3" role="img" aria-label="Jim Craft">JC</span><div class="prow-text"><div class="prow-name trunc">Jim Craft</div><div class="prow-sub trunc">Assoc. Head Coach / OC / QB</div></div><div class="together"><div class="range">2020–</div><div class="dur">7 seasons</div></div></li>
+        <li class="prow"><span class="av av-36 c6" role="img" aria-label="Kit Taura">KT</span><div class="prow-text"><div class="prow-name trunc">Kit Taura</div><div class="prow-sub trunc">Offensive Line / S&amp;C Coordinator</div></div><div class="together"><div class="range">2020–</div><div class="dur">7 seasons</div></div></li>
+        <li class="prow"><span class="av av-36 c5" role="img" aria-label="Justin Leatherman">JL</span><div class="prow-text"><div class="prow-name trunc">Justin Leatherman</div><div class="prow-sub trunc">Special Teams / Defensive Backs</div></div><div class="together"><div class="range">2023–</div><div class="dur">4 seasons</div></div></li>
+        <li class="prow"><span class="av av-36 c1" role="img" aria-label="John Bates">JB</span><div class="prow-text"><div class="prow-name trunc">John Bates</div><div class="prow-sub trunc">Defensive Coordinator / Linebackers</div></div><div class="together"><div class="range">2025–</div><div class="dur">2 seasons</div></div></li>
+        <li class="prow"><span class="av av-36 c1" role="img" aria-label="Nic Brockhoff">NB</span><div class="prow-text"><div class="prow-name trunc">Nic Brockhoff</div><div class="prow-sub trunc">Defensive Line</div></div><div class="together"><div class="range">2025–</div><div class="dur">2 seasons</div></div></li>
+        <li class="prow"><span class="av av-36 c2" role="img" aria-label="Rylan Ma'ae">RM</span><div class="prow-text"><div class="prow-name trunc">Rylan Ma'ae</div><div class="prow-sub trunc">Defensive Assistant Intern</div></div><div class="together"><div class="range">2026–</div><div class="dur">1 season</div></div></li>
+      </ul>
+      <div class="tree-foot footnote">
+        <span>Derived from overlapping seasons at Pacific. All six are on the current staff.</span>
+      </div>
+    </section>
+
+    <!-- Education -->
+    <section class="card card-pad" aria-labelledby="h-edu">
+      <div class="card-h"><h2 class="card-title" id="h-edu">Education</h2></div>
+      <div class="entry">
+        <span class="org org-40" aria-hidden="true">PS</span>
+        <div>
+          <div class="xg-name">Portland State University</div>
+          <div class="xg-sub">Degree not listed in public sources</div>
+        </div>
+        <div class="span"><div class="range">2000</div><div class="dur">Graduated</div></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Right rail -->
+  <aside class="rail" aria-label="Related people">
+    <section class="card rail-card">
+      <h2 class="rail-title">Same tree</h2>
+      <p class="rail-sub">Connected to Ian through his staff</p>
+      <ul class="rail-list" style="margin-top:4px">
+        <li><div class="prow"><span class="av av-36 c3" role="img" aria-label="Jim Craft">JC</span><div class="prow-text">
+          <div class="prow-name trunc">Jim Craft</div><div class="prow-sub trunc">Assoc. Head Coach / OC · Pacific</div>
+          <div class="prow-ctx"><svg class="i i-12"><use href="#i-tree"/></svg><span>Original 2010 staff with Ian</span></div></div>
+          <button class="btn btn-secondary btn-sm btn-icon" aria-label="Connect" title="Connect"><svg class="i i-14"><use href="#i-user-plus"/></svg></button></div></li>
+        <li><div class="prow"><span class="av av-36 c2" role="img" aria-label="Chris Symington">CS</span><div class="prow-text">
+          <div class="prow-name trunc">Chris Symington</div><div class="prow-sub trunc">Senior OC / RB · Brevard</div>
+          <div class="prow-ctx"><svg class="i i-12"><use href="#i-tree"/></svg><span>Via Rob Hutchins · Colorado</span></div></div>
+          <button class="btn btn-secondary btn-sm btn-icon" aria-label="Connect" title="Connect"><svg class="i i-14"><use href="#i-user-plus"/></svg></button></div></li>
+        <li><div class="prow"><span class="av av-36 c3" role="img" aria-label="Brent Barnes">BB</span><div class="prow-text">
+          <div class="prow-name trunc">Brent Barnes</div><div class="prow-sub trunc">Head Football Coach · Grinnell</div>
+          <div class="prow-ctx"><svg class="i i-12"><use href="#i-tree"/></svg><span>Via Ben LoPrimo · Rhodes</span></div></div>
+          <button class="btn btn-secondary btn-sm btn-icon" aria-label="Connect" title="Connect"><svg class="i i-14"><use href="#i-user-plus"/></svg></button></div></li>
+      </ul>
+    </section>
+
+    <section class="card rail-card also">
+      <h2 class="rail-title">People also viewed</h2>
+      <ul class="rail-list" style="margin-top:4px">
+        <li><a class="prow" href="#"><span class="av av-32 c6" role="img" aria-label="Mark Raymond">MR</span><div class="prow-text"><div class="prow-name trunc">Mark Raymond</div><div class="prow-sub trunc">Head Coach · Williams · NESCAC</div></div></a></li>
+        <li><a class="prow" href="#"><span class="av av-32 c4" role="img" aria-label="Bill Russell">BR</span><div class="prow-text"><div class="prow-name trunc">Bill Russell</div><div class="prow-sub trunc">Head Coach · Norwich · NEWMAC</div></div></a></li>
+        <li><a class="prow" href="#"><span class="av av-32 c1" role="img" aria-label="Austin Dickinson">AD</span><div class="prow-text"><div class="prow-name trunc">Austin Dickinson</div><div class="prow-sub trunc">Head Football Coach · Buena Vista · ARC</div></div></a></li>
+        <li><a class="prow" href="#"><span class="av av-32 c3" role="img" aria-label="Dan Garrett">DG</span><div class="prow-text"><div class="prow-name trunc">Dan Garrett</div><div class="prow-sub trunc">Head Coach · Kean · NJAC</div></div></a></li>
+      </ul>
+    </section>
+
+    <footer class="legal">
+      <div class="row"><a href="#">About</a><a href="#">Data sources</a><a href="#">Privacy</a><a href="#">Terms</a></div>
+      <div><span data-brand></span> © 2026</div>
+    </footer>
+  </aside>
+</div>
+
+<nav class="tabbar" aria-label="Primary">
+  <a class="tab" href="#"><svg class="i"><use href="#i-home"/></svg><span>Home</span></a>
+  <a class="tab" href="#"><svg class="i"><use href="#i-users"/></svg><span>Network</span></a>
+  <a class="tab" href="#"><svg class="i"><use href="#i-briefcase"/></svg><span>Jobs</span></a>
+  <a class="tab" href="#"><svg class="i"><use href="#i-bell"/></svg><span class="dot-count">5</span><span>Alerts</span></a>
+  <a class="tab" href="#"><span class="av av-24 c5" role="img" aria-label="Justin Leatherman">JL</span><span>Me</span></a>
+</nav>
+<script>
+/* The product name lives here and nowhere else. */
+const BRAND = { name: "Coach Network" };
+document.querySelectorAll("[data-brand]").forEach((el) => (el.textContent = BRAND.name));
+document.title = document.title.replace("{brand}", BRAND.name);
+</script>
+</body>
+</html>
