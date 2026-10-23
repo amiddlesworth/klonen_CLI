@@ -131,6 +131,7 @@ Neutrals carry a 1–2 % warm tint (hue ≈ 60°). Components use these tokens o
 | `--link` | `#4352D1` | `#8F9AFF` | Links, source links, link-styled stats |
 | `--focus` | `#4352D1` | `#8F9AFF` | Focus ring |
 | `--danger` | `#B42318` | `#F97066` | Form errors and destructive confirmations only |
+| `--danger-hover` / `--danger-pressed` | `#A22218` / `#922118` | `#F87F76` / `#F68C83` | Danger button hover and active (12 % and 22 % toward `--fg-1`: darker in light, lighter in dark, so the label gains contrast) |
 | `--danger-subtle` | `#FDECEA` | `#3A1D1B` | Error halo on inputs |
 | `--badge-bg` / `--badge-fg` | `#1A1A18` / `#FFFFFF` | `#EDEDEA` / `#161615` | Count badges (ink, never Iris) |
 | `--org-bg` / `--org-fg` | `#F0F0EE` / `#45443F` | `#1F1F1D` / `#C9C8C2` | Organization tiles |
@@ -154,6 +155,7 @@ There is no green, red or yellow for status. Status is carried by words, icons a
 | `badge-fg` on `badge-bg` | 17.43 | 15.44 | 4.5 |
 | `org-fg` on `org-bg` | 8.55 | 9.85 | 4.5 |
 | `danger` on `surface` | 6.57 | 6.50 | 4.5 |
+| `surface` on `danger` / `danger-hover` / `danger-pressed` (danger button label) | 6.57 / 7.56 / 8.56 | 6.50 / 7.15 / 7.76 | 4.5 |
 | `control` on `surface` / `canvas` / `hover` (UI boundary) | 3.49 / 3.25 / 3.14 | 3.59 / 3.83 / 3.20 | 3.0 |
 | `focus` on `surface` / `canvas` | 6.24 / 5.82 | 7.10 / 7.57 | 3.0 |
 | Strip steps: `lvl-pos`/surface · `lvl-coord`/`lvl-pos` · `lvl-head`/`lvl-coord` | 2.29 · 2.71 · 2.81 | 2.39 · 2.72 · 2.38 | supplementary graphic, `aria-hidden`; its key carries the numbers |
@@ -184,7 +186,7 @@ Theme rule: tokens follow the OS (`prefers-color-scheme`); `data-theme="light"` 
   --border: #E6E6E3; --divider: #EFEFEC; --border-strong: #D3D3CF; --control: #8C8983;
   --fg-1: #1A1A18; --fg-2: #5C5B57; --fg-3: #6F6E69; --fg-disabled: #A3A19B;
   --accent: #4352D1; --accent-hover: #3A47B8; --accent-pressed: #323E9F; --accent-subtle: #EEF0FC; --on-accent: #FFFFFF;
-  --link: #4352D1; --focus: #4352D1; --danger: #B42318; --danger-subtle: #FDECEA;
+  --link: #4352D1; --focus: #4352D1; --danger: #B42318; --danger-hover: #A22218; --danger-pressed: #922118; --danger-subtle: #FDECEA;
   --badge-bg: #1A1A18; --badge-fg: #FFFFFF; --org-bg: #F0F0EE; --org-fg: #45443F;
   --lvl-head: #1A1A18; --lvl-coord: #62615C; --lvl-pos: #AEABA5; --bar: #5C5B57; --track: #EFEFEC;
   --av1-bg: #E5E9F0; --av1-fg: #3B4A63; --av2-bg: #E3EDE6; --av2-fg: #2F5A3F; --av3-bg: #F1EADF; --av3-fg: #6A4C1F;
@@ -203,7 +205,7 @@ Theme rule: tokens follow the OS (`prefers-color-scheme`); `data-theme="light"` 
     --border: #2A2A27; --divider: #222220; --border-strong: #3A3A36; --control: #706F69;
     --fg-1: #EDEDEA; --fg-2: #A9A8A2; --fg-3: #8C8B85; --fg-disabled: #5F5E59;
     --accent: #4F5DDB; --accent-hover: #4553D2; --accent-pressed: #3C49C0; --accent-subtle: #1C1F3A; --on-accent: #FFFFFF;
-    --link: #8F9AFF; --focus: #8F9AFF; --danger: #F97066; --danger-subtle: #3A1D1B;
+    --link: #8F9AFF; --focus: #8F9AFF; --danger: #F97066; --danger-hover: #F87F76; --danger-pressed: #F68C83; --danger-subtle: #3A1D1B;
     --badge-bg: #EDEDEA; --badge-fg: #161615; --org-bg: #1F1F1D; --org-fg: #C9C8C2;
     --lvl-head: #EDEDEA; --lvl-coord: #9C9B95; --lvl-pos: #55544F; --bar: #A9A8A2; --track: #292926;
     --av1-bg: #222833; --av1-fg: #AFC0DA; --av2-bg: #1D2A22; --av2-fg: #A3CCAF; --av3-bg: #2E2719; --av3-fg: #DDC59A;
@@ -220,7 +222,7 @@ Theme rule: tokens follow the OS (`prefers-color-scheme`); `data-theme="light"` 
   --border: #2A2A27; --divider: #222220; --border-strong: #3A3A36; --control: #706F69;
   --fg-1: #EDEDEA; --fg-2: #A9A8A2; --fg-3: #8C8B85; --fg-disabled: #5F5E59;
   --accent: #4F5DDB; --accent-hover: #4553D2; --accent-pressed: #3C49C0; --accent-subtle: #1C1F3A; --on-accent: #FFFFFF;
-  --link: #8F9AFF; --focus: #8F9AFF; --danger: #F97066; --danger-subtle: #3A1D1B;
+  --link: #8F9AFF; --focus: #8F9AFF; --danger: #F97066; --danger-hover: #F87F76; --danger-pressed: #F68C83; --danger-subtle: #3A1D1B;
   --badge-bg: #EDEDEA; --badge-fg: #161615; --org-bg: #1F1F1D; --org-fg: #C9C8C2;
   --lvl-head: #EDEDEA; --lvl-coord: #9C9B95; --lvl-pos: #55544F; --bar: #A9A8A2; --track: #292926;
   --av1-bg: #222833; --av1-fg: #AFC0DA; --av2-bg: #1D2A22; --av2-fg: #A3CCAF; --av3-bg: #2E2719; --av3-fg: #DDC59A;
@@ -273,7 +275,8 @@ Theme rule: tokens follow the OS (`prefers-color-scheme`); `data-theme="light"` 
   --color-fg-1: var(--fg-1); --color-fg-2: var(--fg-2); --color-fg-3: var(--fg-3); --color-fg-disabled: var(--fg-disabled);
   --color-accent: var(--accent); --color-accent-hover: var(--accent-hover); --color-accent-pressed: var(--accent-pressed);
   --color-accent-subtle: var(--accent-subtle); --color-on-accent: var(--on-accent);
-  --color-link: var(--link); --color-focus: var(--focus); --color-danger: var(--danger); --color-danger-subtle: var(--danger-subtle);
+  --color-link: var(--link); --color-focus: var(--focus); --color-danger: var(--danger); --color-danger-hover: var(--danger-hover);
+  --color-danger-pressed: var(--danger-pressed); --color-danger-subtle: var(--danger-subtle);
   --color-badge-bg: var(--badge-bg); --color-badge-fg: var(--badge-fg); --color-org-bg: var(--org-bg); --color-org-fg: var(--org-fg);
   --color-lvl-head: var(--lvl-head); --color-lvl-coord: var(--lvl-coord); --color-lvl-pos: var(--lvl-pos);
   --color-bar: var(--bar); --color-track: var(--track); --color-overlay: var(--overlay);
@@ -456,7 +459,7 @@ Never use a football, whistle, trophy, helmet, stadium or clipboard. The brand m
 | `primary` | Iris fill, `--on-accent` 13/500 | One per view: Connect, Apply, Publish, Post job, Send |
 | `secondary` | `--surface`, 1 px `--control` border, `--fg-1`, `shadow-btn` | Message, View job, Claim profile, View staff, Show more |
 | `ghost` | Transparent, `--fg-2` | Feed actions, toolbar scope, menu triggers |
-| `danger` | `--danger` fill, white | Destructive confirmation inside a dialog only |
+| `danger` | `--danger` fill, `--surface` label; hover `--danger-hover`, active `--danger-pressed` | Destructive confirmation inside a dialog only |
 | `icon` | Square secondary or ghost | More, Save, Connect in rows, Close |
 
 Sizes: `sm` 28 px (padding 10), `md` 32 px (padding 12, default on desktop), phone 40 px visual with a 44 px hit area (`::before` inset −2 px), header and job-card actions 44 px on phone. Radius 6, gap 6 between icon and label, icon 16 (14 in `sm`). Label 13/500, no wrap. States per §8.0. Toggle buttons (Connect → "Pending", Follow → "Following") switch to secondary with a check icon and `aria-pressed="true"`.

@@ -66,8 +66,29 @@ export async function getOrgJobs(orgId: string) {
   return db.select().from(jobs).where(and(eq(jobs.orgId, orgId), eq(jobs.status, "open"))).orderBy(desc(jobs.postedAt));
 }
 
+/** Escapes LIKE wildcards in user input (backslash is Postgres' default LIKE escape). */
+export function escapeLike(term: string) {
+  return term.replace(/[\\%_]/g, "\\$&");
+}
+
+/**
+ * Registry programs matching a name, short name, nickname or exact conference abbreviation,
+ * ranked before the limit so the obvious match is never pushed out: exact short name, name or
+ * conference first ("mit" → MIT, "nwc" → NWC programs), then name or short-name prefix
+ * ("pacific" → Pacific (OR) before Azusa Pacific), then word start, then any substring.
+ */
 export async function searchOrgs(q: string, limit = 8) {
-  const like = `%${q}%`;
+  const term = q.trim();
+  const lower = term.toLowerCase();
+  const e = escapeLike(term);
+  const like = `%${e}%`;
+  const prefix = `${e}%`;
+  const wordStart = `% ${e}%`;
+  const rank = sql`case
+    when lower(${organizations.shortName}) = ${lower} or lower(${organizations.name}) = ${lower} or lower(${organizations.conferenceAbbr}) = ${lower} then 0
+    when ${organizations.name} ilike ${prefix} or ${organizations.shortName} ilike ${prefix} then 1
+    when ${organizations.name} ilike ${wordStart} or ${organizations.shortName} ilike ${wordStart} or ${organizations.shortName} ilike ${`%(${e}%`} then 2
+    else 3 end`;
   return db
     .select({
       id: organizations.id,
@@ -80,8 +101,13 @@ export async function searchOrgs(q: string, limit = 8) {
       level: organizations.level,
     })
     .from(organizations)
-    .where(and(eq(organizations.inRegistry, true), or(ilike(organizations.name, like), ilike(organizations.shortName, like), ilike(organizations.nickname, like))))
-    .orderBy(asc(organizations.shortName))
+    .where(
+      and(
+        eq(organizations.inRegistry, true),
+        or(ilike(organizations.name, like), ilike(organizations.shortName, like), ilike(organizations.nickname, like), sql`lower(${organizations.conferenceAbbr}) = ${lower}`),
+      ),
+    )
+    .orderBy(rank, asc(organizations.shortName))
     .limit(limit);
 }
 

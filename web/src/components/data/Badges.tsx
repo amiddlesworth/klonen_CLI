@@ -1,6 +1,6 @@
 import { Chip, SampleChip } from "@/components/ui/Chip";
 import { cn } from "@/lib/cn";
-import { levelFull, levelShort } from "@/lib/format";
+import { conferenceShort, levelFull, levelShort } from "@/lib/format";
 
 /** Division / level chip (§8.1 Neutral): "D-III", "High school", full name in title. */
 export function LevelBadge({ level, className }: { level: string | null | undefined; className?: string }) {
@@ -15,10 +15,11 @@ export function LevelBadge({ level, className }: { level: string | null | undefi
 
 /** Conference chip (§8.1 Abbreviation): "NWC" with the full name in title. */
 export function ConferenceBadge({ abbr, name, className }: { abbr: string | null | undefined; name?: string | null; className?: string }) {
-  if (!abbr) return null;
+  const short = conferenceShort(abbr);
+  if (!short) return null;
   return (
-    <Chip kind="abbr" title={name ?? abbr} className={className}>
-      {abbr}
+    <Chip kind="abbr" title={name ?? short} className={className}>
+      {short}
     </Chip>
   );
 }

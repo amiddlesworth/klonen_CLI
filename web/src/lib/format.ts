@@ -184,3 +184,22 @@ export function levelFull(level: string | null | undefined): string | null {
   if (/^pro/i.test(level)) return "Professional or semi-pro";
   return level.replace(/\bD-(I{1,3})\b/, "Division $1");
 }
+
+/** Conference abbreviation for display: drops footnote markers left over from source tables ("NACC[g]" -> "NACC"). */
+export function conferenceShort(abbr: string | null | undefined): string | null {
+  if (!abbr) return null;
+  return abbr.replace(/\[[^\]]*\]/g, "").trim() || null;
+}
+
+export type AvailabilityAudience = "search_firms" | "selected_programs" | "all_except_current";
+
+/**
+ * The private "Open to opportunities" status line (§8.5 MiniProfile, Me menu, settings):
+ * "Off · only you see this", or "On · visible to …" naming the audience. Never shown publicly.
+ */
+export function availabilityStatus(open: boolean, audience: AvailabilityAudience = "all_except_current", currentProgram?: string | null): string {
+  if (!open) return "Off · only you see this";
+  if (audience === "search_firms") return "On · visible to search firms";
+  if (audience === "selected_programs") return "On · visible to programs you chose";
+  return `On · visible to employers except ${currentProgram ?? "your program"}`;
+}

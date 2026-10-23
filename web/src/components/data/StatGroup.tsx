@@ -7,7 +7,11 @@ import { cn } from "@/lib/cn";
 export type Stat = {
   value: ReactNode;
   label: string;
-  /** A linked stat: label in --link 500 with a 12px chevron, underlined on hover. */
+  /**
+   * A linked stat. "header"/"inline": label in --link 500 with a 12px chevron (the profile tree
+   * stat). "kpi": the whole cell is the link and the label stays --fg-2, underlined on hover, so a
+   * row of KPIs doesn't put three Iris labels side by side (§2.1 one accent).
+   */
   href?: string;
   /** Drop this stat on phone (e.g. "First season" in the profile header). */
   hideOnPhone?: boolean;
@@ -54,17 +58,20 @@ export function StatGroup({ stats, variant = "header", label, className }: StatG
       )}
     >
       {stats.map((s, i) => {
+        const linkLabel = !!s.href && variant !== "kpi";
         const body = (
           <>
             <span className="order-2 flex flex-wrap items-center gap-1 text-caption">
               <span
                 className={cn(
-                  "inline-flex items-center gap-0.5 whitespace-nowrap underline-offset-2",
-                  s.href ? "font-medium text-link group-hover/stat:underline" : "text-fg-2",
+                  "inline-flex items-center gap-0.5 underline-offset-2",
+                  variant === "header" && "whitespace-nowrap",
+                  linkLabel ? "font-medium text-link group-hover/stat:underline" : "text-fg-2",
+                  s.href && !linkLabel && "group-hover/stat:text-fg-1 group-hover/stat:underline",
                 )}
               >
                 {s.label}
-                {s.href && <Icon icon={ChevronRight} size={12} />}
+                {linkLabel && <Icon icon={ChevronRight} size={12} />}
               </span>
               {s.adornment}
             </span>

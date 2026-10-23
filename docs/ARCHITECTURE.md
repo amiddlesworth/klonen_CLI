@@ -42,11 +42,16 @@ Screenshot any page: `node tools/screenshot.mjs http://localhost:3000/in/<slug> 
   - `/api/typeahead?q=` JSON for the global search box
 - **Components**
   - `web/src/components/ui/*`: design-system primitives (Button, Card, Avatar, OrgMark, Badge, Tabs, Input, SearchField, Skeleton, EmptyState, Menu). Shared by everyone; change only through the foundation owner.
-  - `web/src/components/shell/*`: TopNav, BottomTabBar, AppShell, RightRail, DemoSwitcher, GlobalSearch.
+  - `web/src/components/shell/*`: TopNav, BottomTabBar, AppShell, RightRail, DemoSwitcher, GlobalSearch, Layouts (page grids with sticky rails), MeMenuSummary (a page's content for the Me menu at 721–1080px, where the feed's left rail is hidden).
   - `web/src/components/<feature>/*`: feature components (profile, tree, program, search, feed, jobs, claim, employer, messaging). A feature agent owns its folder and its routes only.
 - **Formatting**: always use `lib/format.ts` (`seasonRange`, `initials`, `hueFor`, `levelShort`, `salaryRange`, `timeAgo`). Season ranges render with tabular numerals and an en dash.
 - **Brand**: never hard-code the product name; import `BRAND` from `lib/brand.ts`.
 - **Demo data honesty**: anything with `isDemo` or `source === "sample"` shows a small "Demo" / "Sample listing" label. Seeded (unclaimed) profiles show the "built from public sources" banner with source links. Never generate biographical prose about real people; show only structured, sourced facts.
+- **Demo accounts** (decided once, so every feature shows the same viewer; matches `DESIGN.md` §8.2 and both reference mockups). Seeded by `web/scripts/seed.ts`:
+  - Coach demo (cookie `cn_demo_session=coach`, user `u-demo-coach`): **Justin Leatherman** (`p-justin-leatherman`, `/in/justin-leatherman`), Special Teams Coordinator / Defensive Backs Coach at **Pacific (OR)** (`ncaa-2751`, NWC, D-III). Their public record stays **Unclaimed**: we never mark a real person as having claimed a profile. When the coach demo session views `/in/justin-leatherman`, the UI shows an owner view labeled Demo (edit/claim affordances), while every other viewer sees the normal unclaimed profile. No About text is written for them. Their head coach is Ian Falconer. Open to opportunities starts Off.
+  - Athletic director demo (`employer`, user `u-demo-ad`): **Morgan Ellis** (fictional), athletic director at Pacific (OR). Owns the seeded hiring pipeline.
+  - Signed out: no cookie. `/` sends signed-in viewers to `/feed`; `/feed` sends visitors to `/`.
+  - Personal copy ("Pacific (OR) · your program", "NWC · yours", "Ian Falconer · your head coach") always comes from the session (`getSession()` in `lib/session.ts`, or `getViewer()` in `components/shell/viewer.ts`), never from hard-coded names.
 - **Accessibility**: semantic landmarks, one `h1` per page, labelled controls, visible focus, 44px touch targets on phone, color is never the only signal.
 - **Performance**: no client-side data fetching for page content; paginate lists over 50 rows.
 

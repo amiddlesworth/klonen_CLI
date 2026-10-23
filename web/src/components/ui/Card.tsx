@@ -40,18 +40,23 @@ export type CardHeaderProps = {
   className?: string;
 };
 
-/** Card header row: title left, meta and one link right, baseline-aligned. */
+/**
+ * Card header row: title left, meta and one link right, baseline-aligned. The row wraps instead of
+ * squeezing: when title and meta don't fit side by side, the meta drops to its own line (right-
+ * aligned on desktop, left-aligned under the title on phone) and wraps there. The title never gets
+ * narrower than 12rem (or the full width), and only the link keeps its width.
+ */
 export function CardHeader({ title, as: Tag = "h2", id, meta, action, subtitle, size = "main", className }: CardHeaderProps) {
   return (
     <div className={cn(size === "main" ? "mb-3" : "mb-1", className)}>
-      <div className="flex items-baseline justify-between gap-3">
-        <Tag id={id} className={cn("min-w-0", size === "main" ? "text-title" : "text-body font-semibold")}>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+        <Tag id={id} className={cn("min-w-[min(100%,12rem)]", size === "main" ? "text-title" : "text-body font-semibold")}>
           {title}
         </Tag>
         {(meta || action) && (
-          <div className="flex shrink-0 items-baseline gap-4">
-            {meta && <span className="num text-small text-fg-3">{meta}</span>}
-            {action}
+          <div className="ml-auto flex min-w-0 items-baseline gap-4 max-md:ml-0">
+            {meta && <span className="min-w-0 text-right text-small text-fg-3 tabular-nums max-md:text-left">{meta}</span>}
+            {action && <span className="shrink-0">{action}</span>}
           </div>
         )}
       </div>

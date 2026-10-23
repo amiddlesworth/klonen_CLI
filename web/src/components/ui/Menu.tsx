@@ -2,10 +2,20 @@
 import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/cn";
+import { MENU_PANEL, SHEET_HANDLE, SHEET_PHONE } from "./styles";
 import { useAnchoredPosition, useOutsidePointer, type Placement } from "./floating";
 import { Tooltip } from "./Tooltip";
 
 const ITEM_SELECTOR = '[role="menuitem"],[role="menuitemradio"],[role="menuitemcheckbox"]';
+
+/** A menu panel rendered in place (documentation and previews). Items are not keyboard-managed. */
+export function MenuSurface({ label, minWidth = 200, className, children }: { label: string; minWidth?: number; className?: string; children: ReactNode }) {
+  return (
+    <div role="menu" aria-label={label} style={{ minWidth }} className={cn(MENU_PANEL, className)}>
+      {children}
+    </div>
+  );
+}
 
 export type MenuProps = {
   /** Content of the trigger button (icon, avatar, label). */
@@ -27,6 +37,11 @@ export type MenuProps = {
   /** Controlled open state (optional). */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /**
+   * Below 721px, open as a bottom sheet (full width, drag handle, safe-area padding, over the
+   * --overlay scrim) instead of a floating panel. Menu semantics and keys are unchanged.
+   */
+  sheetOnPhone?: boolean;
 };
 
 /**
@@ -47,6 +62,7 @@ export function Menu({
   children,
   open: openProp,
   onOpenChange,
+  sheetOnPhone = false,
 }: MenuProps) {
   const [openState, setOpenState] = useState(false);
   const open = openProp ?? openState;
@@ -63,7 +79,10 @@ export function Menu({
   const id = useId();
   const pos = useAnchoredPosition(open, triggerRef, panelRef, placement);
 
-  const items = () => Array.from(panelRef.current?.querySelectorAll<HTMLElement>(ITEM_SELECTOR) ?? []).filter((el) => el.getAttribute("aria-disabled") !== "true");
+  const items = () =>
+    Array.from(panelRef.current?.querySelectorAll<HTMLElement>(ITEM_SELECTOR) ?? []).filter(
+      (el) => el.getAttribute("aria-disabled") !== "true" && el.getClientRects().length > 0,
+    );
 
   const close = useCallback(
     (returnFocus: boolean) => {
@@ -150,22 +169,30 @@ export function Menu({
       {tooltip && triggerLabel ? <Tooltip content={triggerLabel}>{button}</Tooltip> : button}
       {open &&
         createPortal(
-          <div
-            ref={panelRef}
-            id={id}
-            role="menu"
-            aria-label={label ?? triggerLabel}
-            tabIndex={-1}
-            onKeyDown={onPanelKeyDown}
-            onClick={onPanelClick}
-            style={{ top: pos?.top ?? -9999, left: pos?.left ?? -9999, minWidth, visibility: pos ? "visible" : "hidden" }}
-            className={cn(
-              "fixed z-40 max-h-[calc(100dvh-16px)] max-w-[calc(100vw-16px)] overflow-y-auto rounded-md bg-surface p-1 text-fg-1 shadow-pop outline-none animate-pop-in",
-              panelClassName,
-            )}
-          >
-            {children}
-          </div>,
+          <>
+            {/* Sheet scrim (phone). A pointer down on it is outside the panel, so it closes the menu. */}
+            {sheetOnPhone && <div aria-hidden="true" className="fixed inset-0 z-50 bg-overlay animate-pop-in md:hidden" />}
+            <div
+              ref={panelRef}
+              id={id}
+              role="menu"
+              aria-label={label ?? triggerLabel}
+              tabIndex={-1}
+              onKeyDown={onPanelKeyDown}
+              onClick={onPanelClick}
+              style={{ top: pos?.top ?? -9999, left: pos?.left ?? -9999, minWidth, visibility: pos ? "visible" : "hidden" }}
+              className={cn(
+                MENU_PANEL,
+                "fixed z-40 max-h-[calc(100dvh-16px)] max-w-[calc(100vw-16px)] overflow-y-auto overscroll-contain animate-pop-in",
+                panelClassName,
+                // Phone sheet: pinned to the bottom edge at full width (overrides the anchored position).
+                sheetOnPhone && ["max-md:inset-x-0! max-md:top-auto! max-md:bottom-0! max-md:z-50 max-md:w-full! max-md:min-w-0! max-md:max-w-none! max-md:max-h-[85dvh]", SHEET_PHONE],
+              )}
+            >
+              {sheetOnPhone && <span aria-hidden="true" className={cn(SHEET_HANDLE, "mb-1 mt-1")} />}
+              {children}
+            </div>
+          </>,
           document.body,
         )}
     </>

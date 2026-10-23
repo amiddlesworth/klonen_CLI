@@ -6,7 +6,7 @@ import {
   jsonb,
   pgEnum,
   pgTable,
-  real,
+
   serial,
   text,
   timestamp,

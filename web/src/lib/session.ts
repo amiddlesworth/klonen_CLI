@@ -21,6 +21,11 @@ export type Session = {
 export async function getSession(): Promise<Session> {
   const role = (await cookies()).get(SESSION_COOKIE)?.value as DemoRole | undefined;
   if (!role || !(role in DEMO_USER_ID)) return null;
+  return loadDemoSession(role);
+}
+
+/** The session a demo account would have, without reading the cookie (the component gallery uses it). */
+export async function loadDemoSession(role: DemoRole): Promise<Session> {
   const [user] = await db.select().from(users).where(eq(users.id, DEMO_USER_ID[role])).limit(1);
   if (!user) return null;
   const person = user.personId ? ((await db.select().from(people).where(eq(people.id, user.personId)).limit(1))[0] ?? null) : null;

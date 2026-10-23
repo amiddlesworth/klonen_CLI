@@ -4,7 +4,7 @@ import { aliasedTable } from "drizzle-orm";
 import { db } from "@/db";
 import { organizations, people, tenures, treeEdges } from "@/db/schema";
 import { personSummaryCols, toSummary, type PersonSummary } from "./people";
-import { searchOrgs } from "./orgs";
+import { escapeLike, searchOrgs } from "./orgs";
 
 export type PeopleFilters = {
   q?: string;
@@ -19,12 +19,15 @@ export type PeopleFilters = {
 
 export const PAGE_SIZE = 20;
 
+/** Head coaches first, then coordinators, position coaches, everyone else. */
+const ROLE_GROUP_ORDER = sql`case ${people.roleGroup} when 'head_coach' then 0 when 'coordinator' then 1 when 'position_coach' then 2 else 3 end`;
+
 export async function searchPeople(f: PeopleFilters): Promise<{ results: (PersonSummary & { context: string | null })[]; total: number }> {
   const where: SQL[] = [eq(people.isDemo, false)];
   if (f.q?.trim()) {
     const terms = f.q.trim().split(/\s+/).slice(0, 4);
     for (const t of terms) {
-      const like = `%${t}%`;
+      const like = `%${escapeLike(t)}%`;
       where.push(or(ilike(people.fullName, like), ilike(people.currentTitle, like), ilike(organizations.shortName, like), ilike(organizations.nickname, like))!);
     }
   }
@@ -53,7 +56,7 @@ export async function searchPeople(f: PeopleFilters): Promise<{ results: (Person
   const base = db.select(personSummaryCols).from(people).leftJoin(organizations, eq(organizations.id, people.currentOrgId)).where(and(...where));
   const [rows, [{ total }]] = await Promise.all([
     base
-      .orderBy(sql`case ${people.roleGroup} when 'head_coach' then 0 when 'coordinator' then 1 when 'position_coach' then 2 else 3 end`, asc(people.fullName))
+      .orderBy(ROLE_GROUP_ORDER, asc(people.fullName))
       .limit(PAGE_SIZE)
       .offset((page - 1) * PAGE_SIZE),
     db.select({ total: sql<number>`count(*)::int` }).from(people).leftJoin(organizations, eq(organizations.id, people.currentOrgId)).where(and(...where)),
@@ -61,19 +64,30 @@ export async function searchPeople(f: PeopleFilters): Promise<{ results: (Person
   return { results: rows.map((r) => ({ ...toSummary(r), context: contextOrg ? `Coached at ${contextOrg}` : null })), total };
 }
 
-/** Typeahead for the global search box: a few people and programs. */
+/**
+ * Typeahead for the global search box: up to 6 people and 4 programs. People are ranked before the
+ * limit: exact name, then name prefix ("tan" → Tanner Kingsley), then a later word of the name
+ * ("ian" → Ian Falconer before Adrian Saterstad), then any substring; then head coaches first;
+ * then alphabetical.
+ */
 export async function typeahead(q: string) {
-  if (q.trim().length < 2) return { people: [], orgs: [] };
-  const like = `%${q.trim()}%`;
+  const term = q.trim();
+  if (term.length < 2) return { people: [], orgs: [] };
+  const e = escapeLike(term);
+  const rank = sql`case
+    when lower(${people.fullName}) = ${term.toLowerCase()} then 0
+    when ${people.fullName} ilike ${`${e}%`} then 1
+    when ${people.fullName} ilike ${`% ${e}%`} or ${people.fullName} ilike ${`%-${e}%`} then 2
+    else 3 end`;
   const [ppl, orgs] = await Promise.all([
     db
       .select(personSummaryCols)
       .from(people)
       .leftJoin(organizations, eq(organizations.id, people.currentOrgId))
-      .where(and(eq(people.isDemo, false), ilike(people.fullName, like)))
-      .orderBy(asc(people.fullName))
+      .where(and(eq(people.isDemo, false), ilike(people.fullName, `%${e}%`)))
+      .orderBy(rank, ROLE_GROUP_ORDER, asc(people.fullName))
       .limit(6),
-    searchOrgs(q.trim(), 4),
+    searchOrgs(term, 4),
   ]);
   return { people: ppl.map(toSummary), orgs };
 }

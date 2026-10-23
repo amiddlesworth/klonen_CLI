@@ -22,18 +22,19 @@ export type ButtonStyleOptions = {
 };
 
 const BASE =
-  "relative inline-flex shrink-0 select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-sm border border-transparent " +
+  "relative inline-flex shrink-0 select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-sm border " +
   "text-small font-medium leading-none transition-colors " +
   "disabled:cursor-not-allowed aria-disabled:cursor-not-allowed " +
   "disabled:bg-hover! disabled:text-fg-disabled! disabled:border-transparent! disabled:shadow-none! " +
   "aria-disabled:bg-hover! aria-disabled:text-fg-disabled! aria-disabled:border-transparent! aria-disabled:shadow-none!";
 
 const VARIANT: Record<ButtonVariant, string> = {
-  primary: "bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-pressed",
+  primary: "border-transparent bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-pressed",
   secondary: "bg-surface text-fg-1 border-control shadow-btn hover:bg-hover active:bg-pressed",
-  ghost: "bg-transparent text-fg-2 hover:bg-hover hover:text-fg-1 active:bg-pressed",
+  ghost: "border-transparent bg-transparent text-fg-2 hover:bg-hover hover:text-fg-1 active:bg-pressed",
   // White text on the light-theme danger red; --surface keeps 4.5:1 on the lighter dark-theme red.
-  danger: "bg-danger text-surface hover:opacity-90 active:opacity-80",
+  // Hover and press step the fill away from the label color (darker in light, lighter in dark).
+  danger: "border-transparent bg-danger text-surface hover:bg-danger-hover active:bg-danger-pressed",
 };
 
 const SIZE: Record<ButtonSize, string> = { sm: "h-7 px-2.5", md: "h-8 px-3" };

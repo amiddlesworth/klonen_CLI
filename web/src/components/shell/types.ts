@@ -1,0 +1,39 @@
+import type { AvailabilityAudience } from "@/lib/format";
+import type { DemoRole } from "@/lib/session";
+
+/** The signed-in demo account, as the shell needs it (serializable, safe to pass to client components). */
+export type Viewer = {
+  role: DemoRole;
+  name: string;
+  /** Avatar tint key: the person's slug, or the user id for accounts without a profile. */
+  tintKey: string;
+  /** Profile slug when the account is a coach with a profile. */
+  profileSlug: string | null;
+  title: string | null;
+  orgShortName: string | null;
+  orgSlug: string | null;
+  /** Coach accounts: the private Open to opportunities setting (off when never set); null otherwise. */
+  availability: { open: boolean; audience: AvailabilityAudience } | null;
+};
+
+export type ShellCounts = { unreadMessages: number; newNotifications: number };
+
+/** A demo account offered by the switcher: its name, a one-line detail and its program's short name. */
+export type DemoAccountOption = { role: DemoRole; name: string; detail: string | null; org: string | null };
+
+export type NavSection = "home" | "network" | "jobs" | "messaging" | "notifications" | "me" | "employers" | "search";
+
+/** Which primary nav item a path belongs to. */
+export function navSectionFor(pathname: string, viewer: Viewer | null): NavSection | null {
+  const p = pathname.replace(/\/+$/, "") || "/";
+  if (p === "/feed") return "home";
+  if (p.startsWith("/network")) return "network";
+  if (p.startsWith("/jobs")) return "jobs";
+  if (p.startsWith("/messaging")) return "messaging";
+  if (p.startsWith("/notifications")) return "notifications";
+  if (p.startsWith("/employers")) return "employers";
+  if (p.startsWith("/search")) return "search";
+  if (p.startsWith("/settings")) return "me";
+  if (viewer?.profileSlug && (p === `/in/${viewer.profileSlug}` || p.startsWith(`/in/${viewer.profileSlug}/`))) return "me";
+  return null;
+}

@@ -81,54 +81,24 @@ async function main() {
   // ------------------------------------------------------------ demo records
   const rand = rng(2026);
   const registry = orgs.filter((o) => o.inRegistry);
-  const staffed = new Set(people.map((p) => p.currentOrgId));
-  const withStaff = registry.filter((o) => staffed.has(o.id));
   const pick = <T,>(xs: T[]) => xs[Math.floor(rand() * xs.length)];
 
-  // Demo coach: a fictional profile, clearly labeled, with a career at real programs.
-  const demoHome = withStaff[0];
-  const demoPrev = withStaff[1] ?? withStaff[0];
-  const demoPerson: Person = {
-    id: "p-demo-jordan-reyes",
-    slug: "jordan-reyes-demo",
-    fullName: "Jordan Reyes",
-    firstName: "Jordan",
-    lastName: "Reyes",
-    currentOrgId: demoHome.id,
-    currentTitle: "Defensive Backs Coach",
-    roleGroup: "position_coach",
-    unit: "defense",
-    almaMater: demoPrev.name,
-    about:
-      "Demo profile. Defensive backs coach who builds press-man techniques and special teams units. Interested in coordinator roles in the Midwest.",
-    bioQuality: "full",
-    claimed: true,
-    claimedAt: new Date(),
-    isDemo: true,
-  };
-  await db.insert(schema.people).values(demoPerson);
-  await db.insert(schema.tenures).values([
-    { personId: demoPerson.id, orgId: demoHome.id, role: "Defensive Backs Coach", roleGroup: "position_coach", unit: "defense", startYear: 2024, isCurrent: true, yearsExplicit: true, sortOrder: 0, verified: true },
-    { personId: demoPerson.id, orgId: demoHome.id, role: "Defensive Graduate Assistant", roleGroup: "ga_analyst", unit: "defense", startYear: 2022, endYear: 2023, yearsExplicit: true, sortOrder: 1 },
-    { personId: demoPerson.id, orgId: demoPrev.id, role: "Cornerback", roleGroup: "player", asPlayer: true, startYear: 2017, endYear: 2020, yearsExplicit: true, sortOrder: 2 },
-  ]);
-  const homeHc = people.find((p) => p.currentOrgId === demoHome.id && p.roleGroup === "head_coach");
-  if (homeHc) {
-    await db.insert(schema.treeEdges).values({ kind: "worked_under", mentorId: homeHc.id, menteeId: demoPerson.id, orgId: demoHome.id, startYear: 2022, endYear: 2026 });
-  }
+  // Demo accounts (docs/ARCHITECTURE.md "Demo accounts"; DESIGN.md §8.2 and the reference mockups):
+  // the coach demo views the product as Justin Leatherman, Pacific (OR) special teams coordinator.
+  // We never mark a real person's record as claimed: the public profile stays Unclaimed, and only
+  // the demo session sees an owner view, labeled Demo. The athletic director is fictional.
+  const DEMO_COACH_ID = "p-justin-leatherman";
+  const DEMO_AD_ORG_ID = "ncaa-2751"; // Pacific (OR)
+  const demoCoach = people.find((p) => p.id === DEMO_COACH_ID);
+  const employerOrg = orgs.find((o) => o.id === DEMO_AD_ORG_ID);
+  if (!demoCoach || !employerOrg) throw new Error(`demo accounts: ${DEMO_COACH_ID} or ${DEMO_AD_ORG_ID} is missing from data/`);
 
-  const employerOrg = withStaff[2] ?? withStaff[0];
   await db.insert(schema.users).values([
-    { id: "u-demo-coach", email: "jordan.reyes@example.com", name: "Jordan Reyes", kind: "coach", personId: demoPerson.id, isDemo: true },
-    { id: "u-demo-ad", email: "morgan.ellis@example.com", name: "Morgan Ellis", kind: "employer", orgId: employerOrg.id, isDemo: true },
+    { id: "u-demo-coach", email: "demo-coach@example.com", name: demoCoach.fullName, kind: "coach", personId: DEMO_COACH_ID, isDemo: true },
+    { id: "u-demo-ad", email: "demo-ad@example.com", name: "Morgan Ellis", kind: "employer", orgId: employerOrg.id, isDemo: true },
   ]);
-  await db.insert(schema.availability).values({
-    personId: demoPerson.id,
-    open: true,
-    audience: "all_except_current",
-    roles: ["Defensive Coordinator", "Defensive Backs Coach"],
-    regions: ["Midwest", "Great Lakes"],
-  });
+  // Private and off by default, as in the reference ("Off · only you see this").
+  await db.insert(schema.availability).values({ personId: DEMO_COACH_ID, open: false, audience: "all_except_current", roles: [], regions: [] });
 
   // Sample job listings at real programs, labeled as samples in the UI.
   const now = Date.now();
@@ -156,10 +126,10 @@ async function main() {
 
   // Hiring pipeline for the demo AD.
   const [list] = await db.insert(schema.shortlists).values({ ownerUserId: "u-demo-ad", name: "Defensive Coordinator search" }).returning();
-  const candidates = people.filter((p) => p.roleGroup === "coordinator" || p.roleGroup === "position_coach").slice(0, 9);
+  const candidates = people.filter((p) => (p.roleGroup === "coordinator" || p.roleGroup === "position_coach") && p.currentOrgId !== employerOrg.id).slice(0, 9);
   const stages = ["sourced", "sourced", "sourced", "contacted", "contacted", "interview", "interview", "offer", "sourced"] as const;
   await db.insert(schema.shortlistEntries).values(
-    candidates.map((c, i) => ({ shortlistId: list.id, personId: c.id!, stage: stages[i], position: i, note: i === 5 ? "Strong references from his head coach." : null })),
+    candidates.map((c, i) => ({ shortlistId: list.id, personId: c.id!, stage: stages[i], position: i, note: i === 5 ? "Strong references from the head coach." : null })),
   );
 
   // Notifications for the demo coach.

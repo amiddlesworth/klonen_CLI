@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  availabilityStatus,
+  conferenceShort,
   hueFor,
   initials,
   levelFull,
@@ -93,5 +95,17 @@ describe("DESIGN.md §2.3 / §6 helpers", () => {
     expect(sourceDomain("https://www.goboxers.com/sports/football/roster/coaches/ian-falconer/1")).toBe("goboxers.com");
     expect(levelFull("NCAA D-III")).toBe("NCAA Division III");
     expect(levelFull("NCAA D-I FCS")).toBe("NCAA Division I FCS");
+    expect(conferenceShort("NACC[g]")).toBe("NACC");
+    expect(conferenceShort("NWC")).toBe("NWC");
+  });
+});
+
+describe("availabilityStatus", () => {
+  it("says who can see it", () => {
+    expect(availabilityStatus(false, "search_firms")).toBe("Off · only you see this");
+    expect(availabilityStatus(true, "search_firms")).toBe("On · visible to search firms");
+    expect(availabilityStatus(true, "selected_programs")).toBe("On · visible to programs you chose");
+    expect(availabilityStatus(true, "all_except_current", "Pacific (OR)")).toBe("On · visible to employers except Pacific (OR)");
+    expect(availabilityStatus(true)).toBe("On · visible to employers except your program");
   });
 });

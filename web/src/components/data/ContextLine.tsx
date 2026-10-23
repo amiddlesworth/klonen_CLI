@@ -6,7 +6,7 @@ import { cn } from "@/lib/cn";
 /**
  * Context line (§8.3): 12/16 --fg-3 with an optional 12px --fg-2 icon naming the reason type
  * (network = tree, graduation-cap = school, flag = player relationship, info = status).
- * "Via Rob Hutchins · coached him at Colorado", "Played for Ian 2024–25".
+ * "Via Rob Hutchins · coached Chris at Colorado", "Played for Ian 2024–25".
  */
 export function ContextLine({ icon, children, className }: { icon?: LucideIcon; children: ReactNode; className?: string }) {
   return (

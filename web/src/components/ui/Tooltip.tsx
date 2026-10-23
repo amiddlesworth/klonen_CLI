@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/cn";
+import { TOOLTIP_BUBBLE } from "./styles";
 
 type TooltipProps = {
   /** Short text, usually the control's accessible name. */
@@ -13,7 +14,9 @@ type TooltipProps = {
 
 /**
  * Tooltip (§8.1): --fg-1 fill, --surface text 12/16, radius 4, padding 4 8, 400ms delay,
- * on hover and focus. Decorative: the wrapped control must already carry its name.
+ * on hover and keyboard focus. Not on touch: a tap focuses the button on Android, so focus shows
+ * the tooltip only when it is :focus-visible (keyboard), and touch pointers never trigger hover.
+ * Decorative: the wrapped control must already carry its name.
  */
 export function Tooltip({ content, children, side = "top", className }: TooltipProps) {
   const anchor = useRef<HTMLSpanElement>(null);
@@ -51,7 +54,10 @@ export function Tooltip({ content, children, side = "top", className }: TooltipP
       onPointerEnter={(e) => e.pointerType !== "touch" && show()}
       onPointerLeave={hide}
       onPointerDown={hide}
-      onFocus={show}
+      onFocus={(e) => {
+        const t = e.target as Element;
+        if (t.matches(":focus-visible")) show();
+      }}
       onBlur={hide}
       onKeyDown={(e) => e.key === "Escape" && hide()}
     >
@@ -62,7 +68,8 @@ export function Tooltip({ content, children, side = "top", className }: TooltipP
             role="tooltip"
             style={{ top: pos.top, left: pos.left }}
             className={cn(
-              "pointer-events-none fixed z-[70] -translate-x-1/2 whitespace-nowrap rounded-xs bg-fg-1 px-2 py-1 text-caption text-surface animate-pop-in",
+              TOOLTIP_BUBBLE,
+              "pointer-events-none fixed z-[70] -translate-x-1/2 animate-pop-in",
               pos.side === "top" && "-translate-y-full",
             )}
           >

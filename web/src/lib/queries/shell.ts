@@ -1,7 +1,8 @@
 import "server-only";
 import { and, eq, isNull, sql } from "drizzle-orm";
+import type { AvailabilityAudience } from "@/lib/format";
 import { db } from "@/db";
-import { messages, notifications, organizations, people, users } from "@/db/schema";
+import { availability, messages, notifications, organizations, people, users } from "@/db/schema";
 import { DEMO_USER_ID, type DemoRole } from "@/lib/session";
 
 /** Unread counts for the nav badges. */
@@ -19,7 +20,7 @@ export async function getShellCounts(userId: string): Promise<{ unreadMessages: 
   return { unreadMessages: m?.n ?? 0, newNotifications: n?.n ?? 0 };
 }
 
-export type DemoAccount = { role: DemoRole; name: string; detail: string | null };
+export type DemoAccount = { role: DemoRole; name: string; detail: string | null; org: string | null };
 
 /** The demo accounts offered by the demo switcher, with a one-line description each. */
 export async function getDemoAccounts(): Promise<DemoAccount[]> {
@@ -39,6 +40,12 @@ export async function getDemoAccounts(): Promise<DemoAccount[]> {
     const r = byId.get(DEMO_USER_ID[role]);
     if (!r) return [];
     const detail = role === "coach" ? [r.personTitle, r.orgShortName].filter(Boolean).join(" · ") : r.orgShortName ? `Athletic director · ${r.orgShortName}` : null;
-    return [{ role, name: r.name, detail: detail || null }];
+    return [{ role, name: r.name, detail: detail || null, org: r.orgShortName ?? null }];
   });
+}
+
+/** The coach's private "Open to opportunities" setting (null when never set: treated as off). */
+export async function getAvailabilitySummary(personId: string): Promise<{ open: boolean; audience: AvailabilityAudience } | null> {
+  const [row] = await db.select({ open: availability.open, audience: availability.audience }).from(availability).where(eq(availability.personId, personId)).limit(1);
+  return row ?? null;
 }
