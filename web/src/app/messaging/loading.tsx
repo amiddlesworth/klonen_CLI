@@ -1,12 +1,6 @@
-import { FRAME_PAGE_CLASS } from "@/components/messaging/MessagingFrame";
-import { MessagingSkeleton } from "@/components/messaging/MessagingSkeleton";
-import { PageContainer } from "@/components/shell/Layouts";
+import { MessagingLoadingFrame } from "@/components/messaging/MessagingLoadingFrame";
 
-/** Messaging skeleton: the same page frame, card and split as the page (the inbox only on phone). */
+/** Messaging skeleton: the same page frame, card and split as the page (on phone, the inbox or the conversation it is opening). */
 export default function MessagingLoading() {
-  return (
-    <PageContainer className={FRAME_PAGE_CLASS}>
-      <MessagingSkeleton />
-    </PageContainer>
-  );
+  return <MessagingLoadingFrame />;
 }

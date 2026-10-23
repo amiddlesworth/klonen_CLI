@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { createContext, useContext, useState, type MouseEvent, type ReactNode } from "react";
+import { createContext, useContext, useState, useSyncExternalStore, type MouseEvent, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 /*
@@ -38,10 +38,33 @@ type InboxRowLinkProps = {
   children: ReactNode;
 };
 
-/** An inbox row link that takes the selection as soon as it's clicked. */
+const DESKTOP = "(min-width: 721px)";
+
+function subscribeDesktop(onChange: () => void) {
+  const mq = window.matchMedia(DESKTOP);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+
+/** True on md and up, where the thread desktop opens by default is on screen. False on the server. */
+function useDesktop(): boolean {
+  return useSyncExternalStore(
+    subscribeDesktop,
+    () => window.matchMedia(DESKTOP).matches,
+    () => false,
+  );
+}
+
+/**
+ * An inbox row link that takes the selection as soon as it's clicked. aria-current marks the
+ * conversation on screen: an explicit or just-clicked selection, or the implicit (newest) one only
+ * where it shows, on md and up (on the phone inbox no thread is open).
+ */
 export function InboxRowLink({ threadId, href, selected, explicit, className, children }: InboxRowLinkProps) {
   const { pendingId, choose } = useContext(SelectionContext);
+  const desktop = useDesktop();
   const isSelected = pendingId ? pendingId === threadId : selected;
+  const current = isSelected && (explicit || !!pendingId || desktop);
   function onClick(e: MouseEvent<HTMLAnchorElement>) {
     // A new tab or window leaves this page as it is.
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
@@ -51,7 +74,7 @@ export function InboxRowLink({ threadId, href, selected, explicit, className, ch
     <Link
       href={href}
       onClick={onClick}
-      aria-current={isSelected ? "true" : undefined}
+      aria-current={current ? "true" : undefined}
       className={cn(className, isSelected && (explicit || pendingId ? "bg-hover" : "md:bg-hover"))}
     >
       {children}

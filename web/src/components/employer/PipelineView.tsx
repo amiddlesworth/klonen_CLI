@@ -72,6 +72,7 @@ function useDragEnabled(): boolean {
     () => false,
   );
 }
+
 const FAILED = "That change didn't save. Try again.";
 const PATH = "/employers/pipeline";
 

@@ -3,8 +3,9 @@ import { SampleChip } from "@/components/ui/Chip";
 import { cn } from "@/lib/cn";
 import { timeAgo } from "@/lib/format";
 import type { ThreadSummary } from "@/lib/queries/messaging";
-import { fullDateTime, threadHref } from "./format";
+import { threadHref } from "./format";
 import { InboxRowLink } from "./InboxSelection";
+import { LocalTime } from "./LocalTime";
 
 type InboxListProps = {
   threads: ThreadSummary[];
@@ -42,10 +43,10 @@ export function InboxList({ threads, selectedId, explicit, now, className }: Inb
                 <span className="flex items-center gap-2">
                   <span className="truncate text-small font-semibold text-fg-1">{t.other.name}</span>
                   {t.isDemo && <SampleChip label="Demo" />}
-                  <time dateTime={t.last.sentAt.toISOString()} title={fullDateTime(t.last.sentAt)} className="num ml-auto shrink-0 text-caption text-fg-3">
+                  <LocalTime iso={t.last.sentAt.toISOString()} className="num ml-auto shrink-0 text-caption text-fg-3">
                     {timeAgo(t.last.sentAt, now)}
                     <span className="sr-only"> ago</span>
-                  </time>
+                  </LocalTime>
                 </span>
                 <span className="mt-0.5 flex items-center gap-2">
                   <span className={cn("min-w-0 truncate text-caption", unread ? "font-semibold text-fg-1" : "text-fg-2")}>{snippet}</span>

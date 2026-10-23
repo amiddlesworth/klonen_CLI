@@ -5,7 +5,7 @@ import type { FeedMove, PriorStint } from "@/lib/queries/feedx";
 import { isMilestoneSeason, staffRun, type MilestoneStint } from "./milestones";
 import { classifyMove, pastStints, recordStints, shownEnd, undatedStints, type StintFacts } from "./moves";
 import { DigestSentence, UndatedLine } from "./Sentences";
-import { apTitle, atOrg, inferredReason, isLeague, isStaffOnly, keepTogether, ordinal, playedAt, possessiveEnding, recordTitle, roleRank, sameTitle, unnamedOrg } from "./text";
+import { apTitle, atOrg, inferredReason, isLeague, isStaffOnly, keepTogether, ordinal, pickQuote, playedAt, possessiveEnding, recordTitle, roleRank, sameTitle, unnamedOrg } from "./text";
 
 // Components compile to React.createElement (classic JSX in tests) and Link needs no router here.
 (globalThis as unknown as { React: typeof React }).React = React;
@@ -181,6 +181,23 @@ describe("recordTitle", () => {
     expect(recordTitle("Defensive Back (player)")).toBe("Defensive back");
     expect(recordTitle("Linebacker / Special Teams")).toBe("Linebacker, special teams");
     for (const [title] of AP_CASES) expect(recordTitle(title)).not.toMatch(/[()/]/);
+  });
+});
+
+describe("pickQuote", () => {
+  it("leaves out a line about an earlier stint at the program (Brandon Maguire, Ithaca)", () => {
+    const q = "Ithaca College welcomed Brandon Maguire to South Hill as its new offensive coordinator and quarterbacks coach heading into the 2024 season.";
+    expect(pickQuote(q, true, "Ithaca", 2026)).toBeNull();
+    // Even without the hire words, a promotion's quote can't be only about an earlier season.
+    expect(pickQuote("Maguire guided an offense that led the Liberty League in 2024 and 2025.", true, "Ithaca", 2026)).toBeNull();
+  });
+  it("leaves out a hire's line that dates the arrival at this program before this season", () => {
+    expect(pickQuote("Larry Wilson Wilson arrived at Waynesburg in January, 2025 after serving as the offensive coordinator.", false, "Waynesburg", 2026)).toBeNull();
+  });
+  it("keeps a line that adds a fact about the career before (design/reference/feed.html)", () => {
+    const q = "Kingsley led the AMCats to a share of the 2025 MASCAC regular season championship.";
+    expect(pickQuote(q, false, "MIT", 2026)).toBe(q);
+    expect(pickQuote("A defensive backs coach for the Johnnies in 2025, the head coach announced the promotion to defensive coordinator on Feb. 2, 2026.", true, "Saint John's (MN)", 2026)).not.toBeNull();
   });
 });
 

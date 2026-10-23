@@ -412,6 +412,31 @@ export function inferredReason(evidence: string | null | undefined, sourceUrl: s
   return `not stated in ${bio}; worked out from other details in it`;
 }
 
+/* ---------- Quotes ---------- */
+
+/** A line that only restates a hire (this one or an earlier one) adds nothing under the headline. */
+const RESTATES_HIRE = /\b(joins|joined|enters|entering|rejoins|rejoined|returns|returned|named|hired|welcomed|welcomes|first season|as (its|the|their) new)\b/i;
+
+/**
+ * A verbatim line from the new staff bio for the card's QuoteBlock, or null. It must add a fact
+ * without restating a hire, and it must not describe an earlier stint as if it backed this move: a
+ * line that names an earlier season and not this one is left out when it is about this program (for
+ * a promotion, a role change or a return (`withinProgram`), every such line is; for a hire, one
+ * that names the program), since it describes an earlier stint here, not this season's move.
+ */
+export function pickQuote(excerpt: string | null, withinProgram: boolean, programShortName: string, season: number): string | null {
+  if (!excerpt) return null;
+  const q = excerpt.trim().replace(/\s+/g, " ");
+  if (q.length < 30 || q.length > 240) return null;
+  if (!/^[A-Z“"]/.test(q)) return null;
+  if (!isNeutralQuote(q) || RESTATES_HIRE.test(q)) return null;
+  const years = (q.match(/\b(?:19|20)\d{2}\b/g) ?? []).map(Number);
+  const earlierOnly = years.some((y) => y < season) && !years.includes(season);
+  const aboutProgram = withinProgram || q.toLowerCase().includes(programShortName.replace(/\s*\(.*\)$/, "").toLowerCase());
+  if (earlierOnly && aboutProgram) return null;
+  return q;
+}
+
 /* ---------- Names and numbers ---------- */
 
 /**

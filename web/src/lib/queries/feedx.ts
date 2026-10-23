@@ -6,7 +6,7 @@ import { db } from "@/db";
 import { jobs, organizations, people, profileViews, tenures, treeEdges } from "@/db/schema";
 import { isMilestoneSeason, otherStops, staffRun, stopBefore, type MilestoneStint, type StaffRun } from "@/components/feed/milestones";
 import { classifyMove, lastSeason, pastStints, recordStints, shownEnd, undatedStints, type MoveKind, type StintFacts } from "@/components/feed/moves";
-import { cleanTitle, inferredReason, isNeutralQuote, positionKeys, schoolKey, schoolShort, stableHash, unnamedOrg } from "@/components/feed/text";
+import { cleanTitle, inferredReason, pickQuote, positionKeys, schoolKey, schoolShort, stableHash, unnamedOrg } from "@/components/feed/text";
 import { CURRENT_SEASON } from "@/lib/brand";
 import { conferenceShort } from "@/lib/format";
 import type { Session } from "@/lib/session";
@@ -306,28 +306,6 @@ async function getColleagues(personId: string) {
 
 /* ---------- Moves ---------- */
 
-/** A line that only restates a hire (this one or an earlier one) adds nothing under the headline. */
-const RESTATES_HIRE = /\b(joins|joined|enters|entering|rejoins|rejoined|returns|returned|named|hired|welcomed|welcomes|first season|as (its|the|their) new)\b/i;
-
-/**
- * A verbatim line from the new staff bio for the card's QuoteBlock, or null. It must add a fact
- * without restating a hire, and it must not describe an earlier stint as if it backed this move: for
- * a promotion, a role change or a return (moves within one program's history), a line that names an
- * earlier season and not this one is about the earlier stint, so it is left out.
- */
-export function pickQuote(excerpt: string | null, kind: MoveKind): string | null {
-  if (!excerpt) return null;
-  const q = excerpt.trim().replace(/\s+/g, " ");
-  if (q.length < 30 || q.length > 240) return null;
-  if (!/^[A-Z“"]/.test(q)) return null;
-  if (!isNeutralQuote(q) || RESTATES_HIRE.test(q)) return null;
-  if (kind !== "joined") {
-    const years = (q.match(/\b(?:19|20)\d{2}\b/g) ?? []).map(Number);
-    if (years.some((y) => y < CURRENT_SEASON) && !years.includes(CURRENT_SEASON)) return null;
-  }
-  return q;
-}
-
 /**
  * All Division III moves this season, with records, sources and quotes. Cached per request.
  *
@@ -350,7 +328,7 @@ export const getAllFeedMoves = cache(async (): Promise<FeedMove[]> => {
 });
 
 /** Bump when the derivation below changes, so a cached list from older code isn't served. */
-const FEED_MOVES_VERSION = "5";
+const FEED_MOVES_VERSION = "6";
 
 const buildFeedMoves = unstable_cache((): Promise<FeedMove[]> => deriveFeedMoves(), ["feed-moves", String(CURRENT_SEASON), FEED_MOVES_VERSION], {
   revalidate: 600,
@@ -544,7 +522,7 @@ async function deriveFeedMoves(): Promise<FeedMove[]> {
       roleGroup: current.roleGroup,
       org: toOrg(current.org),
       sourceUrl: current.sourceUrl ?? bioUrl,
-      quote: pickQuote(info?.bioExcerpt ?? null, kind),
+      quote: pickQuote(info?.bioExcerpt ?? null, kind !== "joined", current.org.shortName, CURRENT_SEASON),
       record,
       previous: prev ? toPrior(prev) : null,
       undated: undated.map(toPrior),

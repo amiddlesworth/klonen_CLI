@@ -252,7 +252,11 @@ export function EntityPicker({ kind, param, label, state, selected, unmatched, i
                   {kind === "person" ? <Avatar name={o.name} tintKey={o.slug} size={24} /> : <OrgMark shortName={o.shortName ?? o.name} name={o.orgName ?? o.name} size={24} />}
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-small font-medium leading-[18px] text-fg-1">{o.name}</span>
-                    {o.meta && <span className="block truncate text-caption text-fg-3">{o.meta}</span>}
+                    {o.meta && (
+                      <span className="block truncate text-caption text-fg-3" title={o.meta}>
+                        {o.meta}
+                      </span>
+                    )}
                   </span>
                 </div>
               ))}
