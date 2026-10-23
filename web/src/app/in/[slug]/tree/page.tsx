@@ -12,12 +12,12 @@ import { getSession } from "@/lib/session";
 type Params = Promise<{ slug: string }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-type Options = { view: "diagram" | "list" | null; depth: 1 | 2 };
+type Options = { view: "diagram" | "list" | null; depth: 1 | 2; all: boolean };
 
 function readOptions(sp: Record<string, string | string[] | undefined>): Options {
   const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
   const view = one(sp.view);
-  return { view: view === "list" || view === "diagram" ? view : null, depth: one(sp.depth) === "2" ? 2 : 1 };
+  return { view: view === "list" || view === "diagram" ? view : null, depth: one(sp.depth) === "2" ? 2 : 1, all: one(sp.all) === "1" };
 }
 
 /** Phones (not tablets) get the list by default (DESIGN.md §8.8), so they don't download the hidden diagrams. */
@@ -64,23 +64,24 @@ export default async function TreePage({ params, searchParams }: { params: Param
   const empty = data.uniqueCount === 0;
   // The signed-in coach's own node is marked "you" (from the session, never hard-coded).
   const viewerId = session?.person?.id ?? null;
-  // Default view: the diagram (md and up show it; phone widths always show the list), except on phones,
-  // which skip the diagrams' markup entirely unless ?view=diagram asks for them.
-  const phoneDefault = options.view === null && isPhone(h.get("user-agent"));
-  const view = options.view ?? (phoneDefault ? "list" : "diagram");
-  const explicitView = isPhone(h.get("user-agent"));
+  // The view: what the URL says, at every width (?view=diagram on a phone scrolls and zooms the diagram).
+  // Without one, phones get the list and skip the diagram's markup; other devices get the diagram from md up
+  // and the list at phone widths.
+  const mode = options.view !== null ? "explicit" : isPhone(h.get("user-agent")) ? "phone" : "default";
+  const view = options.view ?? (mode === "phone" ? "list" : "diagram");
 
   return (
     <PageContainer>
       <TreeBreadcrumb data={data} />
-      <TreeHeader data={data} view={view} depth={options.depth} explicitView={explicitView} />
+      <TreeHeader data={data} view={view} depth={options.depth} mode={mode} />
       {empty ? (
         <TreeEmptyCard data={data} inviteHref={inviteHref(h, slug, data.focal.fullName)} />
       ) : (
         <>
-          {/* Phone widths always show the list (the diagram needs width); md and up follow the view. */}
-          {view === "diagram" && <TreeDiagramCard data={data} depth={options.depth} viewerId={viewerId} className="max-md:hidden" />}
-          <TreeListCard data={data} viewerId={viewerId} className={view === "diagram" ? "md:hidden" : undefined} />
+          {view === "diagram" && <TreeDiagramCard data={data} depth={options.depth} viewerId={viewerId} className={mode === "default" ? "max-md:hidden" : undefined} />}
+          {(view === "list" || mode === "default") && (
+            <TreeListCard data={data} viewerId={viewerId} depth={options.depth} view={view} showAll={options.all} className={view === "diagram" ? "md:hidden" : undefined} />
+          )}
         </>
       )}
     </PageContainer>

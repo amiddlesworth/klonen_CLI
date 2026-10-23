@@ -38,8 +38,12 @@ export function railTitle(title: string): string {
 
 /** The title keeps at least this much room (or its own width when shorter) before the program takes the rest. */
 const TITLE_KEEP_PX = 90;
-/** Rough width of a 12px Inter character, to tell a short title from a long one without measuring. */
-const CAPTION_CHAR_PX = 6.4;
+/**
+ * Generous width of a 12px Inter character (capitals included), plus the ellipsis slack, to tell a short
+ * title from a long one without measuring: a short title ("Head Coach") gets its whole width.
+ */
+const CAPTION_CHAR_PX = 7;
+const TITLE_SLACK_PX = 6;
 
 /**
  * The "Title · Program" line of a rail person row (§12: truncate the title, keep the context). The title
@@ -51,7 +55,7 @@ function TitleOrg({ title, org }: { title: string | null; org: string | null }) 
     const only = title ?? org;
     return only ? <span className="block truncate">{only}</span> : null;
   }
-  const keep = Math.min(TITLE_KEEP_PX, Math.ceil(title.length * CAPTION_CHAR_PX));
+  const keep = Math.min(TITLE_KEEP_PX, Math.ceil(title.length * CAPTION_CHAR_PX) + TITLE_SLACK_PX);
   return (
     <span className="flex min-w-0">
       <span className="min-w-0 truncate">{title}</span>
@@ -141,30 +145,24 @@ export function CurrentProgramCard({ program }: { program: ProgramCard }) {
  */
 function ViaLine({ link: l }: { link: SameTreeLink }) {
   const view: TreeYearsView = treeYearsView(l.years, (id) => (id === l.person.id ? l.person.fullName : id === l.via.id ? l.via.fullName : undefined));
-  // " · " before the years, never ", ": a program name can hold commas ("University of California, Davis").
-  const years =
-    view.kind === "range" ? (
-      <>
-        {" · "}
-        <InlineYears view={view} />
-      </>
-    ) : null;
   const first = l.person.fullName.split(" ")[0];
+  const how =
+    l.relation === "alongside"
+      ? `both at ${l.orgShortName}`
+      : l.relation === "via_coached"
+        ? `${first}'s head coach at ${l.orgShortName}`
+        : `coached under ${first} at ${l.orgShortName}`;
+  // " · " before the years, never ", " (a program name can hold commas: "University of California, Davis"),
+  // with no-break spaces so the years stay with the program's last word and no line starts with "·".
   return (
     <>
-      Via {l.via.fullName} ·{" "}
-      {l.relation === "alongside" ? (
-        <>both at {l.orgShortName}</>
-      ) : l.relation === "via_coached" ? (
+      Via {l.via.fullName} · {how}
+      {view.kind === "range" && (
         <>
-          {first}&apos;s head coach at {l.orgShortName}
-        </>
-      ) : (
-        <>
-          coached under {first} at {l.orgShortName}
+          {"\u00a0·\u00a0"}
+          <InlineYears view={view} />
         </>
       )}
-      {years}
     </>
   );
 }

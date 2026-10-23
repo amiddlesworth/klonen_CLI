@@ -19,14 +19,23 @@ export type SportRow = TenureRow & { sport?: string | null };
 /** Football (the sport this network covers), or a row whose sport the caller didn't load. */
 export const isFootball = (r: Pick<SportRow, "sport">) => !r.sport || r.sport === "football";
 
+/** A title that names a coaching job ("Coach", "Coaching staff", "Coaching Fellowship"). */
+const COACHING_TITLE = /\bcoach|\bfellow/i;
+
+/** A football role the source doesn't classify and whose title names no coaching job ("Faculty Liaison", "Scout"). */
+export const isFootballStaffOnly = (r: Pick<SportRow, "asPlayer" | "roleGroup" | "sport" | "role">) =>
+  !r.asPlayer && isFootball(r) && r.roleGroup === "other" && !COACHING_TITLE.test(r.role ?? "");
+
 /**
  * The one test for "football coaching" behind every coaching number on the profile (seasons coached,
  * first season, coaching stops, the season strip): a football stint that isn't a playing stint. Football
- * rows with role group "other" stay in (most are unclassified titles such as "Coach"). Roles in other
- * sports ("Head Coach" of women's basketball) are listed in Experience under their sport but never
- * counted, matching the coaching tree (linkYears edgeEligible counts football only).
+ * rows with role group "other" stay in when the title names a coaching job (most are unclassified titles
+ * such as "Coach"); other unclassified staff roles ("Faculty Liaison") don't. Roles in other sports
+ * ("Head Coach" of women's basketball) are listed in Experience under their sport but never counted,
+ * like the coaching tree (linkYears edgeEligible counts football only).
  */
-export const isFootballCoaching = (r: Pick<SportRow, "asPlayer" | "roleGroup" | "sport">) => !r.asPlayer && r.roleGroup !== "player" && isFootball(r);
+export const isFootballCoaching = (r: Pick<SportRow, "asPlayer" | "roleGroup" | "sport" | "role">) =>
+  !r.asPlayer && r.roleGroup !== "player" && isFootball(r) && !isFootballStaffOnly(r);
 
 /** "women's basketball" → "Women's basketball" (the sport as the source names it, sentence case). */
 export function sportLabel(sport: string): string {
@@ -117,6 +126,11 @@ export function otherSportRoleCount(rows: SportRow[]): number {
   return rows.filter((r) => !r.asPlayer && r.roleGroup !== "player" && !isFootball(r)).length;
 }
 
+/** Unclassified football staff roles with no coaching title: listed, left out of the coaching numbers. */
+export function staffOnlyRoleCount(rows: SportRow[]): number {
+  return rows.filter(isFootballStaffOnly).length;
+}
+
 /** The season strip's input: football coaching stints only, so the figure counts what the header counts. */
 export function stripStints(rows: SportRow[]): StripStint[] {
   return rows.filter(isFootballCoaching).map((r) => ({
@@ -151,7 +165,7 @@ export function levelLine(r: Pick<SportRow, "roleGroup" | "unit" | "role" | "spo
     const level = otherSportLevel(r.role ?? "");
     return [sportLabel(r.sport!), level].filter(Boolean).join(" · ");
   }
-  if (r.roleGroup === "other") return "Level not in source";
+  if (r.roleGroup === "other") return COACHING_TITLE.test(r.role ?? "") ? "Level not in source" : "Football staff, not a coaching role";
   const level = ROLE_GROUP_LABEL[r.roleGroup as RoleGroup] ?? "Coach";
   const unit = r.unit ? UNIT_LABEL[r.unit] : null;
   return unit && r.roleGroup !== "head_coach" ? `${level} · ${unit}` : level;

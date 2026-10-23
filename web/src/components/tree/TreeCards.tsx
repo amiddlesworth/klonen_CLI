@@ -5,135 +5,13 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { TextLink } from "@/components/ui/TextLink";
 import { BRAND } from "@/lib/brand";
 import { cn } from "@/lib/cn";
-import type { TreeExplorer, TreeMember } from "@/lib/queries/tree";
-import {
-  COVERAGE_NOTE,
-  GROUP_LABEL,
-  anyInferred,
-  edgesInWords,
-  listNames,
-  otherPrograms,
-  peopleCount,
-  possessive,
-  rangeView,
-  relationSentence,
-  treeFootnote,
-  treeHref,
-  type GroupKey,
-} from "./copy";
-import { layoutTree, type DiagramInput, type DiagramMemberInput, type DiagramSecondInput } from "./layout";
+import type { TreeExplorer } from "@/lib/queries/tree";
+import { COVERAGE_NOTE, anyInferred, emptySecondLevel, listNames, peopleCount, possessive, treeFootnote, treeHref } from "./copy";
+import { DiagramInteractions } from "./DiagramInteractions";
+import { buildDiagram } from "./diagramInput";
+import { layoutTree, toClientLayout } from "./layout";
 import { TreeDiagram } from "./TreeDiagram";
 import { TreeList } from "./TreeList";
-
-/** How many people of each group the diagram draws; the list always shows everyone. */
-const CAP = { mentors: 12, peers: 24, mentees: 36, up: 12, down: 24 };
-
-/**
- * The program a whole group shares, when it isn't the coach's current one (that one goes without
- * saying, as in the list): named once in the group's pill instead of on every node.
- */
-function sharedProgram(members: TreeMember[], currentSlug: string | null): string | null {
-  const sets = members.map((m) => otherPrograms(m.edges, currentSlug));
-  if (!sets.length || sets.some((s) => s.length !== 1)) return null;
-  return sets.every((s) => s[0] === sets[0][0]) ? sets[0][0] : null;
-}
-
-function buildInput(data: TreeExplorer, viewerId: string | null): { input: DiagramInput; hidden: { group: string; shown: number; total: number }[] } {
-  const { focal } = data;
-  const first = focal.firstName;
-  const currentSlug = focal.currentOrg?.slug ?? null;
-  const rolePart = (p: { currentTitle: string | null; org: { shortName: string } | null }) => [p.currentTitle, p.org?.shortName].filter(Boolean).join(", ");
-  const shared = {
-    mentors: sharedProgram(data.mentors, currentSlug),
-    // Peers sit beside the coach, where a longer pill would widen the diagram: their programs stay on the nodes.
-    peers: null,
-    mentees: sharedProgram(data.mentees, currentSlug),
-  };
-
-  const member =
-    (group: GroupKey) =>
-    (m: TreeMember): DiagramMemberInput => {
-      const role = rolePart(m.person);
-      const you = m.person.id === viewerId;
-      const rv = rangeView(m.edges);
-      const programs = otherPrograms(m.edges, currentSlug);
-      const program = programs.length && !(programs.length === 1 && programs[0] === shared[group]) ? listNames(programs) : null;
-      return {
-        key: `${group}:${m.person.id}`,
-        slug: m.person.slug,
-        name: m.person.fullName,
-        you,
-        program,
-        range: { parts: rv.parts, short: rv.short, title: rv.title },
-        label: `${m.person.fullName}${you ? " (you)" : ""}${role ? `, ${role}` : ""}. ${relationSentence(group, first, m.edges)}.`,
-      };
-    };
-  const second =
-    (dir: "up" | "down") =>
-    (m: NonNullable<TreeExplorer["second"]>["up"][number]): DiagramSecondInput => {
-      const link = m.links[0];
-      const role = rolePart(m.person);
-      const you = m.person.id === viewerId;
-      const rv = rangeView(link.edges);
-      // Under a "Via {name}" caption, the program goes without saying when it is that coach's current one.
-      const programs = otherPrograms(link.edges, link.via.org?.slug ?? null);
-      const how = (l: (typeof m.links)[number]) =>
-        dir === "up" ? `${possessive(l.via.fullName)} head coach at ${edgesInWords(l.edges)}` : `On ${possessive(l.via.fullName)} staff at ${edgesInWords(l.edges)}`;
-      return {
-        key: `${dir}:${m.person.id}`,
-        slug: m.person.slug,
-        name: m.person.fullName,
-        you,
-        program: programs.length ? listNames(programs) : null,
-        range: { parts: rv.parts, short: rv.short, title: rv.title },
-        label: `${m.person.fullName}${you ? " (you)" : ""}${role ? `, ${role}` : ""}. Two steps away: ${listNames(m.links.map(how))}.`,
-        parents: m.links.map((l) => ({ key: `${dir === "up" ? "mentors" : "mentees"}:${l.via.id}`, program: l.edges[0].org.shortName })),
-      };
-    };
-
-  const mentors = data.mentors.slice(0, CAP.mentors).map(member("mentors"));
-  const peers = data.peers.slice(0, CAP.peers).map(member("peers"));
-  const mentees = data.mentees.slice(0, CAP.mentees).map(member("mentees"));
-  const shownKeys = new Set([...mentors, ...mentees].map((m) => m.key));
-  const keep = (s: DiagramSecondInput) => ({ ...s, parents: s.parents.filter((p) => shownKeys.has(p.key)) });
-  const up = (data.second?.up ?? []).map(second("up")).map(keep).filter((s) => s.parents.length).slice(0, CAP.up);
-  const down = (data.second?.down ?? []).map(second("down")).map(keep).filter((s) => s.parents.length).slice(0, CAP.down);
-
-  const hidden = [
-    { group: `who ${first} worked under`, shown: mentors.length, total: data.mentors.length },
-    { group: `who worked alongside ${first}`, shown: peers.length, total: data.peers.length },
-    { group: `who coached under ${first}`, shown: mentees.length, total: data.mentees.length },
-    { group: "two steps up", shown: up.length, total: data.second?.up.length ?? 0 },
-    { group: "two steps down", shown: down.length, total: data.second?.down.length ?? 0 },
-  ].filter((h) => h.shown < h.total);
-
-  const pill = (text: string, count: number, extra: string | null = null) => (count ? { text, count, extra } : null);
-  return {
-    input: {
-      focal: {
-        key: "focal",
-        slug: focal.slug,
-        name: focal.fullName,
-        title: focal.currentTitle,
-        you: focal.id === viewerId,
-        label: `${focal.fullName}${focal.id === viewerId ? " (you)" : ""}${focal.currentTitle ? `, ${focal.currentTitle}` : ""}. Open profile.`,
-      },
-      mentors,
-      peers,
-      mentees,
-      up,
-      down,
-      pills: {
-        mentors: pill(GROUP_LABEL.mentors(), data.mentors.length, shared.mentors),
-        peers: pill(GROUP_LABEL.peers(), data.peers.length),
-        mentees: pill(GROUP_LABEL.mentees(first), data.mentees.length, shared.mentees),
-        up: up.length ? pill(GROUP_LABEL.up(), data.second?.up.length ?? 0) : null,
-        down: down.length ? pill(GROUP_LABEL.down(), data.second?.down.length ?? 0) : null,
-      },
-    },
-    hidden,
-  };
-}
 
 /** The visible explanation of a dotted year (DESIGN.md §6.2), once per view that shows one. */
 function InferredNote() {
@@ -148,35 +26,44 @@ function InferredNote() {
 }
 
 /**
- * Diagram card (md and up): the SVG in two layouts (rows of 4 at md so it fits the card, rows of 6 at
- * lg), its legend and the footnote. The card is Escape's focus target, so focus stays visible.
+ * Diagram card: the SVG in two layouts (rows of 4 below lg, where a phone scrolls it sideways; rows of 6
+ * at lg), zoom controls, its legend and the footnote. The card is Escape's focus target, so focus stays
+ * visible.
  */
 export function TreeDiagramCard({ data, depth, viewerId, className }: { data: TreeExplorer; depth: 1 | 2; viewerId: string | null; className?: string }) {
-  const { input, hidden } = buildInput(data, viewerId);
+  const { input, hidden, sheets } = buildDiagram(data, viewerId);
   const wide = layoutTree(input, "wide");
   const narrow = layoutTree(input, "narrow");
-  const first = data.focal.firstName;
   const inferred = anyInferred(data);
   const secondShown = input.up.length + input.down.length;
+  const secondTotal = (data.second?.up.length ?? 0) + (data.second?.down.length ?? 0);
   const label = `${possessive(data.focal.fullName)} coaching tree`;
   return (
-    <Card
-      id="tree-diagram"
-      padding="main"
-      tabIndex={-1}
-      aria-labelledby="tree-diagram-title"
-      className={cn("focus-visible:rounded-md", className)}
-    >
+    <Card id="tree-diagram" padding="main" tabIndex={-1} aria-labelledby="tree-diagram-title" className={cn("focus-visible:rounded-md", className)}>
       <h2 id="tree-diagram-title" className="sr-only">
         Diagram
       </h2>
       <p id="tree-diagram-help" className="sr-only">
         Arrow keys move between coaches, Enter opens a profile and Escape leaves the diagram. The list view shows the same people.
       </p>
-      <TreeDiagram layout={narrow} label={label} helpId="tree-diagram-help" exitTargetId="tree-diagram" className="-mx-4 px-4 md:-mx-6 md:px-6 lg:hidden" />
-      <TreeDiagram layout={wide} label={label} helpId="tree-diagram-help" exitTargetId="tree-diagram" className="-mx-4 px-4 md:-mx-6 md:px-6 max-lg:hidden" />
+      <DiagramInteractions sheets={sheets} exitTargetId="tree-diagram" className="-mx-4 px-4 md:-mx-6 md:px-6">
+        <TreeDiagram layout={toClientLayout(narrow)} label={label} helpId="tree-diagram-help" className="lg:hidden" />
+        <TreeDiagram layout={toClientLayout(wide)} label={label} helpId="tree-diagram-help" className="max-lg:hidden" />
+      </DiagramInteractions>
       {depth === 2 && secondShown === 0 && (
-        <p className="mt-3 text-center text-small text-fg-3">No one two steps away yet: none of the coaches above or below {first} have head-coach links of their own.</p>
+        <p className="mt-3 text-center text-small text-fg-2 [text-wrap:balance]">
+          {secondTotal > 0 ? (
+            <>
+              The {secondTotal === 1 ? "coach" : "coaches"} two steps away connect through people the diagram doesn&apos;t draw;{" "}
+              <TextLink href={treeHref(data.focal.slug, { view: "list", depth })} variant="inline" className="font-normal">
+                the list shows them
+              </TextLink>
+              .
+            </>
+          ) : (
+            emptySecondLevel(data)
+          )}
+        </p>
       )}
       <div className="mt-4 border-t border-divider pt-3">
         <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-caption text-fg-2" aria-label="Legend">
@@ -225,14 +112,28 @@ export function TreeDiagramCard({ data, depth, viewerId, className }: { data: Tr
   );
 }
 
-/** List card: everyone in the tree, grouped (the phone layout and the accessible equivalent). */
-export function TreeListCard({ data, viewerId, className }: { data: TreeExplorer; viewerId: string | null; className?: string }) {
+/** List card: everyone in the tree, grouped (the phone default and the accessible equivalent). */
+export function TreeListCard({
+  data,
+  viewerId,
+  depth,
+  view,
+  showAll,
+  className,
+}: {
+  data: TreeExplorer;
+  viewerId: string | null;
+  depth: 1 | 2;
+  view: "diagram" | "list";
+  showAll: boolean;
+  className?: string;
+}) {
   const first = data.focal.firstName;
   const inferred = anyInferred(data);
   return (
     <Card padding="main" aria-labelledby="tree-list-title" className={className}>
       <CardHeader id="tree-list-title" title={`People in ${possessive(first)} tree`} meta={peopleCount(data.uniqueCount)} />
-      <TreeList data={data} viewerId={viewerId} />
+      <TreeList data={data} viewerId={viewerId} depth={depth} view={view} showAll={showAll} />
       <div className="mt-2 border-t border-divider pt-3 text-caption text-fg-3">
         {inferred && (
           <p className="mb-1 text-fg-2">
@@ -252,18 +153,24 @@ function emptyReason(data: TreeExplorer): string {
   const first = focal.firstName;
   if (focal.isDemo) return `${focal.fullName} is a fictional demo coach, so no real coaches are linked to this tree.`;
   const { coachingStints, datedStints, programs, otherRoles } = record;
+  // One listed role: in the header's own words (the current title), so the page spells it one way.
   if (coachingStints === 0 && otherRoles.length === 1)
-    return `${possessive(first)} only listed role, ${otherRoles[0]}, isn't a coaching role, so it isn't used to build trees.`;
+    return `${possessive(first)} only listed staff role, ${focal.currentTitle ?? otherRoles[0]}, isn't a coaching role, so it isn't used to build trees.`;
   if (coachingStints === 0 && otherRoles.length > 1)
-    return `${possessive(first)} listed roles (${listNames(otherRoles)}) aren't coaching roles, so they aren't used to build trees.`;
+    return `${possessive(first)} listed staff roles (${listNames(otherRoles)}) aren't coaching roles, so they aren't used to build trees.`;
   if (coachingStints === 0) return `${possessive(first)} record has no coaching stints in the source yet, so there is nothing to overlap.`;
   const stints = `${coachingStints} coaching ${coachingStints === 1 ? "stint" : "stints"}`;
   if (datedStints === 0) return `${possessive(first)} record lists ${stints}, but the source gives no years for ${coachingStints === 1 ? "it" : "them"}, so overlaps can't be worked out yet.`;
   return `${possessive(first)} record lists ${stints} at ${programs} ${programs === 1 ? "program" : "programs"}; no other coach on ${BRAND.name} shares those seasons yet.`;
 }
 
-/** Whole tree empty (DESIGN.md §8.8, §8.0): the profile card's title, one honest line, one secondary button. */
+/**
+ * Whole tree empty (DESIGN.md §8.8, §8.0): the profile card's title, one honest line and, when a colleague
+ * could actually fill the tree, one secondary button. A demo coach, or a record with no coaching role,
+ * gets no invite: nobody's seasons can overlap a role that isn't used to build trees.
+ */
 export function TreeEmptyCard({ data, inviteHref }: { data: TreeExplorer; inviteHref: string }) {
+  const canInvite = !data.focal.isDemo && data.record.coachingStints > 0;
   return (
     <Card padding="main" aria-labelledby="tree-empty-title">
       <h2 id="tree-empty-title" className="sr-only">
@@ -274,11 +181,11 @@ export function TreeEmptyCard({ data, inviteHref }: { data: TreeExplorer; invite
         title="No coaching tree yet."
         description={emptyReason(data)}
         action={
-          data.focal.isDemo ? undefined : (
+          canInvite ? (
             <ButtonLink href={inviteHref} icon={Send}>
               Invite a colleague
             </ButtonLink>
-          )
+          ) : undefined
         }
         spacing="lg"
       />

@@ -45,16 +45,20 @@ type TreeHeaderProps = {
   data: TreeExplorer;
   view: "diagram" | "list";
   depth: 1 | 2;
-  /** The page defaulted to the list (a phone): links spell out view=diagram. */
-  explicitView?: boolean;
+  /**
+   * "explicit": the URL names the view (it holds at every width). "phone": a phone, defaulted to the list.
+   * "default": no view in the URL; the diagram shows from md up and the list below md.
+   */
+  mode: "explicit" | "phone" | "default";
 };
 
 /**
- * Page header card (DESIGN.md §8.8): back link (phone), h1 "{Name}'s coaching tree", the coach's
- * role, "{n} people · derived from overlapping seasons", the Diagram · List control (md and up; the
- * phone always shows the list), the "Two steps away" toggle (?depth=2) and the group counts.
+ * Page header card (DESIGN.md §8.8): back link (phone), h1 "{Name}'s coaching tree", the coach's role,
+ * "{n} people · derived from overlapping seasons", the Diagram · List control (List is the default on
+ * phone; Diagram there opens a diagram that scrolls and zooms), the "Two steps away" toggle (?depth=2)
+ * and the group counts.
  */
-export function TreeHeader({ data, view, depth, explicitView = false }: TreeHeaderProps) {
+export function TreeHeader({ data, view, depth, mode }: TreeHeaderProps) {
   const { focal } = data;
   const first = focal.firstName;
   const empty = data.uniqueCount === 0;
@@ -67,6 +71,19 @@ export function TreeHeader({ data, view, depth, explicitView = false }: TreeHead
     { value: data.uniqueCount, label: "People in tree", hideOnPhone: true },
   ];
   if (data.second) stats.push({ value: data.second.uniqueCount, label: "Two steps away", hideOnPhone: true });
+
+  const control = (value: "diagram" | "list", className?: string, explicitDiagram = true) => (
+    <SegmentedControl
+      label="View"
+      value={value}
+      fullWidthOnPhone={false}
+      className={cn("max-md:grid max-md:w-44 max-md:grid-cols-2", className)}
+      options={[
+        { value: "diagram", label: "Diagram", href: treeHref(focal.slug, { view: "diagram", depth, explicit: explicitDiagram }) },
+        { value: "list", label: "List", href: treeHref(focal.slug, { view: "list", depth }) },
+      ]}
+    />
+  );
 
   return (
     <Card aria-labelledby="tree-title" className={cn("px-4 pt-2 md:px-6 md:pt-5", empty && "pb-4 md:pb-5")}>
@@ -108,29 +125,27 @@ export function TreeHeader({ data, view, depth, explicitView = false }: TreeHead
             <p className="mt-0.5 text-small text-fg-3">
               <span className="num">{peopleCount(data.uniqueCount)}</span> · derived from overlapping seasons
             </p>
-            {!empty && <p className="mt-0.5 text-caption text-fg-3 md:hidden">Shown as a list on phones; the diagram opens on wider screens.</p>}
           </div>
         </div>
         {!empty && (
           <div className="flex shrink-0 flex-wrap items-center gap-2 max-md:pb-1 md:pl-[72px] lg:pl-0">
-            <SegmentedControl
-              label="View"
-              value={view}
-              fullWidthOnPhone={false}
-              className="max-md:hidden"
-              options={[
-                { value: "diagram", label: "Diagram", href: treeHref(focal.slug, { view: "diagram", depth, explicit: explicitView }) },
-                { value: "list", label: "List", href: treeHref(focal.slug, { view: "list", depth }) },
-              ]}
-            />
-            <FilterChip href={treeHref(focal.slug, { view, depth: depth === 2 ? 1 : 2, explicit: explicitView })} selected={depth === 2}>
+            {mode === "default" ? (
+              <>
+                {/* No view in the URL: md and up show the diagram, phone widths the list. */}
+                {control("diagram", "max-md:hidden", false)}
+                {control("list", "md:hidden")}
+              </>
+            ) : (
+              control(view)
+            )}
+            <FilterChip href={treeHref(focal.slug, { view, depth: depth === 2 ? 1 : 2, explicit: mode !== "default" })} selected={depth === 2}>
               Two steps away
             </FilterChip>
           </div>
         )}
       </div>
-      {/* Labels may wrap on phone ("Coached under {first}" is never cut off in a 3-column band); balanced, so no word is left alone. */}
-      {!empty && <StatGroup stats={stats} label="Coaching tree counts" className="mt-4 max-md:[&_span]:whitespace-normal max-md:[&_span]:[text-wrap:balance]" />}
+      {/* Labels may wrap below lg (five columns at 721 px; "Coached under {first}" is never cut off), balanced so no word is left alone. */}
+      {!empty && <StatGroup stats={stats} label="Coaching tree counts" className="mt-4 max-lg:[&_span]:whitespace-normal max-lg:[&_span]:[text-wrap:balance]" />}
     </Card>
   );
 }

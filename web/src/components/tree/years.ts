@@ -7,6 +7,7 @@
  * An undated current stint pins no start year: such a run reads "Current", never "2026–".
  */
 import { CURRENT_SEASON } from "@/lib/brand";
+import { seasonRange, seasonRangeCompact, seasonRangeLabel } from "@/lib/format";
 import { coverage, headSide, staffSide, type EdgeRef, type Side, type YearStint } from "@/components/profile/linkYears";
 
 export type InferredFrom = { personId: string; evidence: string | null };
@@ -89,7 +90,7 @@ export function treeEdgeYears(edge: EdgeRef, stints: YearStint[]): EdgeYears {
 /** "range": years to show; "current": on a staff together now, start not in the source; "none": nothing pinned. */
 export type YearsDisplay = "range" | "current" | "none";
 
-export function yearsDisplay(y: EdgeYears): YearsDisplay {
+export function yearsDisplay(y: Pick<EdgeYears, "ongoing" | "startYear" | "endYear">): YearsDisplay {
   if (y.ongoing) return y.startYear ? "range" : "current";
   return y.startYear && y.endYear ? "range" : "none";
 }
@@ -97,30 +98,40 @@ export function yearsDisplay(y: EdgeYears): YearsDisplay {
 /** A piece of a compact range; inferred pieces carry the dotted mark. */
 export type RangePart = { text: string; inferred: boolean };
 
-/** Compact pieces of one run: "2004" "–" "05", "2020" "–", "2003". Empty unless the display is "range". */
-export function compactParts(y: EdgeYears): RangePart[] {
+/** What compactParts and yearsInWords read: a run's shown bounds and which of them are inferred. */
+export type RunBounds = Pick<EdgeYears, "ongoing" | "startYear" | "endYear" | "startInferred" | "endInferred">;
+
+/**
+ * Compact pieces of one run: "2004" "–" "05", "2020" "–", "2003". The text is format.ts
+ * seasonRangeCompact() split at its en dash, so the formatting rules live in one place; each piece
+ * keeps its own inferred flag. Empty unless the display is "range".
+ */
+export function compactParts(y: RunBounds): RangePart[] {
   if (yearsDisplay(y) !== "range" || !y.startYear) return [];
-  const s = y.startYear;
-  if (y.ongoing) return [{ text: String(s), inferred: y.startInferred }, { text: "–", inferred: false }];
-  const e = y.endYear!;
-  if (e === s) return [{ text: String(s), inferred: y.startInferred || y.endInferred }];
-  const sameCentury = Math.floor(e / 100) === Math.floor(s / 100);
+  const text = seasonRangeCompact(y.startYear, y.endYear, y.ongoing);
+  const dash = text.indexOf("–");
+  // A single season: either bound being inferred marks it.
+  if (dash < 0) return [{ text, inferred: y.startInferred || y.endInferred }];
+  const end = text.slice(dash + 1);
   return [
-    { text: String(s), inferred: y.startInferred },
+    { text: text.slice(0, dash), inferred: y.startInferred },
     { text: "–", inferred: false },
-    { text: sameCentury ? String(e).slice(2) : String(e), inferred: y.endInferred },
+    ...(end ? [{ text: end, inferred: !y.ongoing && y.endInferred }] : []),
   ];
 }
 
-/** The full range in words for labels: "2004–2005, 2 seasons", "2020–Present, 7 seasons", "Current". */
-export function yearsInWords(y: EdgeYears): string {
+/** The full range in words for labels (format.ts seasonRangeLabel): "2004–2005, 2 seasons (2004 inferred)". */
+export function yearsInWords(y: RunBounds): string {
   const d = yearsDisplay(y);
   if (d === "current") return "current (start year not in source)";
   if (d === "none") return "years not in source";
   const s = y.startYear!;
   const e = y.ongoing ? CURRENT_SEASON : y.endYear!;
-  const n = e - s + 1;
-  const range = y.ongoing ? `${s}–Present` : s === e ? String(s) : `${s}–${e}`;
   const inferred = [y.startInferred && String(s), y.endInferred && !y.ongoing && e !== s && String(e)].filter(Boolean);
-  return `${range}, ${n} ${n === 1 ? "season" : "seasons"}${inferred.length ? ` (${inferred.join(" and ")} inferred)` : ""}`;
+  return `${seasonRangeLabel(s, y.endYear, y.ongoing)}${inferred.length ? ` (${inferred.join(" and ")} inferred)` : ""}`;
+}
+
+/** The range alone, in words ("2004–2005", "2020–Present", "2024"), for sentences that already give the count. */
+export function rangeInWords(y: RunBounds): string {
+  return seasonRange(y.startYear, y.endYear, y.ongoing).range;
 }

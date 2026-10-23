@@ -1,6 +1,7 @@
+"use client";
+import { cn } from "@/lib/cn";
 import type { Tint } from "@/lib/format";
-import { DiagramInteractions } from "./DiagramInteractions";
-import type { DiagramLayout, PlacedLabel, PlacedNode } from "./layout";
+import type { ClientLayout, PlacedLabel, PlacedNode } from "./layout";
 
 const TINT_BG: Record<Tint, string> = {
   1: "fill-av1-bg",
@@ -26,75 +27,71 @@ const TONE: Record<PlacedLabel["parts"][number]["tone"], { className: string; we
 };
 
 type TreeDiagramProps = {
-  layout: DiagramLayout;
+  layout: ClientLayout;
   /** Accessible name of the diagram ("Ian Falconer's coaching tree"). */
   label: string;
   /** Id of the visually hidden keyboard help. */
   helpId: string;
-  /** Escape moves focus here (a visible element: the diagram card). */
-  exitTargetId: string;
   className?: string;
 };
 
 /**
- * The coaching tree as an inline SVG node-link diagram (DESIGN.md §8.8), rendered on the server.
- * Nodes are links to profiles (44px+ targets). Connectors are drawn as one 1.5px --border-strong path,
- * so trunks shared by many people paint once; each node has a merged --fg-2 highlight path that shows
- * on hover or focus while the rest fade to 40%. Pills on the trunks name each group and its count;
- * "Via …" captions name the first-level coach each second-level block hangs from.
+ * The coaching tree as an inline SVG node-link diagram (DESIGN.md §8.8), server-rendered from the layout
+ * data (a client component, so the page carries the compact layout once instead of the whole element tree);
+ * the surrounding DiagramInteractions adds keyboard, hover, tap and zoom. Nodes are links to profiles (44px+
+ * targets). Connectors are drawn once as a single 1.5px --border-strong path (shared trunks paint once);
+ * each connector also has its own invisible --fg-2 copy, shown for the hovered or focused person while the
+ * rest fade to 40%. Pills on the trunks name each group and its count; each second-level block's caption
+ * names the coach it hangs from.
  */
-export function TreeDiagram({ layout, label, helpId, exitTargetId, className }: TreeDiagramProps) {
+export function TreeDiagram({ layout, label, helpId, className }: TreeDiagramProps) {
   const base = layout.edges.map((e) => e.d).join(" ");
-  const highlights = layout.nodes
-    .map((n) => ({ key: n.key, d: layout.edges.filter((e) => e.ends.includes(n.key)).map((e) => e.d).join(" ") }))
-    .filter((h) => h.d);
   return (
-    <DiagramInteractions exitTargetId={exitTargetId} className={className}>
-      <svg
-        width={layout.width}
-        height={layout.height}
-        viewBox={`0 0 ${layout.width} ${layout.height}`}
-        role="group"
-        aria-label={label}
-        aria-describedby={helpId}
-        className="mx-auto block max-w-none select-none"
-      >
-        <g transform={`translate(${layout.tx} ${layout.ty})`}>
-          <g aria-hidden="true">
-            <path d={base} strokeWidth={1.5} strokeLinecap="round" className="fill-none stroke-border-strong transition-opacity [[data-active]_&]:opacity-40" />
-            {highlights.map((h) => (
-              <path key={h.key} data-hl={h.key} d={h.d} strokeWidth={1.5} strokeLinecap="round" className="invisible fill-none stroke-fg-2 data-on:visible" />
-            ))}
-          </g>
-          <g aria-hidden="true">
-            {layout.labels.map((l) => (
-              <g key={l.key}>
-                <rect x={l.box.x} y={l.box.y} width={l.box.w} height={l.box.h} rx={l.box.h / 2} className="fill-surface" />
-                <text x={l.x} y={l.y + 4} textAnchor={l.anchor} fontSize={12}>
-                  {l.parts.map((p, i) => (
-                    <tspan key={i} fontWeight={TONE[p.tone].weight} className={TONE[p.tone].className}>
-                      {p.text}
-                    </tspan>
-                  ))}
-                </text>
-              </g>
-            ))}
-          </g>
-          <g>
-            {layout.nodes.map((n) => (
-              <DiagramNode key={n.key} node={n} />
-            ))}
-          </g>
+    <svg
+      width={layout.width}
+      height={layout.height}
+      viewBox={`0 0 ${layout.width} ${layout.height}`}
+      role="group"
+      aria-label={label}
+      aria-describedby={helpId}
+      data-diagram=""
+      className={cn("mx-auto block max-w-none select-none", className)}
+    >
+      <g transform={`translate(${layout.tx} ${layout.ty})`}>
+        <g aria-hidden="true" fill="none" strokeWidth={1.5} strokeLinecap="round">
+          <path d={base} className="stroke-border-strong transition-opacity [[data-active]_&]:opacity-40" />
+          {layout.edges.map((e) => (
+            <path key={e.key} data-ends={e.ends.join(" ")} d={e.d} className="invisible stroke-fg-2 data-on:visible" />
+          ))}
         </g>
-      </svg>
-    </DiagramInteractions>
+        <g aria-hidden="true">
+          {layout.labels.map((l) => (
+            <g key={l.key}>
+              <rect x={l.box.x} y={l.box.y} width={l.box.w} height={l.box.h} rx={l.box.h / 2} className="fill-surface" />
+              <text x={l.x} y={l.y + 4} textAnchor={l.anchor} fontSize={12}>
+                {l.parts.map((p, i) => (
+                  <tspan key={i} fontWeight={TONE[p.tone].weight} className={TONE[p.tone].className}>
+                    {p.text}
+                  </tspan>
+                ))}
+              </text>
+            </g>
+          ))}
+        </g>
+        <g>
+          {layout.nodes.map((n) => (
+            <DiagramNode key={n.key} node={n} />
+          ))}
+        </g>
+      </g>
+    </svg>
   );
 }
 
 function DiagramNode({ node: n }: { node: PlacedNode }) {
   const focal = n.kind === "focal";
   return (
-    <g data-node={n.key} data-kind={n.kind} data-name={n.fullName} data-x={n.cx} data-y={n.cy}>
+    <g data-node={n.key} data-kind={n.kind} data-person={n.slug} data-x={n.cx} data-y={n.cy}>
       {/* The <title> is both the link's accessible name and its hover tooltip (full name, role, relationship). */}
       <a href={`/in/${n.slug}`} data-node-link="" className="group/node outline-none focus-visible:outline-none">
         <title>{n.label}</title>
@@ -105,7 +102,7 @@ function DiagramNode({ node: n }: { node: PlacedNode }) {
           height={n.ring.h}
           rx={8}
           strokeWidth={2}
-          className="fill-transparent stroke-transparent transition-[fill] group-hover/node:fill-hover group-focus-visible/node:stroke-focus"
+          className="fill-transparent stroke-transparent transition-[fill] group-hover/node:fill-hover group-focus-visible/node:stroke-focus [[data-on]_&]:fill-hover"
         />
         <circle cx={n.cx} cy={n.cy} r={n.r} className={TINT_BG[n.tint]} />
         {/* The viewer's own node: an extra Iris ring (a shape, not only a color), named "You" in the legend. */}
@@ -122,15 +119,12 @@ function DiagramNode({ node: n }: { node: PlacedNode }) {
         >
           {n.initials}
         </text>
-        <text
-          x={n.textX}
-          y={n.nameY}
-          textAnchor={n.textAnchor}
-          fontSize={n.nameSize}
-          fontWeight={600}
-          className="fill-fg-1 underline-offset-2 group-hover/node:underline"
-        >
-          {n.name}
+        <text textAnchor={n.textAnchor} fontSize={n.nameSize} fontWeight={600} className="fill-fg-1 underline-offset-2 group-hover/node:underline">
+          {n.nameLines.map((line, i) => (
+            <tspan key={i} x={n.textX} y={n.nameY + i * n.lineHeight}>
+              {line}
+            </tspan>
+          ))}
         </text>
         {n.programLine && (
           <text x={n.textX} y={n.programLine.y} textAnchor={n.textAnchor} fontSize={12} className="fill-fg-3" aria-hidden="true">
@@ -140,7 +134,7 @@ function DiagramNode({ node: n }: { node: PlacedNode }) {
         {n.sub && (
           <>
             <text x={n.textX} y={n.subY} textAnchor={n.textAnchor} fontSize={12} className="fill-fg-3" aria-hidden="true">
-              {n.sub.program && <tspan>{`${n.sub.program} · `}</tspan>}
+              {n.sub.program && <tspan>{`${n.sub.program}${n.sub.parts.length ? " · " : ""}`}</tspan>}
               <tspan data-range="" fontWeight={500} className="num fill-fg-2">
                 {n.sub.parts.map((p, i) => (
                   <tspan key={i} data-part={i}>
@@ -172,8 +166,8 @@ function DiagramNode({ node: n }: { node: PlacedNode }) {
           </>
         )}
         {focal && n.titleLine && (
-          <text x={n.textX} y={n.subY} textAnchor="middle" fontSize={12} className="fill-fg-2">
-            {n.titleLine}
+          <text x={n.textX} y={n.titleLine.y} textAnchor="middle" fontSize={12} className="fill-fg-2">
+            {n.titleLine.text}
           </text>
         )}
       </a>

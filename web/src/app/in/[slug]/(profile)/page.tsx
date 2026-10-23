@@ -11,6 +11,7 @@ import {
   currentHeadline,
   firstSeason,
   otherSportRoleCount,
+  staffOnlyRoleCount,
   stripStints,
   undatedRoleCount,
 } from "@/components/profile/model";
@@ -177,6 +178,7 @@ export default async function ProfilePage({ params }: Props) {
         owner={isOwner}
         showInferredKey={explainIn === "experience"}
         otherSportRoles={otherSportRoleCount(rows)}
+        staffOnlyRoles={staffOnlyRoleCount(rows)}
         isDemo={person.isDemo}
       />
       <PlayingCard rows={playing} personName={person.fullName} explainInferred={explainIn === "playing"} />

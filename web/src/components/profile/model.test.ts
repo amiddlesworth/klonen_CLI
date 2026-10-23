@@ -10,6 +10,7 @@ import {
   levelLine,
   otherSportRoleCount,
   playingLine,
+  staffOnlyRoleCount,
   stripStints,
   treeYearsView,
   undatedRoleCount,
@@ -82,8 +83,18 @@ describe("football coaching only", () => {
     expect(playingLine(baseballPlayer)).toBe("Baseball · Player (catcher)");
   });
 
+  it("counts an unclassified football role only when its title names a coaching job", () => {
+    const liaison = row({ role: "Faculty Liaison", roleGroup: "other", isCurrent: true, orgId: "whittier" });
+    const coach = row({ role: "Coach", roleGroup: "other", startYear: 2010, endYear: 2011, orgId: "phenix" });
+    expect(coachingStops([liaison])).toBe(0);
+    expect(staffOnlyRoleCount([liaison, coach])).toBe(1);
+    expect(coachingSeasons([liaison, coach])).toEqual([2010, 2011]);
+    expect(coachingStops([liaison, coach])).toBe(1);
+  });
+
   it("never prints a bare 'Other' for an unclassified football role, and rows without a sport count as football", () => {
-    expect(levelLine(row({ role: "Faculty Liaison", roleGroup: "other" }))).toBe("Level not in source");
+    expect(levelLine(row({ role: "Faculty Liaison", roleGroup: "other" }))).toBe("Football staff, not a coaching role");
+    expect(levelLine(row({ role: "Coach", roleGroup: "other" }))).toBe("Level not in source");
     expect(levelLine(row({ roleGroup: "coordinator", unit: "special_teams" }))).toBe("Coordinator · Special teams");
     const noSport = row({ startYear: 2020, endYear: 2021, sport: undefined });
     expect(coachingSeasons([noSport])).toEqual([2020, 2021]);

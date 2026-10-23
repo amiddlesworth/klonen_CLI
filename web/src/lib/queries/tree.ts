@@ -4,7 +4,7 @@ import { aliasedTable, and, eq, inArray, or, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import { organizations, people, tenures, treeEdges } from "@/db/schema";
 import { CURRENT_SEASON } from "@/lib/brand";
-import { coverage, edgeEligible, type YearStint } from "@/components/profile/linkYears";
+import { coverage, edgeEligible, playedUnder, type LinkYears, type YearStint } from "@/components/profile/linkYears";
 import { lineageRuns } from "@/components/tree/lineage";
 import { treeEdgeYears, yearsDisplay, type EdgeYears } from "@/components/tree/years";
 import { personSummaryCols, toSummary, type PersonSummary } from "./people";
@@ -40,8 +40,15 @@ export type TreeEdge = {
 
 export type TreePerson = PersonSummary & { firstName: string };
 
+/**
+ * A player relationship between the coach and a tree person, the profile tree card's rule
+ * (getProfileTree, linkYears.playedUnder): "played_for" = the tree person played for the coach (as its
+ * head coach); "coached" = the tree person was the coach's head coach while the coach played.
+ */
+export type TreePlayerLink = { kind: "played_for" | "coached"; years: EdgeYears; reasons: string[] };
+
 /** A first-level member: every edge they share with the focal coach, most recent first. */
-export type TreeMember = { person: TreePerson; edges: TreeEdge[] };
+export type TreeMember = { person: TreePerson; edges: TreeEdge[]; player: TreePlayerLink | null };
 
 /** A second-level member and the first-level people they connect through. */
 export type SecondLevelMember = { person: TreePerson; links: { via: TreePerson; edges: TreeEdge[] }[] };
@@ -60,8 +67,12 @@ export type TreeExplorer = {
   uniqueCount: number;
   /** People who appear in two groups, with the groups they appear in. */
   listedTwice: { person: TreePerson; groups: ("mentors" | "peers" | "mentees")[] }[];
-  /** Present when depth = 2. */
-  second: { up: SecondLevelMember[]; down: SecondLevelMember[]; uniqueCount: number } | null;
+  /**
+   * Present when depth = 2. `dropped` counts links on record that are left out because they are not in
+   * time order (a head coach's own head coach from after coaching the coach, and so on), so an empty
+   * band can say why instead of claiming there are no links.
+   */
+  second: { up: SecondLevelMember[]; down: SecondLevelMember[]; uniqueCount: number; dropped: { up: number; down: number } } | null;
   /** The focal coach's own record, to explain an empty tree honestly. */
   record: TreeRecord;
 };
@@ -110,9 +121,9 @@ async function fetchEdges(where: SQL | undefined): Promise<EdgeRow[]> {
     .where(where);
 }
 
-/** Every stint of these people at these organizations, as linkYears reads them. */
-async function fetchStints(personIds: string[], orgIds: string[]): Promise<YearStint[]> {
-  if (!personIds.length || !orgIds.length) return [];
+/** Every stint of these people (at these organizations, when given), as linkYears reads them. */
+async function fetchStints(personIds: string[], orgIds?: string[]): Promise<YearStint[]> {
+  if (!personIds.length || (orgIds && !orgIds.length)) return [];
   return db
     .select({
       personId: tenures.personId,
@@ -127,7 +138,7 @@ async function fetchStints(personIds: string[], orgIds: string[]): Promise<YearS
       evidence: tenures.evidence,
     })
     .from(tenures)
-    .where(and(inArray(tenures.personId, personIds), inArray(tenures.orgId, orgIds)));
+    .where(orgIds ? and(inArray(tenures.personId, personIds), inArray(tenures.orgId, orgIds)) : inArray(tenures.personId, personIds));
 }
 
 /** "Ian Falconer" → "Ian Falconer's" (no gendered pronouns: the bio is named by whose it is). */
@@ -232,6 +243,7 @@ async function loadTreeExplorer(slug: string, depth: 1 | 2): Promise<TreeExplore
   const firstLevelIds = new Set([...buckets.mentors.keys(), ...buckets.peers.keys(), ...buckets.mentees.keys()]);
   let upRows: EdgeRow[] = [];
   let downRows: EdgeRow[] = [];
+  let dropped = { up: 0, down: 0 };
   if (depth === 2) {
     const mentorIds = [...buckets.mentors.keys()];
     const menteeIds = [...buckets.mentees.keys()];
@@ -240,15 +252,27 @@ async function loadTreeExplorer(slug: string, depth: 1 | 2): Promise<TreeExplore
       menteeIds.length ? fetchEdges(and(eq(treeEdges.kind, "worked_under"), inArray(treeEdges.mentorId, menteeIds))) : Promise.resolve([]),
     ]);
     const skip = (other: string) => other === id || firstLevelIds.has(other);
-    upRows = upRows.filter((e) => !skip(e.mentorId) && lineageRuns("up", buckets.mentors.get(e.menteeId) ?? [], [e]).length > 0);
-    downRows = downRows.filter((e) => !skip(e.menteeId) && lineageRuns("down", buckets.mentees.get(e.mentorId) ?? [], [e]).length > 0);
+    const upAll = upRows.filter((e) => !skip(e.mentorId));
+    const downAll = downRows.filter((e) => !skip(e.menteeId));
+    upRows = upAll.filter((e) => lineageRuns("up", buckets.mentors.get(e.menteeId) ?? [], [e]).length > 0);
+    downRows = downAll.filter((e) => lineageRuns("down", buckets.mentees.get(e.mentorId) ?? [], [e]).length > 0);
+    dropped = { up: upAll.length - upRows.length, down: downAll.length - downRows.length };
   }
 
   const allIds = new Set<string>(firstLevelIds);
   for (const e of upRows) allIds.add(e.mentorId);
   for (const e of downRows) allIds.add(e.menteeId);
   const orgIds = new Set([...edges, ...upRows, ...downRows].map((e) => e.orgId));
-  const [peopleById, stints, record] = await Promise.all([fetchPeople([...allIds]), fetchStints([id, ...allIds], [...orgIds]), loadRecord(id)]);
+  // The coach and the first level: every stint (a player relationship can be at any program). The
+  // second level: only stints at the programs of their links.
+  const secondIds = [...allIds].filter((pid) => !firstLevelIds.has(pid));
+  const [peopleById, firstStints, secondStints, record] = await Promise.all([
+    fetchPeople([...allIds]),
+    fetchStints([id, ...firstLevelIds]),
+    fetchStints(secondIds, [...orgIds]),
+    loadRecord(id),
+  ]);
+  const stints = [...firstStints, ...secondStints];
   const nameOf = (pid: string) => (pid === id ? focal.fullName : peopleById.get(pid)?.fullName);
 
   const stintsByPair = (a: string, b: string, orgId: string) => stints.filter((t) => t.orgId === orgId && (t.personId === a || t.personId === b));
@@ -275,9 +299,26 @@ async function loadTreeExplorer(slug: string, depth: 1 | 2): Promise<TreeExplore
     };
   };
 
+  // Player relationships, exactly as the profile's tree card checks them (getProfileTree).
+  const toRun = (y: LinkYears): EdgeYears => {
+    const startInferred = y.startInferred ?? y.inferred;
+    const endInferred = !!y.endInferred;
+    const from = [startInferred ? (y.startFrom ?? y.inferredFrom) : null, endInferred ? y.endFrom : null];
+    return { ongoing: y.ongoing, startYear: y.startYear, endYear: y.endYear, startInferred, endInferred, inferredFrom: from.filter((f): f is NonNullable<typeof f> => !!f) };
+  };
+  const playerLink = (otherId: string): TreePlayerLink | null => {
+    const both = stints.filter((t) => t.personId === id || t.personId === otherId);
+    const playedFor = playedUnder(otherId, id, both);
+    const coached = playedFor ? null : playedUnder(id, otherId, both);
+    const link = playedFor ? { kind: "played_for" as const, y: playedFor } : coached ? { kind: "coached" as const, y: coached } : null;
+    if (!link) return null;
+    const years = toRun(link.y);
+    return { kind: link.kind, years, reasons: [...new Set(years.inferredFrom.map((f) => inferredReason(f.evidence, nameOf(f.personId))))] };
+  };
+
   const members = (map: Map<string, EdgeRow[]>): TreeMember[] =>
     [...map.entries()]
-      .map(([pid, list]) => ({ person: peopleById.get(pid), edges: list.map(toEdge).sort(byRecency) }))
+      .map(([pid, list]) => ({ person: peopleById.get(pid), edges: list.map(toEdge).sort(byRecency), player: playerLink(pid) }))
       .filter((m): m is TreeMember => !!m.person)
       .sort(memberOrder);
   const mentors = members(buckets.mentors);
@@ -315,7 +356,7 @@ async function loadTreeExplorer(slug: string, depth: 1 | 2): Promise<TreeExplore
     };
     const up = build(upRows, (e) => e.mentorId, (e) => e.menteeId);
     const down = build(downRows, (e) => e.menteeId, (e) => e.mentorId);
-    second = { up, down, uniqueCount: new Set([...up, ...down].map((m) => m.person.id)).size };
+    second = { up, down, uniqueCount: new Set([...up, ...down].map((m) => m.person.id)).size, dropped };
   }
 
   return { focal, mentors, peers, mentees, uniqueCount: groupsOf.size, listedTwice, second, record };

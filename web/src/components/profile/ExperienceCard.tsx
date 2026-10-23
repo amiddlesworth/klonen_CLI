@@ -26,6 +26,8 @@ type ExperienceCardProps = {
   showInferredKey: boolean;
   /** Roles in other sports: listed here, left out of the season and stop counts (the card says so). */
   otherSportRoles?: number;
+  /** Unclassified football staff roles with no coaching title ("Faculty Liaison"): listed, not counted. */
+  staffOnlyRoles?: number;
   /** A fictional demo candidate: its stints have no source, so each says so instead of a Source disclosure. */
   isDemo?: boolean;
 };
@@ -40,6 +42,19 @@ const TRUNCATE_OVER = 8;
  */
 export function seasonsText(seasons: number, undatedRoles: number): string {
   return `${seasons}${undatedRoles > 0 ? "+" : ""} ${seasons === 1 && !undatedRoles ? "season" : "seasons"}`;
+}
+
+/**
+ * "Seasons and coaching stops count football coaching only: 5 roles in other sports and 1 non-coaching
+ * role are listed but not counted."
+ */
+function uncountedNote(otherSport: number, staffOnly: number): string {
+  const parts = [
+    otherSport > 0 && `${otherSport} ${otherSport === 1 ? "role" : "roles"} in other sports`,
+    staffOnly > 0 && `${staffOnly} non-coaching ${staffOnly === 1 ? "role" : "roles"}`,
+  ].filter(Boolean);
+  const verb = otherSport + staffOnly === 1 ? "is" : "are";
+  return `Seasons and coaching stops count football coaching only: ${parts.join(" and ")} ${verb} listed but not counted.`;
 }
 
 /** Program name, linked when the program has a page. */
@@ -69,6 +84,7 @@ export function ExperienceCard({
   owner,
   showInferredKey,
   otherSportRoles = 0,
+  staffOnlyRoles = 0,
   isDemo = false,
 }: ExperienceCardProps) {
   const claimLink = owner ? (
@@ -114,7 +130,7 @@ export function ExperienceCard({
         personName={personName}
         limit={groups.length > TRUNCATE_OVER ? SHOW_FIRST : groups.length}
       />
-      {((seasons > 0 && undatedRoles > 0) || otherSportRoles > 0) && (
+      {((seasons > 0 && undatedRoles > 0) || otherSportRoles + staffOnlyRoles > 0) && (
         <p className="border-t border-divider py-3 text-caption text-fg-3">
           {seasons > 0 && undatedRoles > 0 && (
             <>
@@ -122,13 +138,8 @@ export function ExperienceCard({
               {undatedRoles === 1 ? "its seasons aren't" : "their seasons aren't"} counted.
             </>
           )}
-          {seasons > 0 && undatedRoles > 0 && otherSportRoles > 0 && " "}
-          {otherSportRoles > 0 && (
-            <>
-              Seasons and coaching stops count football coaching only: {otherSportRoles} {otherSportRoles === 1 ? "role" : "roles"} in other sports{" "}
-              {otherSportRoles === 1 ? "is" : "are"} listed but not counted.
-            </>
-          )}
+          {seasons > 0 && undatedRoles > 0 && otherSportRoles + staffOnlyRoles > 0 && " "}
+          {otherSportRoles + staffOnlyRoles > 0 && uncountedNote(otherSportRoles, staffOnlyRoles)}
         </p>
       )}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-divider pt-3 text-caption text-fg-3">

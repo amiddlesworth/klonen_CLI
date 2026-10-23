@@ -110,3 +110,47 @@ describe("treeEdgeYears", () => {
     }
   });
 });
+
+describe("copy", () => {
+  const org = (slug: string, shortName: string) => ({ id: slug, slug, shortName, name: shortName, inRegistry: true });
+  const run = (o: ReturnType<typeof org>, s: number, e: number, inferred = false) => ({
+    org: o,
+    startYear: s,
+    endYear: e,
+    isCurrent: false,
+    years: { ongoing: false, startYear: s, endYear: e, startInferred: inferred, endInferred: false, inferredFrom: [] },
+    inferred,
+    reasons: [],
+    supportOnly: false,
+  });
+  const pacific = org("pacific", "Pacific (OR)");
+  const oberlin = org("oberlin", "Oberlin");
+
+  it("names each program once, runs oldest first (Declan Brown under Ian)", async () => {
+    const { edgesInWords, relationSentence } = await import("./copy");
+    // Most recent first, as the query returns them.
+    const edges = [run(pacific, 2024, 2024), run(pacific, 2022, 2022)];
+    expect(edgesInWords(edges)).toBe("Pacific (OR), 2022 and 2024");
+    expect(relationSentence("mentees", "Ian", edges)).toBe("Coached under Ian at Pacific (OR), 2022 and 2024");
+    expect(edgesInWords([run(pacific, 2016, 2019), run(oberlin, 2004, 2005, true)])).toBe("Oberlin, 2004–2005 (inferred) and Pacific (OR), 2016–2019");
+  });
+
+  it("uses one possessive rule everywhere", async () => {
+    const { possessive } = await import("./copy");
+    expect(possessive("Chris")).toBe("Chris'");
+    expect(possessive("Ian")).toBe("Ian's");
+    expect(possessive("Matt Brown '12")).toBe("Matt Brown's");
+  });
+
+  it("builds compact ranges from format.ts", () => {
+    expect(compactParts({ ongoing: false, startYear: 1998, endYear: 2003, startInferred: false, endInferred: true })).toEqual([
+      { text: "1998", inferred: false },
+      { text: "–", inferred: false },
+      { text: "2003", inferred: true },
+    ]);
+    expect(compactParts({ ongoing: true, startYear: 2020, endYear: null, startInferred: true, endInferred: false })).toEqual([
+      { text: "2020", inferred: true },
+      { text: "–", inferred: false },
+    ]);
+  });
+});
