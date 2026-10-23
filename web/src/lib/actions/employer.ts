@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { people, shortlistEntries, shortlists } from "@/db/schema";
 import { searchDisplayName } from "@/components/employer/presets";
 import { NOTE_MAX, PIPELINE_STAGES, type PipelineStage } from "@/components/employer/stages";
+import { visibleShortlists } from "@/lib/demo-scope";
 import { getSession } from "@/lib/session";
 
 /**
@@ -21,15 +22,19 @@ const NOT_FOUND = "That candidate is no longer in your pipeline.";
 const DEFAULT_SEARCH_NAME = "Shortlist";
 
 const stageSchema = z.enum(PIPELINE_STAGES);
-const entryIdSchema = z.number().int().positive();
+const entryIdSchema = z.number().int().positive().max(2_147_483_647);
 const personIdSchema = z.string().trim().min(1).max(200);
+const positionSchema = z.number().int().min(0).max(1_000_000);
 
 async function employerUserId(): Promise<string | null> {
   const session = await getSession();
   return session?.user.kind === "employer" ? session.user.id : null;
 }
 
-/** An entry, only when it belongs to one of this user's searches. */
+/**
+ * An entry, only when it belongs to one of this user's searches that this browser can see (the
+ * seeded searches, and those opened with its own demo listings: lib/demo-scope.ts).
+ */
 async function ownedEntry(entryId: number, userId: string) {
   const [row] = await db
     .select({
@@ -42,7 +47,7 @@ async function ownedEntry(entryId: number, userId: string) {
     })
     .from(shortlistEntries)
     .innerJoin(shortlists, eq(shortlists.id, shortlistEntries.shortlistId))
-    .where(and(eq(shortlistEntries.id, entryId), eq(shortlists.ownerUserId, userId)))
+    .where(and(eq(shortlistEntries.id, entryId), eq(shortlists.ownerUserId, userId), await visibleShortlists()))
     .limit(1);
   return row ?? null;
 }
@@ -51,7 +56,17 @@ async function ownedShortlist(shortlistId: number, userId: string) {
   const [row] = await db
     .select({ id: shortlists.id, name: shortlists.name })
     .from(shortlists)
-    .where(and(eq(shortlists.id, shortlistId), eq(shortlists.ownerUserId, userId)))
+    .where(and(eq(shortlists.id, shortlistId), eq(shortlists.ownerUserId, userId), await visibleShortlists()))
+    .limit(1);
+  return row ?? null;
+}
+
+/** The entry for a person in a search (the unique pair shortlist_entries_list_person_idx). */
+async function entryFor(shortlistId: number, personId: string) {
+  const [row] = await db
+    .select({ id: shortlistEntries.id, stage: shortlistEntries.stage })
+    .from(shortlistEntries)
+    .where(and(eq(shortlistEntries.shortlistId, shortlistId), eq(shortlistEntries.personId, personId)))
     .limit(1);
   return row ?? null;
 }
@@ -91,25 +106,29 @@ export async function addToPipeline(
     [list] = await db
       .select({ id: shortlists.id, name: shortlists.name })
       .from(shortlists)
-      .where(eq(shortlists.ownerUserId, userId))
+      .where(and(eq(shortlists.ownerUserId, userId), await visibleShortlists()))
       .orderBy(asc(shortlists.createdAt), asc(shortlists.id))
       .limit(1);
     if (!list) [list] = await db.insert(shortlists).values({ ownerUserId: userId, name: DEFAULT_SEARCH_NAME }).returning({ id: shortlists.id, name: shortlists.name });
   }
 
-  const [existing] = await db
-    .select({ id: shortlistEntries.id, stage: shortlistEntries.stage })
-    .from(shortlistEntries)
-    .where(and(eq(shortlistEntries.shortlistId, list.id), eq(shortlistEntries.personId, person.id)))
-    .limit(1);
   const shortlistLabel = searchDisplayName(list.name);
+  const existing = await entryFor(list.id, person.id);
   if (existing) return { ok: true, entryId: existing.id, stage: existing.stage, shortlistId: list.id, shortlistName: list.name, shortlistLabel, alreadyAdded: true };
 
+  // Two adds can race (double click, two tabs on the shared demo): the unique (search, person) index
+  // keeps one row, and the loser reports the winner's entry.
   const position = await endOfStage(list.id, "sourced");
   const [entry] = await db
     .insert(shortlistEntries)
     .values({ shortlistId: list.id, personId: person.id, stage: "sourced", position })
+    .onConflictDoNothing({ target: [shortlistEntries.shortlistId, shortlistEntries.personId] })
     .returning({ id: shortlistEntries.id });
+  if (!entry) {
+    const winner = await entryFor(list.id, person.id);
+    if (!winner) return { ok: false, error: "That coach could not be added. Try again." };
+    return { ok: true, entryId: winner.id, stage: winner.stage, shortlistId: list.id, shortlistName: list.name, shortlistLabel, alreadyAdded: true };
+  }
   revalidatePath(PIPELINE_PATH);
   return { ok: true, entryId: entry.id, stage: "sourced", shortlistId: list.id, shortlistName: list.name, shortlistLabel, alreadyAdded: false };
 }
@@ -127,7 +146,7 @@ export async function moveCandidate(
   if (!userId) return { ok: false, error: NOT_EMPLOYER };
   const id = entryIdSchema.safeParse(entryId);
   const to = stageSchema.safeParse(stage);
-  const at = z.number().int().min(0).max(1_000_000).optional().safeParse(position);
+  const at = positionSchema.optional().safeParse(position);
   if (!id.success || !to.success || !at.success) return { ok: false, error: "That move is not possible." };
   const entry = await ownedEntry(id.data, userId);
   if (!entry) return { ok: false, error: NOT_FOUND };
@@ -181,23 +200,28 @@ export async function restoreCandidate(removed: RemovedCandidate): Promise<Actio
       personId: personIdSchema,
       stage: stageSchema,
       note: z.string().max(NOTE_MAX).nullable(),
-      position: z.number().int().min(0),
+      position: positionSchema,
     })
     .safeParse(removed);
   if (!parsed.success) return { ok: false, error: "That candidate could not be restored." };
   const r = parsed.data;
   const list = await ownedShortlist(r.shortlistId, userId);
   if (!list) return { ok: false, error: "That hiring search could not be found." };
-  const [existing] = await db
-    .select({ id: shortlistEntries.id })
-    .from(shortlistEntries)
-    .where(and(eq(shortlistEntries.shortlistId, list.id), eq(shortlistEntries.personId, r.personId)))
-    .limit(1);
-  if (existing) return { ok: true, entryId: existing.id };
-  const [entry] = await db
-    .insert(shortlistEntries)
-    .values({ shortlistId: list.id, personId: r.personId, stage: r.stage, note: r.note, position: r.position })
-    .returning({ id: shortlistEntries.id });
-  revalidatePath(PIPELINE_PATH);
-  return { ok: true, entryId: entry.id };
+  const [person] = await db.select({ id: people.id }).from(people).where(eq(people.id, r.personId)).limit(1);
+  if (!person) return { ok: false, error: "That coach could not be found." };
+  try {
+    const existing = await entryFor(list.id, person.id);
+    if (existing) return { ok: true, entryId: existing.id };
+    const [entry] = await db
+      .insert(shortlistEntries)
+      .values({ shortlistId: list.id, personId: person.id, stage: r.stage, note: r.note, position: r.position })
+      .onConflictDoNothing({ target: [shortlistEntries.shortlistId, shortlistEntries.personId] })
+      .returning({ id: shortlistEntries.id });
+    const id = entry?.id ?? (await entryFor(list.id, person.id))?.id;
+    if (!id) return { ok: false, error: "That candidate could not be restored." };
+    revalidatePath(PIPELINE_PATH);
+    return { ok: true, entryId: id };
+  } catch {
+    return { ok: false, error: "That candidate could not be restored." };
+  }
 }

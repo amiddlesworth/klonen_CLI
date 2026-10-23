@@ -2,7 +2,7 @@ import { Fragment, type ReactNode } from "react";
 import { ExternalLink } from "lucide-react";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
-import type { Block, DescriptionSection, Inline } from "./description";
+import type { Block, Inline } from "./description";
 
 /** Web addresses and email addresses in a description (the "How to apply" line), made into links. */
 const LINKABLE = /(https?:\/\/[^\s<>"]+[^\s<>".,;:!?)'])|([^\s@<>()"]+@[^\s@<>()"]+\.[a-z]{2,})/gi;
@@ -83,24 +83,6 @@ export function DescriptionBlocks({ blocks, className }: { blocks: Block[]; clas
           </p>
         );
       })}
-    </div>
-  );
-}
-
-/**
- * The whole description in one card body: sections split by dividers, each with an h3 (the
- * /jobs detail pane, where the job title is the pane's h2).
- */
-export function JobDescriptionInline({ sections, headingLevel = "h3" }: { sections: DescriptionSection[]; headingLevel?: "h2" | "h3" }) {
-  const H = headingLevel;
-  return (
-    <div className="divide-y divide-divider">
-      {sections.map((s, i) => (
-        <section key={i} className="py-4 first:pt-0 last:pb-0">
-          <H className="mb-2 text-body font-semibold">{s.heading ?? "About the role"}</H>
-          <DescriptionBlocks blocks={s.blocks} />
-        </section>
-      ))}
     </div>
   );
 }

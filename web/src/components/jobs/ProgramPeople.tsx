@@ -300,7 +300,7 @@ export function ProgramPeople({ org, network, proof, as = "card" }: ProgramPeopl
   if (as === "section") {
     return (
       <section aria-labelledby={headingId}>
-        <h3 id={headingId} className="mb-3 text-body font-semibold">
+        <h3 id={headingId} className="mb-3 text-title">
           People from this program on the network
         </h3>
         {body}
