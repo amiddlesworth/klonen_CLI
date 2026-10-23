@@ -1,15 +1,12 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { FolderSearch } from "lucide-react";
+import { PipelineBoard } from "@/components/employer/PipelineBoard";
 import { PipelineGate } from "@/components/employer/PipelineGate";
-import { PipelineView } from "@/components/employer/PipelineView";
-import { findCandidatesHref, pipelinePresets } from "@/components/employer/presets";
-import { isPipelineStage, PIPELINE_STAGES, STAGE_LABEL } from "@/components/employer/stages";
+import { PipelineSkeleton } from "@/components/employer/PipelineSkeleton";
+import { PIPELINE_STAGES, STAGE_LABEL } from "@/components/employer/stages";
 import { PageContainer } from "@/components/shell/Layouts";
-import { ButtonLink } from "@/components/ui/Button";
-import { Card, CardHeader } from "@/components/ui/Card";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { getEmployerProgram, getPipeline } from "@/lib/queries/employer";
+import { getEmployerShortlists, getPipeline } from "@/lib/queries/employer";
 import { getDemoAccounts } from "@/lib/queries/shell";
 import { getSession } from "@/lib/session";
 
@@ -40,7 +37,12 @@ export async function generateMetadata({ searchParams }: { searchParams: SearchP
   };
 }
 
-/** /employers/pipeline (§8.14): the athletic director's shortlist by stage. */
+/**
+ * /employers/pipeline (§8.14): the athletic director's shortlist by stage. The session and the
+ * `?list=` ownership are checked before anything streams, so a bad or foreign list is a real 404;
+ * the board then streams under a Suspense boundary with the skeleton (no route-level loading.tsx,
+ * which would start the stream before notFound() could set the status).
+ */
 export default async function PipelinePage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
   const session = await getSession();
@@ -49,51 +51,25 @@ export default async function PipelinePage({ searchParams }: { searchParams: Sea
     const accounts = await getDemoAccounts().catch(() => []);
     return (
       <PageContainer>
-        <PipelineGate viewerName={session?.user.name ?? null} account={accounts.find((a) => a.role === "employer") ?? null} />
+        <PipelineGate account={accounts.find((a) => a.role === "employer") ?? null} />
       </PageContainer>
     );
   }
 
   const listId = parseListId(first(sp.list));
   if (listId === null) notFound();
-  const [data, program] = await Promise.all([getPipeline(session.user.id, listId), getEmployerProgram(session.user.orgId ?? session.org?.id)]);
-  if (listId !== undefined && !data.shortlist) notFound();
+  if (listId !== undefined && !(await getEmployerShortlists(session.user.id)).some((l) => l.id === listId)) notFound();
 
-  if (!data.shortlist) {
-    return (
-      <PageContainer>
-        <Card padding="main" aria-labelledby="pipeline-title">
-          <CardHeader as="h1" id="pipeline-title" title="Hiring pipeline" />
-          <EmptyState
-            as="h2"
-            icon={FolderSearch}
-            title="No hiring searches yet."
-            description="Add a coach from search results or a profile and a shortlist starts here, in Sourced."
-            action={
-              <ButtonLink href={findCandidatesHref(null, program)} variant="primary" phone="large">
-                Find candidates
-              </ButtonLink>
-            }
-            spacing="lg"
-          />
-        </Card>
-      </PageContainer>
-    );
-  }
-
-  const stageParam = first(sp.stage);
   return (
     <PageContainer>
-      <PipelineView
-        shortlist={data.shortlist}
-        shortlists={data.shortlists}
-        programName={session.org?.shortName ?? program?.shortName ?? null}
-        candidates={data.candidates}
-        initialStage={isPipelineStage(stageParam) ? stageParam : "sourced"}
-        findHref={findCandidatesHref(data.shortlist.name, program)}
-        presets={pipelinePresets(data.shortlist.name, program)}
-        isDemo={session.user.isDemo}
-      />
+      <Suspense key={listId ?? "default"} fallback={<PipelineSkeleton />}>
+        <PipelineBoard
+          userId={session.user.id}
+          orgId={session.user.orgId ?? session.org?.id ?? null}
+          listId={listId}
+          programName={session.org?.shortName ?? null}
+        />
+      </Suspense>
     </PageContainer>
   );
 }

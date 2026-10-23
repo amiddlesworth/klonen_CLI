@@ -1,13 +1,17 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Lock } from "lucide-react";
 import { LevelBadge } from "@/components/data/Badges";
+import { Button } from "@/components/ui/Button";
 import { Chip, SampleChip } from "@/components/ui/Chip";
 import { OrgMark } from "@/components/ui/OrgMark";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { cn } from "@/lib/cn";
 import { conferenceShort, salaryRange, timeAgo } from "@/lib/format";
 import { ApplyButton } from "./ApplyButton";
-import { LISTING_SEASON, UNIT_LABEL, hasRealPostedAt, isSampleJob, jobPlace, postedTitle, roleGroupLabel } from "./labels";
+import { LISTING_SEASON, UNIT_LABEL, hasRealPostedAt, isOpenJob, isSampleJob, jobPlace, postedTitle, programName, roleGroupLabel } from "./labels";
 import { OwnerActions } from "./OwnerActions";
+import { PlaceLine } from "./PlaceLine";
 import { SaveJobButton } from "./SaveJobButton";
 
 export type JobHeaderJob = {
@@ -35,6 +39,15 @@ type JobHeaderProps = {
   preview?: boolean;
   /** The signed-in athletic director's own listing: hiring tools instead of Apply and Save. */
   owner?: boolean;
+  /** An athletic director looking at another program's listing: Save only, since Apply is for coaches. */
+  employer?: boolean;
+  /** The owner's hiring pipeline for this listing (`/employers/pipeline?list=`), when it has one. */
+  pipelineListId?: number | null;
+  /**
+   * Actions stay under the identity block at lg too (§8.4 md arrangement). The /jobs pane uses it
+   * for the owner's two wider buttons, so the program line and chips keep their width.
+   */
+  stackActions?: boolean;
   /** Extra classes for the title (the pane uses display-sm). */
   titleClassName?: string;
   /** id for the title, so the surrounding region can be labelled by it. */
@@ -43,25 +56,93 @@ type JobHeaderProps = {
 };
 
 /**
- * Job detail header (§8.9): OrgMark 56 (48 on phone), title text-display, "Program · ST · Conf"
- * with the program linked to its page, chips (Sample listing, role group, unit, division), actions
- * Apply (the one primary) and Save, then a facts band: salary range, employment type, and when it
- * was posted. Only a posted listing has a real time ("Posted · 4h ago"); a seeded sample reads
- * "Listed · 2026 season" (§6.3). The owner of the listing gets OwnerActions instead of Apply/Save.
+ * Job detail header (§8.9): OrgMark 56 (48 on phone), title text-display, "Program · Place · Conf"
+ * with the program linked to its page, chips (Sample listing, role group, unit, division), actions,
+ * then a facts band: salary range, employment type, and when it was posted. Only a posted listing
+ * has a real time ("Posted · 4h ago"); a seeded sample reads "Listed · 2026 season" (§6.3).
+ *
+ * Actions by viewer: coaches and visitors get Apply (the one primary) and Save; on a closed listing
+ * there is nothing to apply to, so a disabled "Applications closed" takes Apply's place, no Iris
+ * shows, and Save appears only to let someone remove a job they saved earlier. The owner of the
+ * listing gets OwnerActions; another program's athletic director gets Save only.
  */
-export function JobHeader({ job, headingLevel = "h1", preview, owner, titleClassName, titleId, className }: JobHeaderProps) {
+export function JobHeader({ job, headingLevel = "h1", preview, owner, employer, pipelineListId, stackActions, titleClassName, titleId, className }: JobHeaderProps) {
   const H = headingLevel;
   const sample = isSampleJob(job);
+  const open = isOpenJob(job);
   const salary = salaryRange(job.salaryMin, job.salaryMax);
   const place = jobPlace(job);
   const conf = conferenceShort(job.org.conferenceAbbr);
-  const programName = job.org.name || job.org.shortName;
-  const actionsCls = cn("col-span-full mt-4", !preview && "md:col-span-1 md:col-start-3 md:row-start-1 md:mt-0 md:items-start");
+  const name = programName(job.org);
+  // Phone: one full-width row under the header. md (721–1080): under the identity block, left
+  // aligned with the title (§8.4 md), so the title and program line keep their width. lg: beside
+  // it, unless the caller stacks them (the /jobs pane with the owner's two wider buttons).
+  const besideFromLg = !preview && !stackActions;
+  const actionsCls = cn(
+    "col-span-full mt-4",
+    !preview && "md:col-span-1 md:col-start-2 md:mt-3",
+    besideFromLg && "lg:col-start-3 lg:row-start-1 lg:mt-0 lg:items-start",
+  );
+  // Phone: the actions share one full-width row. Stacked from md: buttons keep their own width.
+  const buttonCls = preview ? "flex-1" : "max-md:flex-1";
+
+  let actions: ReactNode;
+  if (owner && !preview) {
+    actions = <OwnerActions jobId={job.id} jobTitle={job.title} open={open} pipelineListId={pipelineListId ?? null} className={actionsCls} buttonClassName={buttonCls} />;
+  } else if (preview) {
+    actions = (
+      <div className={cn(actionsCls, "flex gap-2")}>
+        <ApplyButton jobTitle={job.title} programName={job.org.shortName} sample={job.source === "sample"} large preview className="flex-1" />
+        <span aria-hidden="true" className="grid h-11 flex-1 place-items-center rounded-sm border border-control bg-surface px-3 text-small font-medium text-fg-1 md:h-8">
+          Save
+        </span>
+      </div>
+    );
+  } else if (!open) {
+    actions = (
+      <div className={cn(actionsCls, "flex gap-2")}>
+        <Tooltip content="This listing is closed" className={buttonCls}>
+          <Button icon={Lock} aria-disabled="true" phone="large" className="max-md:w-full">
+            Applications closed
+          </Button>
+        </Tooltip>
+        <SaveJobButton jobId={job.id} title={job.title} variant="label" large removeOnly className={buttonCls} />
+      </div>
+    );
+  } else if (employer) {
+    actions = (
+      <div className={cn(actionsCls, "flex gap-2")}>
+        <SaveJobButton jobId={job.id} title={job.title} variant="label" large className={buttonCls} />
+      </div>
+    );
+  } else {
+    actions = (
+      <div className={cn(actionsCls, "flex gap-2")}>
+        <ApplyButton jobTitle={job.title} programName={job.org.shortName} sample={job.source === "sample"} large className={buttonCls} />
+        <SaveJobButton jobId={job.id} title={job.title} variant="label" large className={buttonCls} />
+      </div>
+    );
+  }
+
+  const programNode =
+    job.org.inRegistry && !preview ? (
+      <Link href={`/programs/${job.org.slug}`} className="target-24 font-medium text-fg-1 underline-offset-2 hover:underline">
+        {name}
+      </Link>
+    ) : (
+      <span className="font-medium text-fg-1">{name}</span>
+    );
 
   return (
     <div className={className}>
       {/* The preview sits in a 360px column, so it always uses the stacked (phone) arrangement. */}
-      <div className={cn("grid grid-cols-[48px_minmax(0,1fr)] gap-x-3", !preview && "md:grid-cols-[56px_minmax(0,1fr)_auto] md:gap-x-4")}>
+      <div
+        className={cn(
+          "grid grid-cols-[48px_minmax(0,1fr)] gap-x-3",
+          !preview && "md:grid-cols-[56px_minmax(0,1fr)] md:gap-x-4",
+          besideFromLg && "lg:grid-cols-[56px_minmax(0,1fr)_auto]",
+        )}
+      >
         {preview ? (
           <OrgMark shortName={job.org.shortName || "?"} name={job.org.name} size={48} />
         ) : (
@@ -76,23 +157,24 @@ export function JobHeader({ job, headingLevel = "h1", preview, owner, titleClass
             {job.title || "Job title"}
           </H>
           <p className={cn("mt-0.5 text-body text-fg-2", !preview && "md:text-subtitle")}>
-            {job.org.inRegistry && !preview ? (
-              <Link href={`/programs/${job.org.slug}`} className="target-24 font-medium text-fg-1 underline-offset-2 hover:underline">
-                {programName}
-              </Link>
-            ) : (
-              <span className="font-medium text-fg-1">{programName}</span>
-            )}
-            {/* A no-break space before each dot keeps it at the end of a line, never starting the next. */}
-            {place && <>{"\u00a0· "}{place}</>}
-            {conf && (
-              <>
-                {"\u00a0· "}
-                <abbr title={job.org.conference ?? conf} className="no-underline">
-                  {conf}
-                </abbr>
-              </>
-            )}
+            <PlaceLine
+              parts={[
+                { node: programNode, text: name },
+                ...(place ? [place] : []),
+                ...(conf
+                  ? [
+                      {
+                        node: (
+                          <abbr title={job.org.conference ?? conf} className="no-underline">
+                            {conf}
+                          </abbr>
+                        ),
+                        text: conf,
+                      },
+                    ]
+                  : []),
+              ]}
+            />
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {sample && <SampleChip label="Sample listing" />}
@@ -101,20 +183,7 @@ export function JobHeader({ job, headingLevel = "h1", preview, owner, titleClass
             <LevelBadge level={job.org.level} />
           </div>
         </div>
-        {owner && !preview ? (
-          <OwnerActions jobId={job.id} jobTitle={job.title} open={(job.status ?? "open") === "open"} className={actionsCls} buttonClassName="max-md:flex-1" />
-        ) : (
-          <div className={cn(actionsCls, "flex gap-2")}>
-            <ApplyButton jobTitle={job.title} programName={job.org.shortName} sample={job.source === "sample"} large preview={preview} className={preview ? "flex-1" : "max-md:flex-1"} />
-            {preview ? (
-              <span aria-hidden="true" className="grid h-11 flex-1 place-items-center rounded-sm border border-control bg-surface px-3 text-small font-medium text-fg-1 md:h-8">
-                Save
-              </span>
-            ) : (
-              <SaveJobButton jobId={job.id} title={job.title} variant="label" large className="max-md:flex-1" />
-            )}
-          </div>
-        )}
+        {actions}
       </div>
       <dl className={cn("mt-4 grid grid-cols-3 border-t border-divider", !preview && "md:mt-5")}>
         <Fact label="Salary range" value={salary ?? "Not listed"} muted={!salary} num compact={preview} />

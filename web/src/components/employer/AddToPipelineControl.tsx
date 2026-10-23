@@ -11,29 +11,37 @@ export type AddToPipelineControlProps = {
   personId: string;
   /** The coach's name, for the accessible description and the toast. */
   name: string;
-  /** Where the coach already is in the employer's pipeline, if anywhere. */
+  /** Where the coach already is in the employer's pipeline, if anywhere… */
   initialStage?: PipelineStage | null;
+  /** …and in which search, so "In pipeline" opens that search's board. */
+  shortlistId?: number | null;
   size?: ButtonSize;
   phone?: ButtonPhone;
   fullWidth?: boolean;
   className?: string;
 };
 
+/** The board of one search, opened at a stage (the stage matters on phone, where one shows at a time). */
+function boardHref(stage: PipelineStage, shortlistId: number | null): string {
+  return shortlistId != null ? `/employers/pipeline?list=${shortlistId}&stage=${stage}` : `/employers/pipeline?stage=${stage}`;
+}
+
 /**
  * Client half of AddToPipelineButton. Not in the pipeline: secondary "Add to pipeline" that runs the
  * addToPipeline server action and confirms with a toast ("View pipeline" opens the board). Already
- * in it: a secondary link "In pipeline · {stage}" with a check, to that stage of the board.
+ * in it: a secondary link "In pipeline · {stage}" with a check, to that stage of that search.
  */
-export function AddToPipelineControl({ personId, name, initialStage = null, size = "md", phone = "default", fullWidth, className }: AddToPipelineControlProps) {
+export function AddToPipelineControl({ personId, name, initialStage = null, shortlistId = null, size = "md", phone = "default", fullWidth, className }: AddToPipelineControlProps) {
   const router = useRouter();
   const toast = useToast();
-  const [stage, setStage] = useState<PipelineStage | null>(initialStage);
+  const [status, setStatus] = useState<{ stage: PipelineStage; shortlistId: number | null } | null>(initialStage ? { stage: initialStage, shortlistId } : null);
   const [pending, startTransition] = useTransition();
 
-  if (stage) {
+  if (status) {
+    const { stage } = status;
     return (
       <ButtonLink
-        href={`/employers/pipeline?stage=${stage}`}
+        href={boardHref(stage, status.shortlistId)}
         icon={Check}
         size={size}
         phone={phone}
@@ -61,10 +69,10 @@ export function AddToPipelineControl({ personId, name, initialStage = null, size
           try {
             const res = await addToPipeline(personId);
             if (!res.ok) return toast.show(res.error);
-            setStage(res.stage);
-            toast.show(res.alreadyAdded ? `${name} is already in ${res.shortlistName}` : `Added ${name} to ${res.shortlistName} · ${STAGE_LABEL[res.stage]}`, {
+            setStatus({ stage: res.stage, shortlistId: res.shortlistId });
+            toast.show(res.alreadyAdded ? `${name} is already in ${res.shortlistLabel}` : `Added ${name} to ${res.shortlistLabel} · ${STAGE_LABEL[res.stage]}`, {
               actionLabel: "View pipeline",
-              onAction: () => router.push(`/employers/pipeline?stage=${res.stage}`),
+              onAction: () => router.push(boardHref(res.stage, res.shortlistId)),
             });
           } catch {
             toast.show(`${name} wasn't added. Try again.`);

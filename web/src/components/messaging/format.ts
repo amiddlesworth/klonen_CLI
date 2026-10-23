@@ -32,3 +32,29 @@ export function clockTime(d: Date, timeZone?: string): string {
 export function fullDateTime(d: Date, timeZone?: string): string {
   return new Intl.DateTimeFormat("en-US", { timeZone, dateStyle: "full", timeStyle: "short" }).format(d);
 }
+
+/** "a", "a and b", "a, b and c". */
+export function joinAnd(parts: string[]): string {
+  if (parts.length <= 1) return parts[0] ?? "";
+  return `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
+}
+
+/**
+ * The tooltip reason for an inferred season (§6.2), after "Inferred: ". Quotes the staff-bio sentence
+ * only when it has no gendered pronouns (gender is not in the data, so we never repeat one).
+ */
+export function inferredSeasonReason(evidence: string | null, sourceUrl: string | null): string {
+  let bio = "the staff bio";
+  if (sourceUrl) {
+    try {
+      bio = `the ${new URL(sourceUrl).hostname.replace(/^www\./, "")} staff bio`;
+    } catch {
+      // Not a URL: keep the generic wording.
+    }
+  }
+  const q = evidence?.trim().replace(/\s+/g, " ").replace(/^["“]|["”]$/g, "");
+  if (q && !/\b(he|him|his|himself|she|her|hers|herself)\b/i.test(q)) {
+    return `from ${bio}, which says “${q.length > 140 ? `${q.slice(0, 137).trimEnd()}…` : q}”`;
+  }
+  return `the season is worked out from ${bio}, which doesn't state the year`;
+}

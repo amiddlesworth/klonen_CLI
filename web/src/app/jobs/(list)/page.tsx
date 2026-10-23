@@ -12,7 +12,7 @@ import { hasFilters, jobsHref, parseJobsQuery, roleGroupLabel } from "@/componen
 import { proofFor } from "@/components/jobs/ProgramPeople";
 import { isJobOwner, viewerContext } from "@/components/jobs/viewer";
 import { BRAND } from "@/lib/brand";
-import { getJobDetail, getJobFacets, getNetworkProof, getProgramNetwork, searchJobs, type JobsFilter } from "@/lib/queries/jobsx";
+import { getJobDetail, getJobFacets, getListingPipelineId, getNetworkProofs, getProgramNetwork, searchJobs, type JobsFilter } from "@/lib/queries/jobsx";
 import { getSession } from "@/lib/session";
 
 type PageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -44,12 +44,14 @@ export default async function JobsPage({ searchParams }: PageProps) {
   const selected = selectedId ? await getJobDetail(selectedId) : null;
 
   const { viewerPersonId, viewerOrgId } = viewerContext(session);
-  const [network, proof] = selected
-    ? await Promise.all([
-        getProgramNetwork(selected.org.id, { viewerPersonId }),
-        viewerPersonId ? getNetworkProof(viewerPersonId, selected.org.id) : Promise.resolve(null),
-      ])
-    : [null, null];
+  const selectedOwner = !!selected && isJobOwner(session, selected);
+  // Network proof for the coach viewer: one query for this page's programs (rows and the pane).
+  const [network, proofs, pipelineListId] = await Promise.all([
+    selected ? getProgramNetwork(selected.org.id, { viewerPersonId }) : Promise.resolve(null),
+    viewerPersonId ? getNetworkProofs(viewerPersonId, result.jobs.map((j) => j.org.id)) : Promise.resolve(null),
+    selected && selectedOwner && session ? getListingPipelineId(session.user.id, selected) : Promise.resolve(null),
+  ]);
+  const proofOf = (org: { id: string; shortName: string }) => proofFor(proofs?.get(org.id) ?? null, org.shortName, { ownProgram: !!viewerPersonId && viewerOrgId === org.id });
 
   const filtered = hasFilters(query);
   const isEmployer = session?.user.kind === "employer";
@@ -80,7 +82,8 @@ export default async function JobsPage({ searchParams }: PageProps) {
             Post a job
           </ButtonLink>
         )}
-        <JobFilters query={query} facets={facets} />
+        {/* With no results, the empty state below carries the one "Clear filters" (§8.0). */}
+        <JobFilters query={query} facets={facets} showClear={result.total > 0} />
       </Card>
 
       {result.total === 0 ? (
@@ -116,6 +119,8 @@ export default async function JobsPage({ searchParams }: PageProps) {
                     href={`/jobs/${j.id}`}
                     selectHref={jobsHref(query, { id: j.id })}
                     selected={selected?.id === j.id}
+                    owner={isJobOwner(session, j)}
+                    proof={proofOf(j.org)}
                     headingLevel="h3"
                   />
                 </li>
@@ -136,8 +141,10 @@ export default async function JobsPage({ searchParams }: PageProps) {
             <JobDetailPane
               job={selected}
               network={network}
-              owner={isJobOwner(session, selected)}
-              proof={proofFor(proof, selected.org.shortName, { ownProgram: !!viewerPersonId && viewerOrgId === selected.org.id })}
+              owner={selectedOwner}
+              employer={isEmployer}
+              pipelineListId={pipelineListId}
+              proof={proofOf(selected.org)}
             />
           )}
         </div>

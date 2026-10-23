@@ -24,13 +24,19 @@ export async function resolveProgramSlug(rawSlug: string): Promise<ProgramOrg | 
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
+/** True when the URL already uses the organization's own slug (not an uppercase or encoded variant). */
+export function isCanonicalSlug(rawSlug: string, org: ProgramOrg): boolean {
+  return decodeSlug(rawSlug) === org.slug;
+}
+
 /**
- * Sends a non-canonical slug (/programs/PACIFIC-OR?tab=alumni) to the canonical URL with a 308,
- * keeping the query string so the tab and page survive. The layout can't see the query, so the page
- * (and generateMetadata, which runs first for crawlers) calls this.
+ * Sends a non-canonical slug (/programs/PACIFIC-OR?tab=alumni) to the canonical URL, keeping the query
+ * string so the tab and page survive. The layout can't see the query, so the page calls this; it runs
+ * inside the segment's loading boundary, so Next answers 200 and redirects in the stream (a real 308
+ * needs a middleware rule). generateMetadata marks that response noindex with the canonical link.
  */
 export function redirectToCanonicalSlug(rawSlug: string, org: ProgramOrg, searchParams: SearchParams): void {
-  if (decodeSlug(rawSlug) === org.slug) return;
+  if (isCanonicalSlug(rawSlug, org)) return;
   const qs = new URLSearchParams();
   for (const [k, v] of Object.entries(searchParams)) {
     if (Array.isArray(v)) v.forEach((x) => qs.append(k, x));

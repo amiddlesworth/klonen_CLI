@@ -1,16 +1,21 @@
 import "server-only";
 import { cache } from "react";
-import { aliasedTable, and, eq, inArray, or, sql, type SQL } from "drizzle-orm";
+import { aliasedTable, and, eq, inArray, or, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import { organizations, people, tenures, treeEdges } from "@/db/schema";
 import { CURRENT_SEASON } from "@/lib/brand";
+import { coverage, edgeEligible, type YearStint } from "@/components/profile/linkYears";
+import { lineageRuns } from "@/components/tree/lineage";
+import { treeEdgeYears, yearsDisplay, type EdgeYears } from "@/components/tree/years";
 import { personSummaryCols, toSummary, type PersonSummary } from "./people";
 
 /*
  * Coaching tree explorer /in/[slug]/tree (DESIGN.md §8.8). Builds on the same tree_edges that
- * getTree() in people.ts reads, but keeps every edge per person (a pair can overlap at two
- * programs), flags edges whose years rest on an inferred stint, and adds an optional second level:
- * the people the coach's mentors worked under, and the people who coached under the coach's mentees.
+ * getTree() in people.ts reads, but keeps every edge per person (a pair can overlap at two programs or
+ * in two runs), works out what each edge's years can honestly show from both people's stints (the
+ * profile's linkYears rules: an undated current stint pins no start year; inferred bounds are flagged
+ * with their evidence), and adds an optional second level in time order: the people the coach's head
+ * coaches had worked under by then, and the people who later coached under the coach's former staff.
  */
 
 export type TreeOrg = { id: string; slug: string; shortName: string; name: string; inRegistry: boolean };
@@ -18,12 +23,19 @@ export type TreeOrg = { id: string; slug: string; shortName: string; name: strin
 /** One overlap between two coaches on the same staff. */
 export type TreeEdge = {
   org: TreeOrg;
+  /** The stored run (pipeline coverage; used for order, never shown as a fact on its own). */
   startYear: number | null;
   endYear: number | null;
   /** Both coaches are on that staff in the current season. */
   isCurrent: boolean;
-  /** At least one of the overlapping stints has years inferred from the bio, not stated in it. */
+  /** What the years can honestly show, per bound. */
+  years: EdgeYears;
+  /** A shown year is inferred from a bio, not stated in it. */
   inferred: boolean;
+  /** Plain-words reasons for the inferred years, quoting the evidence (DESIGN.md §6.2). */
+  reasons: string[];
+  /** The staff side held only support roles there (operations, admin): word it "on staff", not "coached". */
+  supportOnly: boolean;
 };
 
 export type TreePerson = PersonSummary & { firstName: string };
@@ -51,28 +63,20 @@ export type TreeExplorer = {
   /** Present when depth = 2. */
   second: { up: SecondLevelMember[]; down: SecondLevelMember[]; uniqueCount: number } | null;
   /** The focal coach's own record, to explain an empty tree honestly. */
-  record: { coachingStints: number; datedStints: number; programs: number };
+  record: TreeRecord;
+};
+
+export type TreeRecord = {
+  /** Football coaching stints that can form tree edges (resolve.py edge_eligible). */
+  coachingStints: number;
+  /** Of those, stints that cover at least one season (a current stint counts: it covers this season). */
+  datedStints: number;
+  programs: number;
+  /** Titles of listed roles that are not coaching roles (role group "other"), which never form edges. */
+  otherRoles: string[];
 };
 
 const edgeOrg = aliasedTable(organizations, "edge_org");
-
-/**
- * True when the edge's first or last season comes from a stint whose years are inferred
- * (either coach, same org, overlapping seasons, years_explicit = false). The overlap starts at the
- * later start and ends at the earlier end, so only the stint that supplies a boundary matters; a
- * current stint's end is the current season, which the staff page states.
- */
-const inferredSql = sql<boolean>`exists (
-  select 1 from ${tenures} t
-  where t.org_id = ${treeEdges.orgId}
-    and t.person_id in (${treeEdges.mentorId}, ${treeEdges.menteeId})
-    and t.as_player = false
-    and t.years_explicit = false
-    and t.start_year is not null
-    and t.start_year <= coalesce(${treeEdges.endYear}, ${CURRENT_SEASON}::int)
-    and coalesce(t.end_year, case when t.is_current then ${CURRENT_SEASON}::int else t.start_year end) >= coalesce(${treeEdges.startYear}, 0)
-    and (t.start_year = ${treeEdges.startYear} or (not t.is_current and coalesce(t.end_year, t.start_year) = ${treeEdges.endYear}))
-)`;
 
 type EdgeRow = {
   kind: "worked_under" | "worked_alongside";
@@ -80,7 +84,6 @@ type EdgeRow = {
   menteeId: string;
   startYear: number | null;
   endYear: number | null;
-  inferred: boolean;
   orgId: string;
   orgSlug: string;
   orgShortName: string;
@@ -96,7 +99,6 @@ async function fetchEdges(where: SQL | undefined): Promise<EdgeRow[]> {
       menteeId: treeEdges.menteeId,
       startYear: treeEdges.startYear,
       endYear: treeEdges.endYear,
-      inferred: inferredSql,
       orgId: edgeOrg.id,
       orgSlug: edgeOrg.slug,
       orgShortName: edgeOrg.shortName,
@@ -108,30 +110,61 @@ async function fetchEdges(where: SQL | undefined): Promise<EdgeRow[]> {
     .where(where);
 }
 
-function toEdge(r: EdgeRow): TreeEdge {
-  return {
-    org: { id: r.orgId, slug: r.orgSlug, shortName: r.orgShortName, name: r.orgName, inRegistry: r.orgInRegistry },
-    startYear: r.startYear,
-    endYear: r.endYear,
-    isCurrent: r.endYear !== null && r.endYear >= CURRENT_SEASON,
-    inferred: !!r.inferred,
-  };
+/** Every stint of these people at these organizations, as linkYears reads them. */
+async function fetchStints(personIds: string[], orgIds: string[]): Promise<YearStint[]> {
+  if (!personIds.length || !orgIds.length) return [];
+  return db
+    .select({
+      personId: tenures.personId,
+      orgId: tenures.orgId,
+      roleGroup: tenures.roleGroup,
+      sport: tenures.sport,
+      startYear: tenures.startYear,
+      endYear: tenures.endYear,
+      isCurrent: tenures.isCurrent,
+      asPlayer: tenures.asPlayer,
+      yearsExplicit: tenures.yearsExplicit,
+      evidence: tenures.evidence,
+    })
+    .from(tenures)
+    .where(and(inArray(tenures.personId, personIds), inArray(tenures.orgId, orgIds)));
 }
 
-/** Most recent overlap first. */
+/** "Ian Falconer" → "Ian Falconer's" (no gendered pronouns: the bio is named by whose it is). */
+const possessive = (name: string) => (/s$/i.test(name) ? `${name}'` : `${name}'s`);
+
+/** The reason under a dotted year (§6.2): whose bio it comes from, quoting the source phrase. */
+function inferredReason(evidence: string | null, whose: string | undefined): string {
+  const bio = whose ? `${possessive(whose)} staff bio` : "the staff bio";
+  if (!evidence) return `from ${bio}, not stated in it`;
+  const q = evidence.trim().replace(/^["“]|["”]$/g, "");
+  return `from ${bio}, which says “${q.length > 160 ? `${q.slice(0, 157).trimEnd()}…` : q}”`;
+}
+
+/** Most recent run first. */
 function byRecency(a: TreeEdge, b: TreeEdge): number {
   return (b.endYear ?? 0) - (a.endYear ?? 0) || (b.startYear ?? 0) - (a.startYear ?? 0);
 }
 
-/** Current overlaps first (longest-serving first), then past ones by how recently they ended. */
+/**
+ * Order inside a group, the same as the profile's tree card (getProfileTree's byTenure): runs with years
+ * first, by end (current first), then start (longest-serving first), then name; runs whose years the
+ * source doesn't pin go last (current first, then name).
+ */
 function memberOrder(a: { person: TreePerson; edges: TreeEdge[] }, b: { person: TreePerson; edges: TreeEdge[] }): number {
-  const ea = a.edges[0];
-  const eb = b.edges[0];
-  if (ea.isCurrent !== eb.isCurrent) return ea.isCurrent ? -1 : 1;
-  const byYears = ea.isCurrent
-    ? (ea.startYear ?? 9999) - (eb.startYear ?? 9999)
-    : (eb.endYear ?? 0) - (ea.endYear ?? 0) || (eb.startYear ?? 0) - (ea.startYear ?? 0);
-  return byYears || a.person.fullName.localeCompare(b.person.fullName);
+  const ya = a.edges[0].years;
+  const yb = b.edges[0].years;
+  const ra = yearsDisplay(ya) === "range";
+  const rb = yearsDisplay(yb) === "range";
+  if (ra !== rb) return ra ? -1 : 1;
+  if (ra) {
+    const end = (y: EdgeYears) => (y.ongoing ? Infinity : (y.endYear ?? -Infinity));
+    const e = end(yb) - end(ya);
+    if (e) return e;
+    const s = (ya.startYear ?? 0) - (yb.startYear ?? 0);
+    if (s) return s;
+  } else if (ya.ongoing !== yb.ongoing) return ya.ongoing ? -1 : 1;
+  return a.person.fullName.localeCompare(b.person.fullName);
 }
 
 async function fetchPeople(ids: string[]): Promise<Map<string, TreePerson>> {
@@ -144,10 +177,10 @@ async function fetchPeople(ids: string[]): Promise<Map<string, TreePerson>> {
   return new Map(rows.map((r) => [r.id, { ...toSummary(r), firstName: r.firstName?.trim() || r.fullName.split(/\s+/)[0] }]));
 }
 
-function collect(map: Map<string, TreeEdge[]>, id: string, edge: TreeEdge) {
+function collect<T>(map: Map<string, T[]>, id: string, item: T) {
   const list = map.get(id);
-  if (list) list.push(edge);
-  else map.set(id, [edge]);
+  if (list) list.push(item);
+  else map.set(id, [item]);
 }
 
 async function loadTreeExplorer(slug: string, depth: 1 | 2): Promise<TreeExplorer | null> {
@@ -186,39 +219,65 @@ async function loadTreeExplorer(slug: string, depth: 1 | 2): Promise<TreeExplore
   const id = focal.id;
 
   // First level: every edge that touches the focal coach.
-  const edges = await fetchEdges(or(eq(treeEdges.mentorId, id), eq(treeEdges.menteeId, id)));
-  const buckets = { mentors: new Map<string, TreeEdge[]>(), peers: new Map<string, TreeEdge[]>(), mentees: new Map<string, TreeEdge[]>() };
+  const edges = (await fetchEdges(or(eq(treeEdges.mentorId, id), eq(treeEdges.menteeId, id)))).filter((e) => e.mentorId !== e.menteeId);
+  const buckets = { mentors: new Map<string, EdgeRow[]>(), peers: new Map<string, EdgeRow[]>(), mentees: new Map<string, EdgeRow[]>() };
   for (const e of edges) {
     const other = e.mentorId === id ? e.menteeId : e.mentorId;
-    if (other === id) continue;
     const bucket = e.kind === "worked_alongside" ? "peers" : e.mentorId === id ? "mentees" : "mentors";
-    collect(buckets[bucket], other, toEdge(e));
+    collect(buckets[bucket], other, e);
   }
 
-  // Second level (depth 2): mentors of mentors, mentees of mentees.
-  const mentorIds = [...buckets.mentors.keys()];
-  const menteeIds = [...buckets.mentees.keys()];
+  // Second level (depth 2): head coaches the coach's head coaches had worked under by then, and coaches
+  // who later worked under the coach's former staff (lineage.ts keeps only links in time order).
   const firstLevelIds = new Set([...buckets.mentors.keys(), ...buckets.peers.keys(), ...buckets.mentees.keys()]);
   let upRows: EdgeRow[] = [];
   let downRows: EdgeRow[] = [];
   if (depth === 2) {
+    const mentorIds = [...buckets.mentors.keys()];
+    const menteeIds = [...buckets.mentees.keys()];
     [upRows, downRows] = await Promise.all([
       mentorIds.length ? fetchEdges(and(eq(treeEdges.kind, "worked_under"), inArray(treeEdges.menteeId, mentorIds))) : Promise.resolve([]),
       menteeIds.length ? fetchEdges(and(eq(treeEdges.kind, "worked_under"), inArray(treeEdges.mentorId, menteeIds))) : Promise.resolve([]),
     ]);
     const skip = (other: string) => other === id || firstLevelIds.has(other);
-    upRows = upRows.filter((e) => !skip(e.mentorId));
-    downRows = downRows.filter((e) => !skip(e.menteeId));
+    upRows = upRows.filter((e) => !skip(e.mentorId) && lineageRuns("up", buckets.mentors.get(e.menteeId) ?? [], [e]).length > 0);
+    downRows = downRows.filter((e) => !skip(e.menteeId) && lineageRuns("down", buckets.mentees.get(e.mentorId) ?? [], [e]).length > 0);
   }
 
   const allIds = new Set<string>(firstLevelIds);
   for (const e of upRows) allIds.add(e.mentorId);
   for (const e of downRows) allIds.add(e.menteeId);
-  const [peopleById, record] = await Promise.all([fetchPeople([...allIds]), loadRecord(id)]);
+  const orgIds = new Set([...edges, ...upRows, ...downRows].map((e) => e.orgId));
+  const [peopleById, stints, record] = await Promise.all([fetchPeople([...allIds]), fetchStints([id, ...allIds], [...orgIds]), loadRecord(id)]);
+  const nameOf = (pid: string) => (pid === id ? focal.fullName : peopleById.get(pid)?.fullName);
 
-  const members = (map: Map<string, TreeEdge[]>): TreeMember[] =>
+  const stintsByPair = (a: string, b: string, orgId: string) => stints.filter((t) => t.orgId === orgId && (t.personId === a || t.personId === b));
+  const toEdge = (r: EdgeRow): TreeEdge => {
+    const pair = stintsByPair(r.mentorId, r.menteeId, r.orgId);
+    const years = treeEdgeYears(r, pair);
+    // The staff side of a "worked under" run (or either side of "alongside") held only support roles.
+    const staffIds = r.kind === "worked_under" ? [r.menteeId] : [r.mentorId, r.menteeId];
+    const lo = r.startYear ?? r.endYear ?? CURRENT_SEASON;
+    const hi = r.endYear ?? r.startYear ?? CURRENT_SEASON;
+    const during = pair.filter((t) => {
+      const c = coverage(t);
+      return staffIds.includes(t.personId) && edgeEligible(t) && t.roleGroup !== "head_coach" && !!c && c[0] <= hi && c[1] >= lo;
+    });
+    return {
+      org: { id: r.orgId, slug: r.orgSlug, shortName: r.orgShortName, name: r.orgName, inRegistry: r.orgInRegistry },
+      startYear: r.startYear,
+      endYear: r.endYear,
+      isCurrent: r.endYear !== null && r.endYear >= CURRENT_SEASON,
+      years,
+      inferred: years.startInferred || years.endInferred,
+      reasons: [...new Set(years.inferredFrom.map((f) => inferredReason(f.evidence, nameOf(f.personId))))],
+      supportOnly: r.kind === "worked_under" && during.length > 0 && during.every((t) => t.roleGroup === "support"),
+    };
+  };
+
+  const members = (map: Map<string, EdgeRow[]>): TreeMember[] =>
     [...map.entries()]
-      .map(([pid, list]) => ({ person: peopleById.get(pid), edges: list.sort(byRecency) }))
+      .map(([pid, list]) => ({ person: peopleById.get(pid), edges: list.map(toEdge).sort(byRecency) }))
       .filter((m): m is TreeMember => !!m.person)
       .sort(memberOrder);
   const mentors = members(buckets.mentors);
@@ -240,9 +299,8 @@ async function loadTreeExplorer(slug: string, depth: 1 | 2): Promise<TreeExplore
       const byPerson = new Map<string, Map<string, TreeEdge[]>>();
       for (const e of rows) {
         const other = otherOf(e);
-        const via = viaOf(e);
         if (!byPerson.has(other)) byPerson.set(other, new Map());
-        collect(byPerson.get(other)!, via, toEdge(e));
+        collect(byPerson.get(other)!, viaOf(e), toEdge(e));
       }
       return [...byPerson.entries()]
         .map(([pid, vias]) => ({
@@ -263,17 +321,32 @@ async function loadTreeExplorer(slug: string, depth: 1 | 2): Promise<TreeExplore
   return { focal, mentors, peers, mentees, uniqueCount: groupsOf.size, listedTwice, second, record };
 }
 
-async function loadRecord(personId: string): Promise<TreeExplorer["record"]> {
-  const [r] = await db
+/** The coach's own stints, counted the way the pipeline builds edges (resolve.py edge_eligible and span). */
+async function loadRecord(personId: string): Promise<TreeRecord> {
+  const rows = await db
     .select({
-      coachingStints: sql<number>`count(*)::int`,
-      datedStints: sql<number>`count(*) filter (where ${tenures.startYear} is not null)::int`,
-      programs: sql<number>`count(distinct ${tenures.orgId})::int`,
+      orgId: tenures.orgId,
+      role: tenures.role,
+      roleGroup: tenures.roleGroup,
+      sport: tenures.sport,
+      startYear: tenures.startYear,
+      endYear: tenures.endYear,
+      isCurrent: tenures.isCurrent,
+      asPlayer: tenures.asPlayer,
     })
     .from(tenures)
-    .where(and(eq(tenures.personId, personId), eq(tenures.asPlayer, false)));
-  return r ?? { coachingStints: 0, datedStints: 0, programs: 0 };
+    .where(eq(tenures.personId, personId));
+  const coaching = rows.filter((t) => !t.asPlayer && t.sport === "football" && t.roleGroup !== "other" && t.roleGroup !== "player");
+  const dated = coaching.filter((t) => t.isCurrent || t.startYear !== null || t.endYear !== null);
+  const otherRoles = [...new Set(rows.filter((t) => !t.asPlayer && t.roleGroup === "other").map((t) => t.role.trim()))].filter(Boolean);
+  return { coachingStints: coaching.length, datedStints: dated.length, programs: new Set(coaching.map((t) => t.orgId)).size, otherRoles };
 }
 
 /** The coach's tree for the explorer, deduplicated per request (generateMetadata and the page share it). */
 export const getTreeExplorer = cache(loadTreeExplorer);
+
+/** Whether a coach lives at this slug: the route layout's check, so an unknown slug is a real 404. */
+export const treeCoachExists = cache(async (slug: string): Promise<boolean> => {
+  const [row] = await db.select({ id: people.id }).from(people).where(eq(people.slug, slug)).limit(1);
+  return !!row;
+});

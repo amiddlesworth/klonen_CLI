@@ -1,0 +1,462 @@
+{
+ "0": {
+  "findings": [
+   {
+    "id": "M1",
+    "where": "Every input and search field at 390 and 1440 (post-job-390, claim-390, jobs-390, search-empty-390, landing-390, and the top-bar search on every phone screen). Code: /home/user/klonen_cli/web/src/components/ui/Field.tsx:55 (CONTROL_CLASSES), /home/user/klonen_cli/web/src/components/ui/SearchField.tsx:48-49,64, /home/user/klonen_cli/web/src/components/landing/LandingSearch.tsx:112-113,141",
+    "problem": "Inputs, selects, textareas and search fields remove the focus outline (focus-visible:outline-none). The only focus cue left is a 1px border that changes from --control to --accent, plus a 3px --accent-subtle halo. That cue does not meet \u00a79 ('Focus is always visible (--focus, \u2265 3:1 in both themes)'). It uses --accent where \u00a79 calls for --focus, and in dark mode a focused field looks almost the same as an unfocused one.",
+    "evidence": "Computed WCAG ratios: the halo is #EEF0FC on #FFFFFF = 1.13:1 in light and #1C1F3A on #161615 = 1.13:1 in dark, so it is effectively invisible. The border's change between states is #8C8983 to #4352D1 = 1.79:1 in light and #706F69 to #4F5DDB = 1.06:1 in dark. In dark mode, focus is only a hue shift on a 1px line. In all 20 outline-none hits in web/src, these three form-control families are the only ones with no compliant replacement. The others are fine: tabIndex=-1 headings and main, menu and popover panels, the NotificationRow and SampleProfiles ::after rings, and the TreeDiagram rect stroke-focus.",
+    "fix": "In CONTROL_CLASSES, SearchField and the LandingSearch wrapper, replace the halo with a 2px --focus ring: `focus:border-focus focus:shadow-[0_0_0_1px_var(--focus)]`, or `focus-within:` on the wrappers (7.10:1 in dark, 6.24:1 in light). Keep --accent-subtle only as an optional outer glow. Alternatively, drop `focus-visible:outline-none` and let the global :focus-visible outline show (outline-offset-0 on the input). Then update the Input/SearchField spec in DESIGN.md \u00a78.1 so it matches \u00a79.",
+    "severity": "major"
+   },
+   {
+    "id": "M2",
+    "where": "profile-owner-390 (Worked alongside: 'Wide Receiver Coach / Asst. Recruiting Coordinator \u00b7 \u2026'), profile-khayat-390 (Coached under Bill: 'Manager of Football Data / Asst. Special Teams \u00b7 Brev\u2026'), profile-falconer-dark-1440 tree card ('Defensive Assistant Intern \u00b7 Pa\u2026', 'ST Coord. / DBs \u00b7 Case Wester\u2026'), feed-dark-1440 People you may know ('Assoc. HC-Defense / DC \u00b7 Bre\u2026'). Code: /home/user/klonen_cli/web/src/components/profile/TreeCard.tsx:117,127 and /home/user/klonen_cli/web/src/components/data/PersonRow.tsx:67,82-89",
+    "problem": "The profile Coaching tree rows and PersonRow (used by People you may know, program staff and job people) truncate the whole 'Title \u00b7 Program' line as one string. When the title is long, the program, which is the identifying context, is cut off completely. \u00a712 says to truncate titles with an ellipsis, not the context after them.",
+    "evidence": "TreeCard builds `sub = [title, org].join(' \u00b7 ')` and renders `<p className=\"truncate ...\">{sub}</p>`. PersonRow renders `<p className={truncate && 'truncate'}>` around both spans. TreeList.tsx:141-150 and RailCards.tsx:25-33 already use the correct pattern (the title truncates and the program is shrink-0), but they were edited after these captures. The Same tree rows in profile-falconer-390 and profile-khayat-390 ('George F\u2026', 'Ke\u2026', 'North Carolina \u2026') therefore need a re-capture to confirm.",
+    "fix": "Use the TreeList pattern in TreeCard.TreeRow and PersonRow: `<p className=\"flex min-w-0\"><span className=\"min-w-0 truncate\">{title}</span><span className=\"shrink-0 whitespace-nowrap\">{' \u00b7 '}{org}</span></p>`. Cap the org at around 75% width, as RailCards does, so a very long program name still leaves room for the title.",
+    "severity": "major"
+   },
+   {
+    "id": "M3",
+    "where": "Claim flow step 2 (Review your career) at \u2264720px when signed out. Signed out is the normal path: claim-390 and profile-falconer-390 are both signed out. Code: /home/user/klonen_cli/web/src/components/claim/ReviewStep.tsx:179",
+    "problem": "The sticky review footer always sits at `bottom: calc(var(--tabbar-h) + safe-area)`. Signed-out visitors have no bottom tab bar (AppShell.tsx:38 renders it only when there is a viewer), so the action bar floats 56px above the screen bottom and page content scrolls visibly underneath it.",
+    "evidence": "ReviewStep.tsx:179 uses `sticky bottom-[calc(var(--tabbar-h)+env(safe-area-inset-bottom))]` with no viewer condition. claim/[slug]/page.tsx allows anonymous claims (`saves={!!session && ...}`). Toast.tsx:66 already handles this case with `aboveTabBar`. This was found in the code, not in a capture: audit2 only captured step 1.",
+    "fix": "Add a shell variable: `:root { --tabbar-offset: env(safe-area-inset-bottom) }` and `.has-tabbar { --tabbar-offset: calc(var(--tabbar-h) + env(safe-area-inset-bottom)) }` in globals.css \u00a76. Use `bottom-[var(--tabbar-offset)]` in ReviewStep, ThreadView.tsx:195 and Toast. Add a signed-out 390 capture of claim step 2 (`#fold`, fullPage 0) to the audit set.",
+    "severity": "major"
+   },
+   {
+    "id": "M4",
+    "where": "feed-390, Brandon Maguire card. The headline wraps as 'Brandon Maguire was / promoted to head coach / (offensive coordinator) at Ithaca'. Code: /home/user/klonen_cli/web/src/components/feed/MoveCard.tsx:17-18,43,47 and /home/user/klonen_cli/web/src/components/feed/text.ts (apTitle)",
+    "problem": "At 390 a feed headline line starts with '(', which fails \u00a711 rule 12 ('No headline line starts with punctuation'). OrgName has no nowrap, so short names with a parenthetical ('Pacific (OR)', 'Monmouth (IL)', 'Saint John's (MN)', 'New England (ME)') can break the same way on other cards.",
+    "evidence": "apTitle lowercases 'Head Coach (Offensive Coordinator)' to 'head coach (offensive coordinator)' and leaves a normal space before '('. The h2 uses `balance` (ItemParts.tsx:56), which picks that break at 390 px. At 1440 (feed-dark-1440) the same headline breaks after 'head', which is fine.",
+    "fix": "In apTitle (or the headline renderer), bind the parenthetical to the word before it: `.replace(/ \\(/g, '\u00a0(')`. Add `whitespace-nowrap` to OrgName's Link and <b>. Add a unit test in feed text tests for 'Head Coach (Offensive Coordinator)'.",
+    "severity": "major"
+   },
+   {
+    "id": "M5",
+    "where": "/home/user/klonen_cli/design/audit2/ capture set",
+    "problem": "Dark mode has never been captured at 390, and only 2 of 18 screens (feed, profile-falconer) were captured dark at 1440. \u00a711 says a screen ships only when all 12 rules pass at 1440 and 390 in light and dark. The phone-only surfaces have zero dark coverage: MobileTopBar, BottomTabBar, bottom sheets (Menu sheetOnPhone, FilterSheet, Dialog), PhoneTrackerSummary, the phone season-strip staircase and the pipeline stage tabs. There are also no `#fold` captures, so 'fixed bars never cover content' and 'the first screen of a profile shows name, headline, actions and stats' cannot be checked against the real fixed tab bar.",
+    "evidence": "Files in audit2: only feed-dark-1440.png and profile-falconer-dark-1440.png are dark, and no *-390-fold.png exists. tools/screenshot.mjs already supports THEME=dark and COOKIE. Several components were also edited after these captures (TreeList.tsx 11:43, RailCards.tsx 11:35, NoQuery.tsx 11:49, PipelineView stage tabs, QuickSearches), so the tree-390, pipeline-390 and search-empty-390 captures are stale.",
+    "fix": "Re-capture all 18 routes at 390 with THEME=dark, using `COOKIE='cn_demo_session=coach'` or `employer` for the signed-in routes, for example `THEME=dark COOKIE='cn_demo_session=coach' node tools/screenshot.mjs http://localhost:3000/feed design/audit2/feed-dark-390.png 390 844 1`. Add `#fold` first-screen captures (`... \"<url>#fold\" out.png 390 844 0`) for feed, a profile, notifications and post-job. Re-run the 390 light set for the routes edited after 11:24.",
+    "severity": "major"
+   },
+   {
+    "id": "m1",
+    "where": "profile-falconer-390, Experience season strip. The program rows are labeled 'WL' and 'LC' while Oberlin and Pacific (OR) get names. Code: /home/user/klonen_cli/web/src/components/data/SeasonStrip.tsx:104-112,137-138",
+    "problem": "On phone, each program has its own row, and its label may run right over empty columns (\u00a78.3). There is room for 'West Linn' and 'Lewis & Clark', but the label choice is still computed from the desktop widthHint (712px segment widths). Phone users get cryptic initials instead.",
+    "evidence": "`labelOf` decides between short name and initials once, using `unit = (widthHint - \u2026) / seasons.length`. The same text is then rendered with `max-md:col-end-[-1] max-md:overflow-visible`, so the phone row has the full width available but still shows initials.",
+    "fix": "Render both labels: initials or short name, as computed, inside `max-md:hidden`, plus `<span className=\"md:hidden\">{shortName}</span>`, which is always the short name. Or compute a second `fits` against the phone width (about 358px), since phone rows span to the last column.",
+    "severity": "minor"
+   },
+   {
+    "id": "m2",
+    "where": "job-390 Similar jobs tiles (CC, FS, DV), program-390 and program-nostaff-390 Conference peers tiles (GF, PL, LU, WU, UP, LC / WJ, CW, GC, AC, BC, WU), and the claim StintReviewRow. Code: /home/user/klonen_cli/web/src/components/ui/OrgMark.tsx:8",
+    "problem": "The 32px OrgMark renders its initials at 11px. \u00a711 rule 1 exempts initials only in tiles smaller than 32 px, so these break the 12px type floor. Avatar 32 already uses 12px.",
+    "evidence": "`32: \"size-8 rounded-sm text-[11px]\"`. It is used at size 32 in SimilarJobs.tsx:28, ProgramRail.tsx:35 and :204, and StintReviewRow.tsx:89.",
+    "fix": "Change OrgMark 32 to `text-[12px]`. Three-letter initials still fit in 32px at 12/600. Alternatively, cap derived initials at 2 letters for size 32.",
+    "severity": "minor"
+   },
+   {
+    "id": "m3",
+    "where": "Every signed-out 390 screen: profile-falconer, program, program-nostaff, tree, search, search-empty, jobs, job, claim. The top-bar placeholder reads 'Search coaches, progra\u2026'. Code: /home/user/klonen_cli/web/src/components/shell/MobileTopBar.tsx:31-48",
+    "problem": "When signed out, the brand tile (44) plus the text 'Sign in' ghost button leave about 240px for the search field, so the specified placeholder 'Search coaches, programs' ends in an ellipsis on every signed-out phone page. It reads as broken copy.",
+    "evidence": "The signed-in screens (feed-390, profile-owner-390, messaging-390) show the full placeholder because the avatar and message icon are narrower than 'Sign in'.",
+    "fix": "When `!viewer`, pass a shorter placeholder (\"Search\" or \"Search coaches\") and keep the full text as the aria-label. Record the signed-out variant in DESIGN.md \u00a78.2 so rule 11 auditors accept it. The other option is to tighten the header to `px-1` and the Sign in button to `px-2.5`.",
+    "severity": "minor"
+   },
+   {
+    "id": "m4",
+    "where": "notifications-390, all three unread rows. Code: /home/user/klonen_cli/web/src/components/messaging/NotificationRow.tsx:70-71",
+    "problem": "The 8px unread dot sits 6px from the screen edge (`left-1.5`), inside the 16px side gutter that \u00a711 rule 12 requires. The unread row tint (--surface-2 on --surface) is 1.05:1 in both themes, so the dot is effectively the only visible unread cue.",
+    "evidence": "The capture shows the dots touching the left edge, outside the content column. The computed contrast between --surface-2 and --surface is 1.05:1 in light and in dark.",
+    "fix": "At \u2264720 px, move the dot into the gutter at `left-1.5` only if the row content starts at 24px, or keep the content at 16px and place the dot inline before the avatar. Also set the unread sentence to `font-semibold`, as InboxList already does for unread snippets, so unread does not depend on a 6px-from-edge dot.",
+    "severity": "minor"
+   },
+   {
+    "id": "m5",
+    "where": "messaging-390: no tab is active and the top-bar Messaging icon stays --fg-2. Code: /home/user/klonen_cli/web/src/components/shell/MobileTopBar.tsx:40-47",
+    "problem": "On /messaging, phone users get no current-location indicator, because Messaging is not in the tab bar and its top-bar button has no active state. At md and up, the TopNav marks Messaging active. That breaks the 'same words at every width' orientation.",
+    "evidence": "The Link has no aria-current and no active class. `pathname` is already available in the component.",
+    "fix": "When `pathname.startsWith('/messaging')`, set `aria-current=\"page\"`, `text-fg-1`, and `strokeWidth={2.1}` on the icon. This mirrors the BottomTabBar active treatment.",
+    "severity": "minor"
+   },
+   {
+    "id": "m6",
+    "where": "jobs-390 (20 identical 'View job' buttons; Save labels repeat 'Defensive Coordinator', 'Offensive Line Coach' and others across programs). Code: /home/user/klonen_cli/web/src/components/jobs/JobCard.tsx:172-175 and /home/user/klonen_cli/web/src/components/jobs/SaveJobButton.tsx:99",
+    "problem": "In screen-reader link and button lists, every row's actions have the same name, and the job title alone does not tell rows apart, for example the three 'Defensive Coordinator' listings at Austin, Carleton and Framingham State.",
+    "evidence": "The jobs-list JobCard 'View job' ButtonLink has no aria-label, unlike feed/JobCard.tsx:93 (`View job: ${job.title}`). SaveJobButton's label is `Save job: ${title}` with no program.",
+    "fix": "Use `aria-label={`View job: ${job.title}, ${job.org.shortName}`}` and pass the program into SaveJobButton (`Save job: {title}, {program}`). Apply the same to the feed JobCard.",
+    "severity": "minor"
+   },
+   {
+    "id": "m7",
+    "where": "/home/user/klonen_cli/web/src/app/layout.tsx:27 (viewportFit: 'cover') together with the MobileTopBar, TopNav, page container and BottomTabBar",
+    "problem": "`viewport-fit=cover` is set so that env(safe-area-inset-bottom) works, but nothing applies the left or right insets. In landscape on notched iPhones (844px+ wide, so the md/lg layout), the sticky nav, the 16/24px gutters and the edge-to-edge tab bar run under the notch and the rounded corners.",
+    "evidence": "Searching for safe-area finds only `-inset-bottom` uses: BottomTabBar, Dialog, Toast, FilterSheet, ReviewStep and ThreadView.",
+    "fix": "Use `padding-inline: max(16px, env(safe-area-inset-left))` / `env(safe-area-inset-right)` on the MobileTopBar, TopNav and page container (24px at md+), and inner padding with the same insets on BottomTabBar.",
+    "severity": "minor"
+   },
+   {
+    "id": "m8",
+    "where": "feed-dark-1440 Carousel tracker, 'NWC \u00b7 yours' bar. The same component appears at 390 at the bottom of the feed.",
+    "problem": "The viewer's own bar is --accent on --track: 2.72:1 in dark, compared with 5.41:1 in light. It is the one Iris mark in the chart and drops below the 3:1 non-text guideline in dark.",
+    "evidence": "Computed: #4F5DDB on #292926 = 2.72:1. The neutral bars (--bar on --track) are 6.12:1 in dark. The numbers and the '\u00b7 yours' text carry the meaning, so this is supplementary, not blocking.",
+    "fix": "For the viewer's bar in dark, use --link or --focus (#8F9AFF, about 6.0:1 on --track), or add a `--bar-you` token (light #4352D1 / dark #8F9AFF) to \u00a72.1 and \u00a72.2.",
+    "severity": "minor"
+   },
+   {
+    "id": "m9",
+    "where": "Signed-out 390 screens (profile-falconer, program, tree, search, jobs, job, claim). Code: /home/user/klonen_cli/web/src/components/shell/AppShell.tsx:38 and /home/user/klonen_cli/web/src/components/shell/DemoSwitcher.tsx:89-95",
+    "problem": "Signed-out phone pages have no primary navigation, only the brand, the search field and Sign in. Jobs cannot be reached from a profile, program or tree page except through the landing page. \u00a78.2 does not say the tab bar is signed-in only; only \u00a78.10 (landing) says 'no tab bar', so auditors will keep raising this.",
+    "evidence": "The AppShell renders BottomTabBar only when there is a viewer. The compact Sign in sheet already holds the For employers links but has no Jobs or Search entry.",
+    "fix": "Either state 'Signed-in only; signed-out pages use the Sign in sheet for navigation' in DESIGN.md \u00a78.2, or add Browse jobs (and Search) as MenuLinks in the compact SignInMenu sheet.",
+    "severity": "minor"
+   },
+   {
+    "id": "m10",
+    "where": "feed-390 toolbar (and md 721-1080). Code: /home/user/klonen_cli/web/src/components/feed/ScopeMenu.tsx:21 and /home/user/klonen_cli/web/src/components/feed/FeedToolbar.tsx",
+    "problem": "The 'Showing Division III' scope control is `hidden lg:inline-flex`. \u00a78.5 says it moves into the filter sheet on phone, but the phone feed has no filter sheet, so the scope label and control are missing below 1081px. This fails rule 11's label parity (the phone feed only hints at the scope in the tracker subtitle).",
+    "evidence": "feed-390 shows only the All / Moves / Jobs segments. feed-dark-1440 shows 'Showing Division III \u25be'.",
+    "fix": "Below lg, add a one-line caption under the segments ('Showing Division III'), or a ghost trigger that opens the same radio group as a bottom sheet (Menu `sheetOnPhone`).",
+    "severity": "minor"
+   }
+  ],
+  "summary": "I opened all 18 phone screenshots at 390px (cut into screen-height slices) and both dark ones (feed-dark-1440, profile-falconer-dark-1440), read DESIGN.md \u00a72, \u00a78.2, \u00a79 and \u00a711, and checked web/src. The phone layouts and dark-mode colors mostly hold up. Five things block sign-off and ten are minor.\n\n**What passes:**\n- **No horizontal overflow.** Every 390 capture is exactly 390px wide, gutters are 16px, and cards run edge to edge.\n- **Tab bar.** It shows on every signed-in screen (feed, profile-owner, profile-khayat, availability, messaging, notifications, pipeline, post-job), has text labels, and sits after the footer, so it covers nothing.\n- **Stacking order.** Rail content comes after the main column on profile, job and program, and no desktop rail is squeezed in.\n- **Text size and targets.** Text is 12px or larger, except the 32px organization tile (m2). Buttons, segments, tabs, chips, the Source toggle and footer links all have 44px phone hit areas (24px for links).\n- **Dark tokens.** There are no hex or rgb values in components or app, no `dark:` variants and no Tailwind palette classes. Both dark screens render correctly.\n\n**The five that block sign-off:**\n1. **Form fields barely show focus (M1).** `outline-none` appears 20 times. 17 have a proper replacement. The other 3 are the input, search-field and landing-search styles: they swap the focus ring for a 1px border colour change plus a faint halo. In dark mode a focused field looks almost identical to an unfocused one (1.06:1 change; the halo is 1.13:1). \u00a79 requires a visible ring in the `--focus` colour at 3:1 or better.\n2. **Tree card and person rows cut off the program name (M2).** Long titles push the program out of view, for example \"\u2026Asst. Recruiting Coordinator \u00b7 \u2026\". It shows on profile-owner-390, profile-khayat-390 and both dark screens.\n3. **The claim review footer floats when signed out (M3).** I found this in the code; it isn't in any screenshot, because only claim step 1 was captured. The footer always reserves room for the tab bar, which signed-out visitors don't have, so it sits 56px above the bottom with content scrolling underneath.\n4. **A feed headline line starts with \"(\" at 390 (M4).** The Brandon Maguire card breaks before \"(offensive coordinator)\", which fails \u00a711 rule 12.\n5. **Dark mode is almost uncaptured (M5).** Nothing is captured dark at 390, only 2 of 18 screens are captured dark at all, and there are no first-screen (`#fold`) captures. That leaves \"fixed bars never cover content\" unchecked.\n\nThe minor items cover cryptic \"WL\"/\"LC\" labels on the phone season strip, the 11px initials, the cut-off search placeholder on signed-out phones, the notification unread dot sitting too close to the screen edge, no active state for Messaging on phone, repeated \"View job\" names for screen readers, missing side safe-area padding, a low-contrast highlight bar in dark mode, and two spec gaps (the signed-out tab bar and the feed's Division III scope control).\n\nSome components changed after these captures (TreeList, RailCards, the pipeline stage tabs, NoQuery, QuickSearches). tree-390, pipeline-390, search-empty-390 and the \"Same tree\" rows need re-capturing before those items are closed."
+ },
+ "1": {
+  "summary": "I opened all 20 screenshots at 1440 (plus the two references) and stacked the nav bars and phone tab bars to compare them. I measured cap heights, card edges, gutters and padding from the pixels and traced each finding to the component that causes it in web/src.\n\n**Where it holds up**\n- The profile and feed are very close to profile-1440.png and feed-1440.png.\n- Avatar tints for the same person, OrgMark letters, the Unclaimed chip, the count badges and the rail card titles (15px, as in the reference) are consistent across screens.\n- In signed-in views the nav active state is correct: Home on feed, Me on the owner profile and availability, Messaging, Notifications, and For employers on the pipeline and post-job pages. Nothing is active on another coach's profile, which is also correct.\n\n**Where it drifts**\nThe drift sits in the jobs screens and the utility pages, and most of it comes from components built twice:\n- two JobCards (feed/JobCard and jobs/JobCard);\n- two \"Current program\" rail cards (profile/RailCards and jobs/ProgramCard);\n- two steppers (ClaimStepper and a local one in PostJobForm);\n- job stats built with JobHeader's own Fact instead of the shared StatGroup;\n- job detail rendered one way in the /jobs pane and another way on /jobs/[id].\n\n**Missing shared pieces**\nThere is no PageHeader or Breadcrumb component. As a result:\n- page titles split into two sizes: 24px on Jobs, Post a job and Pipeline; 16px on Notifications, Messaging, Settings, Claim and Search;\n- sub-pages use a breadcrumb, a back link, or nothing.\n\n**Cross-screen data problems**\n- Landing says 2,177 coaches; search says 2,185.\n- The program staff list shows Ian Falconer as head coach \"2010\u2013Present \u00b7 17 seasons\"; his profile says head coach 2020\u2013Present, 7 seasons.\n- Inferred years are dotted on the tree page but not on the profile's tree card.\n- Notifications show an unnamed move with an invented \"45m\"; the feed shows the same kind of event by name with \"2026 season\".\n- Signed-out pages have no nav items at all, so /jobs, /search, program and profile pages show no active state and offer no route to Jobs.\n\n**Smaller rhythm problems**\n- Card padding is 16, 24 or 32px depending on the screen, sometimes within one route.\n- The jobs list/detail gutter is 12px against 24px everywhere else.\n- In messaging, the thread header is inset 8px less than the thread body.\n- StatBand numbers are 20px on profile, program and tree, 15px on job pages and 24px on landing.\n\nNo issue rises to critical, but 11 findings break \u00a711 rules or the \u00a78 component contracts and are rated major.",
+  "findings": [
+   {
+    "id": "X01",
+    "where": "jobs-1440, post-job-1440, pipeline-1440 vs notifications-1440, messaging-1440, availability-1440, claim-1440, search-1440, search-empty-1440. Code: app/jobs/(list)/page.tsx:66, components/jobs/PostJobForm.tsx:251, components/employer/PipelineFrame.tsx:5 (text-display) vs components/messaging/NotificationsCard.tsx:183, components/messaging/MessagingFrame.tsx:28, components/claim/AvailabilityForm.tsx:128, app/search/page.tsx:204, components/search/NoQuery.tsx:36 (text-title)",
+    "problem": "Page titles come in two sizes. Each of these pages puts its h1 in the first card, yet three render it at 24/32 and six at 16/24. At 16 the h1 is the same size as any card title, so 'Notifications' or 'Open to opportunities' reads as a card, not a page. Landing adds a third size (about 20px) for section headings outside cards ('Real coaching careers', 'How it works').",
+    "evidence": "Measured cap heights: 'Jobs', 'Post a job', 'Hiring pipeline' = 17px (24px type). 'Notifications', 'Messaging', 'Open to opportunities', 'Claim your profile', 'Search coaches and programs', '628 results for coordinator' = 12px, the same as the card titles 'About', 'Head coach' and 'Popular searches' (12px). 'Real coaching careers' = 14px (about 20px type).",
+    "fix": "Add one PageHeader primitive and write the rule into \u00a74: entity pages (profile, program, job detail, tree) use text-display; every tool page (Jobs, Search, Messaging, Notifications, Pipeline, Post a job, Settings, Claim) uses one size, recommended text-display-sm (20/28), with subtitle 13 fg-2 below and actions top-right. Landing h2s use the same 20/28 token.",
+    "severity": "major"
+   },
+   {
+    "id": "X02",
+    "where": "jobs-1440 right pane (components/jobs/JobDetailPane.tsx) vs job-1440 (app/jobs/[id]/page.tsx)",
+    "problem": "The same job detail has two layouts. The /jobs pane is one card with sections split by dividers, 14/600 section titles and a 20px job title. /jobs/[id] has one card per section, 16/600 section titles and a 24px title. The /jobs pane is also not sticky, so it scrolls away and leaves blank canvas beside the list.",
+    "evidence": "'About the role' cap: pane 10px (14px type) vs page 12px (16px type). 'People from this program on the network': 10 vs 12. Title cap: 'Offensive Line Coach' (pane) 15px vs 'Defensive Coordinator' (page) 17px. In jobs-1440 the right column is empty canvas from y\u22481080 to 3081.",
+    "fix": "Extract one JobDetailBody used by both routes, with the same section heading token (text-title) whether sections sit in cards or between dividers. Make the pane sticky (top 72px, max-height 100vh\u221288, internal scroll) like the other rails.",
+    "severity": "major"
+   },
+   {
+    "id": "X03",
+    "where": "feed-1440 (components/feed/JobCard.tsx) vs jobs-1440, the program Jobs tab and the post-job-1440 preview (components/jobs/JobCard.tsx)",
+    "problem": "There are two JobCard components, and the post-job preview does not match the feed card it is meant to show. \u00a78.13 says the preview is 'the JobCard exactly as the feed will show it'. Instead it renders the phone layout at desktop, with full-width 'View job' followed by Save (the feed has Save then View job, top-right). Its meta line drops the state. The preview header uses OrgMark 48 and a 20px title, where the real job page uses 56 and 24.",
+    "evidence": "Feed card: 'Wesleyan University (Connecticut) \u00b7 CT \u00b7 NESCAC \u00b7 Full-time'. The same listing in the jobs list: 'Wesleyan \u00b7 CT \u00b7 NESCAC \u00b7 Full-time'. Preview: 'Pacific (OR) \u00b7 NWC \u00b7 Full-time'. Measured preview OrgMark 48\u00d748 vs job detail 56\u00d756; preview title cap 14px vs 17px.",
+    "fix": "Keep one JobCard with a layout prop (feed | list) built on the same jobSubline(). The post-job preview renders the feed variant at desktop width, and JobHeader drops its `preview` downscaling (OrgMark 56, text-display).",
+    "severity": "major"
+   },
+   {
+    "id": "X04",
+    "where": "profile-falconer-1440 and profile-owner-1440 rail (components/profile/RailCards.tsx) vs job-1440 rail (components/jobs/ProgramCard.tsx); program-1440 StatBand; feed-1440 CarouselTracker",
+    "problem": "The 'Current program' rail card is built twice, so labels and the Sample chip differ. The profile version reads 'Staff on Coach Network 12' and puts [Sample] after the 'Open jobs' label. The job version reads 'Staff listed' or 'Staff not read yet', adds an 'Alumni coaches' row, puts [Sample] after the value and swaps 'View staff' for 'View alumni'. The program StatBand puts the chip after the value and the tracker puts it under the label, so the chip has four positions for one meaning.",
+    "evidence": "Profile rail: 'Open jobs [Sample] \u2026 1'. Job rail: 'Open jobs \u2026 2 [Sample]'. Program StatBand: '1 [Sample] / Open jobs'. Tracker: '29 / Open jobs / [Sample]'. RailCards.tsx:73 renders `Staff on {BRAND.name}`; ProgramCard.tsx:82 renders 'Staff listed'.",
+    "fix": "Use one ProgramRailCard in both rails, with fixed rows 'Staff listed \u00b7 Alumni coaches \u00b7 Open jobs' and the buttons 'View staff' plus the site link. Adopt one rule (\u00a78.3 KPIStrip): the Sample chip sits immediately after the label in KV rows, StatBands and KPIs alike.",
+    "severity": "major"
+   },
+   {
+    "id": "X05",
+    "where": "Every signed-out screen: landing-1440, jobs-1440, job-1440, search-1440, search-empty-1440, program-1440, program-nostaff-1440, profile-falconer-1440, tree-1440, claim-1440; the signed-out *-390 screens have no tab bar (components/shell/TopNav.tsx, BottomTabBar.tsx)",
+    "problem": "The signed-out top bar has only the brand, search, 'For employers \u25be' and 'Sign in \u25be'. A visitor on /jobs sees no Jobs item and no active marker, and from a profile or program page there is no route to Jobs at all. Signed-in pages use icon-over-label items with the ink bar, so signed-out and signed-in screens look like two different shells. \u00a78.10 also asks for ghost 'Sign in' and 'For employers' buttons without chevrons.",
+    "evidence": "In the stacked nav strips, all ten signed-out 1440 bars are identical and have no active indicator. The signed-out 390 bars end in the LegalFooter with no tab bar.",
+    "fix": "Signed-out TopNav: icon-over-label items for the public destinations (Jobs; Search at md) with the 2px ink active bar and aria-current, then 'For employers' and a ghost 'Sign in' with no chevron (the demo switcher can live in that menu). On phone, show a reduced tab bar (Home \u2192 landing, Jobs, Sign in).",
+    "severity": "major"
+   },
+   {
+    "id": "X06",
+    "where": "landing-1440 proof points vs search-empty-1440 intro and Division facet",
+    "problem": "The landing page and search show different totals (\u00a711 rule 11: a number shown in two places must match). Search also claims all 244 programs are built from staff pages, which contradicts the landing footnote.",
+    "evidence": "Landing: '196 Division III programs', '2,177 Coaches', footnote 'at 196 of the 244 NCAA Division III football programs'. Search-empty: '2,185 coaches and 244 programs in Division III football, built from public staff pages'; Division III facet: 2185.",
+    "fix": "Read both from the same data/stats.json query. Search copy: '{coaches} coaches at 196 of 244 Division III programs, built from public staff pages.'",
+    "severity": "major"
+   },
+   {
+    "id": "X07",
+    "where": "tree-1440 diagram (components/tree/TreeRange.tsx) vs profile-falconer-1440 coaching tree card (components/profile/TreeCard.tsx / TreeYears.tsx)",
+    "problem": "Inferred years have the dotted underline on the tree page but not on the profile's tree card. \u00a76.2 and \u00a711 rule 4 require the mark on tree rows.",
+    "evidence": "Dotted on the tree page: Jeff Ramsey 2004\u201305, Lukkes Gilgan 2016\u201319, Jim Craft 2010\u201312, Rylan Ma'ae 2026\u2013. In a 2\u00d7 zoom of the profile tree card the same ranges have no underline.",
+    "fix": "Render profile TreeCard ranges through the same InferredYear / TreeRange component as the diagram, including the sr-only '(inferred)' text and the title tooltip.",
+    "severity": "major"
+   },
+   {
+    "id": "X08",
+    "where": "program-1440 'Head coach' card vs profile-falconer-1440 Experience",
+    "problem": "The program staff list contradicts the profile on Ian Falconer's head-coach tenure. Under the 'Head coach' unit his row shows his whole time at Pacific, which reads as 17 seasons as head coach. His profile says head coach since 2020, after ten seasons as offensive line coach.",
+    "evidence": "Program: 'Ian Falconer \u00b7 Head Football Coach \u00b7 2010\u2013Present \u00b7 17 seasons'. Profile: 'Head Football Coach 2020\u2013Present \u00b7 7 seasons'; 'Assistant Coach / Offensive Line 2010\u20132019 \u00b7 10 seasons'.",
+    "fix": "Staff rows show the current role's stint ('2020\u2013Present \u00b7 7 seasons', \u00a78.6 'Since 2020'), or label the program total explicitly ('At Pacific since 2010'). Apply the same rule to Jim Craft and Kit Taura.",
+    "severity": "major"
+   },
+   {
+    "id": "X09",
+    "where": "notifications-1440 vs feed-1440 (components/messaging/NotificationsCard.tsx:89, web/scripts/seed.ts:241)",
+    "problem": "The tree-move notification names nobody and shows an invented relative time. The feed shows the same kind of event with names, the season and a source. This breaks \u00a76.3 and rule 6 (moves read '2026 season') and \u00a73 principle 5 (name people).",
+    "evidence": "'A coach from your tree changed jobs. 45m'. All three rows read '45m' because the times were seeded. The feed shows 'Rob Hutchins joined Pacific (OR) as \u2026 \u00b7 New hire \u00b7 NWC \u00b7 2026 season \u00b7 goboxers.com'.",
+    "fix": "Seed the notification with a person and a program ('Rob Hutchins, who coached under Ian, joined Pacific (OR)'), show '2026 season' plus the source domain for moves, and keep relative time for events with real timestamps (messages, claims).",
+    "severity": "major"
+   },
+   {
+    "id": "X10",
+    "where": "profile-falconer-1440 (header 'Oregon'; rail 'Boxers \u00b7 Oregon'), program-1440 ('Boxers \u00b7 Oregon'; peers 'Bruins \u00b7 OR'), post-job-1440 ('Boxers \u00b7 OR'), jobs-1440 list and pane, job-1440, feed-1440 job card (components/jobs/labels.ts jobPlace/jobSubline)",
+    "problem": "The same program's location and name are written several ways. jobPlace() swaps in the city whenever the state is already in the short name, so the second slot in job meta lines switches between city and state within one list. States are spelled out in profiles and abbreviated in rails and forms. The reference profile shows 'Forest Grove, OR'.",
+    "evidence": "'Pacific (OR) \u00b7 Forest Grove \u00b7 NWC' next to 'Austin \u00b7 TX \u00b7 SCAC' in one list. Jobs pane header: 'Pacific University (Oregon) \u00b7 Forest Grove \u00b7 NWC'. Job detail: 'Austin College \u00b7 TX \u00b7 SCAC'. Feed: 'Wesleyan University (Connecticut) \u00b7 CT \u00b7 NESCAC'.",
+    "fix": "Add two helpers to lib/format.ts: placeLong() \u2192 'City, ST' (headers, profile meta, Experience city line) and placeShort() \u2192 'ST' (rails, compact rows). Job meta lines always read '{shortName} \u00b7 {City, ST} \u00b7 {Conf} \u00b7 {type}', with the full program name only in page headers.",
+    "severity": "major"
+   },
+   {
+    "id": "X11",
+    "where": "profile-*-1440 and tree-1440 (breadcrumb, first card at y=104), job-1440 (breadcrumb, y=98), availability-1440 ('\u2039 Settings' back link, y=105), claim-1440, post-job-1440, pipeline-1440, program-1440 (none, y=72)",
+    "problem": "Sub-pages use three wayfinding patterns: a breadcrumb, a back link, or nothing. The breadcrumb row also has a different height on different pages, so cards and rails start at different heights on sibling detail pages. Claim and Post a job have no way back to the profile or the employer area.",
+    "evidence": "Top border of the first card measured at y=104 (profile, tree), 98 (job detail), 105 (availability) and 72 (pages without a breadcrumb).",
+    "fix": "One Breadcrumb component with a fixed 32px row (13px fg-2 text, 14px chevrons, current page in fg-1) on every page below top level: 'Settings \u203a Open to opportunities', 'Ian Falconer \u203a Claim profile', 'For employers \u203a Post a job', 'For employers \u203a Hiring pipeline', 'Jobs \u203a {title}'. Top-level destinations keep none and start at y=72.",
+    "severity": "major"
+   },
+   {
+    "id": "X12",
+    "where": "profile, program, tree, pipeline StatBands and the feed tracker KPIs vs job-1440, the jobs-1440 pane and the post-job-1440 preview vs landing-1440 proof points (components/jobs/JobHeader.tsx:148 Fact vs components/data/StatGroup.tsx)",
+    "problem": "StatBand numbers come in three sizes. Job pages use text-subtitle 15px instead of text-stat 20px, and landing uses about 24px.",
+    "evidence": "Digit cap heights: profile '25' 15px, program '12' 14px, tree '1' 14px, pipeline '3' 15px, tracker '322' 15px; job detail '$52K' 11px; landing '196' 17px.",
+    "fix": "JobHeader renders its facts with StatGroup (text-stat). Landing ProofPoints uses text-stat, or a documented text-stat-lg token added to \u00a74.",
+    "severity": "minor"
+   },
+   {
+    "id": "X13",
+    "where": "search-empty-1440 vs search-1440; messaging-1440; landing-1440; jobs-1440",
+    "problem": "Card padding and column gutters break the spacing rhythm. On /search the card inset changes between the empty state and the results state. In messaging the thread header avatar sits 8px left of the body avatars. Landing uses three different card paddings. The jobs list/detail gutter is half the standard 24px. 'Popular searches' rows have no dividers, against the \u00a75.1 list rule.",
+    "evidence": "Text starts at x=425 in the search-empty card (24px inset) and x=417 in the results card (16px). Messaging header avatar at x=481 (16px) vs intro, message and composer at x=489 (24px). Landing: stat band 24px, sample cards 16, 'How it works' 24, 'Hiring a coach?' 32. Jobs: list card ends at x=584, detail starts at 596 (12px gap), against 24px gutters on profile (951\u2192977), feed (967\u2192993) and search (376\u2192401).",
+    "fix": "Limit the Card padding prop to 'main' (24) and 'list' (16) and choose one per route: /search uses 16 in both states, like the feed. Set the messaging thread header to 24. Use 24 for every landing card. Use gap-6 for the jobs grid. Add dividers between the Popular searches rows.",
+    "severity": "minor"
+   },
+   {
+    "id": "X14",
+    "where": "availability-1440 ('Who can see it', 'Roles you'd consider': 13/600), post-job-1440 ('Role', 'Program', 'Location and type': 14/600), jobs-1440 pane ('About the role': 14/600), job-1440 section cards (16/600), job-1440 group heads ('Alumni coaches 2', count inline) vs profile tree card group heads (count right-aligned)",
+    "problem": "Section headings inside cards use three sizes, and group counts sit in two places. The two form pages, Settings and Post a job, don't even match each other.",
+    "evidence": "Measured caps: availability sub-heads 9px (13px type), post-job and pane sub-heads 10px (14px), job detail card titles 12px (16px).",
+    "fix": "Allow two levels only: card title = text-title 16/600; in-card group or section head = 13/600 with its count in fg-3, right-aligned (the profile tree card pattern). Apply this to both forms, the jobs pane and the job detail people groups.",
+    "severity": "minor"
+   },
+   {
+    "id": "X15",
+    "where": "claim-1440 (components/claim/ClaimStepper.tsx) vs post-job-1440 (local Stepper in components/jobs/PostJobForm.tsx:66)",
+    "problem": "There are two stepper styles. Claim uses 24px ink number discs joined by connector lines, in a band under the header card. Post a job uses smaller discs inline under the subtitle, with no connectors.",
+    "evidence": "The two screenshots side by side: '1 Confirm identity \u2014\u2014 2 Review your career \u2014\u2014 3 Publish' vs '1 Listing details  2 Checkout'.",
+    "fix": "Move ClaimStepper to components/ui/Stepper and use it in both flows, in the same position (a band under the page header).",
+    "severity": "minor"
+   },
+   {
+    "id": "X16",
+    "where": "profile-falconer-1440 (avatar 80), tree-1440 (56), claim-1440 (48); job-1440 and jobs-1440 (OrgMark 56) vs post-job-1440 preview (48)",
+    "problem": "The same subject gets a different header avatar or tile size on each sub-page. Ian Falconer's avatar shrinks from the profile to the tree page to the claim page, and the job header tile is 48 in the preview but 56 on the real job page.",
+    "evidence": "Measured header avatars 80, 56 and 48 for the same person; job tiles 56, 56 and 48.",
+    "fix": "Use 80 on the profile only. Every person sub-page header (tree, claim) uses 56, and every job header uses OrgMark 56, including the preview.",
+    "severity": "minor"
+   },
+   {
+    "id": "X17",
+    "where": "pipeline-1440 candidate cards (components/employer/CandidateCard.tsx) vs messaging-1440 list and thread header vs notifications-1440; Unclaimed chip in program-1440 staff, search-1440, job-1440 network rows and landing cards, but not in the profile tree card, tree-1440, rails, PYMK or the feed",
+    "problem": "Chips are placed inconsistently. On pipeline cards the Demo chip takes its own line under the name; in messaging it sits inline after the name. The Unclaimed chip appears on every row in some person lists and never in others, with no rule. On the program page all 12 staff rows carry it, which is noise.",
+    "evidence": "Pipeline: 'Avery Fieldstone / [Demo] / Defensive Graduate\u2026' (the chip adds a line to every card). Messaging: 'Dana Whitcombe [Demo] 2h'.",
+    "fix": "Put chips inline after the name, on the same baseline, everywhere. Unclaimed rule: show it in the profile header, search results and landing cards, where claim status matters, and drop it from ledger and staff rows where every row has it.",
+    "severity": "minor"
+   },
+   {
+    "id": "X18",
+    "where": "availability-1440 vs search-1440 facets (components/search/params.ts:34 vs lib/format.ts:10); program-1440 StatBand and rail; job-1440 people section; profile-owner-1440; inferred-year legends on profile, tree-1440, program-1440 and feed-1440",
+    "problem": "The same concept gets different words on different screens. 'Support staff' (availability chips) vs 'Support' (search facet). 'Alumni coaches 5' vs 'Coaches from here 6' vs 'All 6 former players' vs 'Played here 2' for coaching alumni and former players. 'Claim and edit' (button) vs 'Claim to edit \u2192' (two header links) vs 'Claim profile' (source banner). The inferred-year note reads 'from the bio' on the profile, 'from a bio' on the tree page, 'from the staff bio' on the program page and 'Dotted years are inferred from the bio' in the feed.",
+    "evidence": "ROLE_FACET_LABEL.support = 'Support' while ROLE labels in lib/format.ts say 'Support staff'. The program page shows the two near-synonymous stats 'Alumni coaches 5' and 'Coaches from here 6' next to each other.",
+    "fix": "Use the lib/format.ts role labels everywhere. Rename 'Coaches from here' to 'Former players now coaching' in both the StatBand and the rail ('Played here' becomes the ContextLine only). Use one claim verb, 'Claim profile'. Keep one INFERRED_NOTE constant.",
+    "severity": "minor"
+   },
+   {
+    "id": "X19",
+    "where": "profile-owner-1440 header vs Experience; feed-1440 MiniProfile; program-1440 Special teams row (data/people.json currentTitle vs data/tenures.json)",
+    "problem": "One page shows the same coach with two current titles. The headline takes the staff-directory title and the current Experience role takes the bio title.",
+    "evidence": "Header: 'Special Teams Coordinator / Defensive Backs Coach at Pacific University (Oregon)'. Experience current role: 'Special Teams Coordinator / Safeties Coach'. The MiniProfile and the program row show the first.",
+    "fix": "Use one title source for the headline and the current role row (the current tenure title, or the directory title in both), and keep the bio wording in the role's Source quote.",
+    "severity": "minor"
+   },
+   {
+    "id": "X20",
+    "where": "landing-1440, search-empty-1440, jobs-1440, search-1440 (components/landing/LandingSearch.tsx, components/search/NoQuery.tsx, components/jobs/JobFilters.tsx, components/search/FacetForm.tsx)",
+    "problem": "There are four page search styles. Landing: 48px bordered field with a primary 'Search' button inside. Search-empty: 36px filled borderless field with a primary button outside. Jobs: the same filled field with a secondary button outside. Search results: a bordered 'Keywords' facet input that duplicates the nav search.",
+    "evidence": "Visible in the four screenshots: the field fill and border, button placement and button weight all differ.",
+    "fix": "Use one page-search pattern: a bordered Input (40px desktop, 48px on landing) with the submit button inside on the right. The button is secondary on pages that already have a primary (Jobs) and primary otherwise. Drop the 'Keywords' facet; the query belongs in the header field and the results title.",
+    "severity": "minor"
+   },
+   {
+    "id": "X21",
+    "where": "notifications-1440 vs messaging-1440, jobs-1440, feed-1440",
+    "problem": "The Notifications page width doesn't match the other nav destinations. It is a 640px centered column with about 400px of empty canvas on each side, so it reads like a settings form rather than a destination page.",
+    "evidence": "Notifications card spans x=401\u20131039. Messaging and Jobs use 145\u20131295. Feed uses the 232\u00b7568\u00b7304 grid.",
+    "fix": "Put Notifications on the feed grid (MiniProfile left rail, centre column, right rail with PYMK and the tracker), as LinkedIn does, or on the 808\u00b7320 detail grid. Keep the 640px centered column for Settings and Claim forms only.",
+    "severity": "minor"
+   },
+   {
+    "id": "X22",
+    "where": "feed-1440, messaging-1440, notifications-1440, feed-dark-1440",
+    "problem": "Unread badges clear differently on the two pages. Opening /messaging marks the top thread read, so the Messaging badge drops from 2 to 1. Visiting /notifications leaves its badge at 3, both on that page and afterwards. As a result the same coach shows different badge numbers in the light and dark feed captures.",
+    "evidence": "Messaging badge: 2 on feed-1440 (11:20), 1 on messaging-1440 (11:23) and feed-dark-1440 (11:24). Notifications badge: 3 throughout, including on the Notifications page itself.",
+    "fix": "Choose one model. LinkedIn's: visiting Notifications clears the badge while rows stay unread-styled until clicked, and Messaging doesn't auto-mark the first thread on load. Capture screenshots from a fixed seed so cross-screen numbers match.",
+    "severity": "minor"
+   },
+   {
+    "id": "X23",
+    "where": "profile-falconer-1440 ('Show all 14 \u203a', 'In coaching tree \u203a'), program-1440 ('Coaches from here \u203a', 'All NWC programs \u2192'), job-1440 ('See all \u2192'), feed-1440 ('All moves \u2192'), landing-1440 ('Search all coaches \u2192')",
+    "problem": "Navigation links mix arrows and chevrons, and their labels mix verbs: 'See all', 'Show all', 'All \u2026', 'View \u2026', 'Explore \u2026'.",
+    "evidence": "Seen in the card headers and footers of the screens listed.",
+    "fix": "Use \u2192 for any link that goes to another page and reserve chevrons for disclosure. Card headers say 'View {thing} \u2192' or 'Explore tree \u2192'; footers say 'All {n} {things} \u2192' (so 'See all' becomes 'All similar jobs \u2192').",
+    "severity": "minor"
+   },
+   {
+    "id": "X24",
+    "where": "Signed-out phone screens: jobs-390, job-390, program-390, program-nostaff-390, search-390, search-empty-390, tree-390, profile-falconer-390, claim-390",
+    "problem": "The search placeholder is cut off on every signed-out phone screen because the 'Sign in' text button takes up the space. Signed-in screens show it in full.",
+    "evidence": "Signed-out: 'Search coaches, progra\u2026'. Signed-in: 'Search coaches, programs' (feed-390, messaging-390, notifications-390).",
+    "fix": "When 'Sign in' is present, shorten the placeholder to 'Search', or make 'Sign in' a 44px icon button with a tooltip.",
+    "severity": "minor"
+   },
+   {
+    "id": "X25",
+    "where": "job-1440 and jobs-1440 Apply (send icon) vs feed-1440 'Invite to claim' (send); primary buttons on profile, program, pipeline, claim, landing, search-empty, post-job, messaging, availability",
+    "problem": "Primary buttons are inconsistent about icons. Connect, Follow, Apply, Find candidates, Send code and 'Claim and edit' have one; Search, Continue to checkout, Save and Send don't. Apply also uses the `send` icon, which \u00a77 assigns to 'Invite to claim', so one glyph stands for two actions.",
+    "evidence": "Apply shows a paper-plane icon on both job screens; 'Invite to claim' in the feed's People you may know uses the same icon.",
+    "fix": "Rule: a primary button carries an icon only when \u00a77 maps one to that concept. Remove `send` from Apply, or add an Apply row to \u00a77 with its own icon, and document the rule in \u00a78.1 Button.",
+    "severity": "minor"
+   }
+  ]
+ },
+ "2": {
+  "findings": [
+   {
+    "id": "next-rsc-rce",
+    "where": "web/package.json (\"next\": \"15.5.4\", react 19.1.0); affects every App Router page, all of which accept Server Action POSTs",
+    "problem": "The installed Next.js 15.5.4 is affected by GHSA-9qr9-h5gf-34mp (CVE-2025-55182/66478, 'RCE in React flight protocol'). This is a critical bug that lets an unauthenticated attacker run code on the server: Server Action and RSC request bodies are deserialized (decodeReply) before any app code runs. npm audit also lists later critical and high advisories for this version: RSC/Server Action DoS, source-code exposure, cache poisoning, and image-optimizer RCE.",
+    "evidence": "`node -p \"require('./node_modules/next/package.json').version\"` gives 15.5.4. `npm audit --omit=dev` gives: next critical, range >=15.5.0-canary.0 <15.5.7, title 'Next.js is vulnerable to RCE in React flight protocol' https://github.com/advisories/GHSA-9qr9-h5gf-34mp, plus GHSA-w37m-7fhw-fmv9 (Server Actions source exposure), GHSA-mwv6-3258-q52c / GHSA-h25m-26qc-wcjf / GHSA-m99w-x7hq-7vfj (Server Components / Server Actions DoS), GHSA-2464-fhr4-w9xw (image-optimizer RCE <=15.5.27). The attack surface is reachable without a session: any POST to e.g. http://localhost:3000/ with a `Next-Action` header goes through the flight decoder. I did not run an exploit against the shared dev server.",
+    "fix": "Upgrade next to the latest 15.5.x patch (npm audit names 15.5.28) and react/react-dom to the matching patched 19.1.x. Re-run `npm audit --omit=dev` until it shows no critical/high next advisories. While there, also bump drizzle-orm to >=0.45.2 (GHSA-gpj5-g38j-94v9, identifier escaping). The app builds no identifiers from user input, so that one is not exploitable today.",
+    "severity": "critical"
+   },
+   {
+    "id": "public-job-injection",
+    "where": "web/src/lib/actions/jobs.ts:19-76 (createJob), :85-109 (closeJob)",
+    "problem": "Any anonymous visitor can switch to the shared employer demo, a cookie set with no credential. From there they can publish a job listing with free text and external https links. It is permanently public on /jobs, /jobs/[id], the feed and the program page, under a real institution (org ncaa-2751, 'Pacific University (Oregon)'). This is 'write arbitrary data' visible to everyone: phishing links or offensive content shown under a real school's name. Only a 'Sample listing' chip marks it. Messages got per-browser scoping for exactly this reason (the coach demo is a real coach); listings did not. The 25-open-listing cap is per account, and the account is shared by all visitors, so one visitor can fill it and block everyone else. Close-then-repost also allows unlimited total rows. Mass assignment is NOT possible: extra orgId/isDemo/status fields were ignored.",
+    "evidence": "Post as the employer. The multipart field 0 must come last, and the action id comes from .next/server/server-reference-manifest.json:\ncurl -s -X POST http://localhost:3000/employers/jobs/new -b 'cn_demo_session=employer' -H 'Next-Action: 60a179b9e9f0820f1513bfe9dc478f1cb57801c9b2' -H 'Accept: text/x-component' -F '1_title=SECREVIEW test listing' -F '1_roleGroup=head_coach' -F '1_unit=staff' -F '1_employmentType=Full-time' -F '1_description=Arbitrary text any anonymous visitor can publish. Apply at https://evil.example/login now.' -F '1_howToApply=https://evil.example/apply' -F '1_orgId=ncaa-953' -F '1_isDemo=false' -F '0=[null,\"$K1\"]'\nResponse: 1:{\"errors\":{},\"published\":{\"id\":37,...}}. DB row: 37|ncaa-2751|Pacific University (Oregon)|is_demo=t|native.\nThen signed out: `curl http://localhost:3000/jobs/37` returns 200, and the HTML contains href=\"https://evil.example/login\" and href=\"https://evil.example/apply\". I deleted row 37 afterwards.",
+    "fix": "Treat demo-authored listings like demo messages. Scope them to the authoring browser (a random httpOnly scope cookie, filtered out of public queries), or don't persist them and render the success page from the submitted data. If they must be public, add moderation or allowlisted link domains, a per-IP rate limit, and a TTL. Make the open-listing cap per scope rather than per shared account.",
+    "severity": "major"
+   },
+   {
+    "id": "switch-open-redirect",
+    "where": "web/src/lib/actions/session.ts:6-13 (switchDemoAccount)",
+    "problem": "Both arguments are client-controlled and unvalidated. `redirectTo` goes straight to redirect(), so the action redirects to absolute and protocol-relative external URLs (open redirect). `role` is written into the session cookie verbatim, so any string works, e.g. '__proto__'; see the session-proto-chain finding. Next's built-in Origin check blocks cross-site invocation, so this is defense-in-depth rather than a remote exploit today. It becomes exploitable as soon as any page passes a URL-derived value (e.g. ?next=) into it.",
+    "evidence": "curl -s -i -X POST http://localhost:3000/ -H 'Next-Action: 60e44c61b547ea99dc492ab57fcfa28353dffb8fba' -H 'Accept: text/x-component' -H 'Content-Type: text/plain;charset=UTF-8' --data-raw '[\"coach\",\"https://evil.example/phish\"]' returns `HTTP/1.1 303`, `x-action-redirect: https://evil.example/phish;push`. With '//evil.example/x' it returns `x-action-redirect: //evil.example/x;push`. With '[\"__proto__\",\"/about\"]' it returns `Set-Cookie: cn_demo_session=__proto__`. The same request with `-H 'Origin: https://evil.example'` returns 500 'Invalid Server Actions request.' (CSRF check works).",
+    "fix": "Validate with zod: `role: z.enum([\"coach\",\"employer\",\"signed_out\"])`. Accept redirectTo only if it is a same-origin path: starts with a single '/', does not start with '//' or '/\\\\', and parses to the same origin with `new URL(v, base)`. Otherwise fall back to '/feed'.",
+    "severity": "minor"
+   },
+   {
+    "id": "session-proto-chain",
+    "where": "web/src/lib/session.ts:22-24 (getSession: `!(role in DEMO_USER_ID)`)",
+    "problem": "The `in` check walks the prototype chain, so cookie values like '__proto__', 'constructor' and 'toString' pass it. loadDemoSession then calls `DEMO_USER_ID[role]` and gets a non-string. With '__proto__' this throws a TypeError, and every page that calls getSession() without .catch returns 500. switchDemoAccount will set exactly this cookie. The impact is limited to the browser holding the cookie: self-DoS, no cross-user effect.",
+    "evidence": "`curl -s -o /dev/null -w '%{http_code}' -b 'cn_demo_session=__proto__' http://localhost:3000/settings` returns 500. GET /messaging with the same cookie renders an error boundary with \"TypeError: Cannot read properties of null (reading 'constructor')\" at loadDemoSession (src/lib/session.ts) <- getSession <- MessagingPage.",
+    "fix": "Use `Object.hasOwn(DEMO_USER_ID, role)`, or a zod enum / literal check (`role === 'coach' || role === 'employer'`), before indexing.",
+    "severity": "minor"
+   },
+   {
+    "id": "scoped-unread-badge",
+    "where": "web/src/lib/actions/messaging.ts:96-114 (markThreadUnread) and :81-94 (markThreadRead); web/src/lib/queries/shell.ts:9-21 (getShellCounts)",
+    "problem": "otherUserIn() does not reject '#'-scoped thread ids. When the viewer's id sorts first ('u-demo-ad:u-demo-coach#<scope>'), it returns the bogus other id 'u-demo-coach#<scope>'. markThreadUnread never checks that this user exists, so the employer session can flip a private, per-browser message back to unread. getShellCounts counts every unread message to the user with no scope filter. Result: every visitor using the employer demo sees a phantom unread badge for a message they cannot open or clear. This breaks the documented rule 'saved as read so they never move another visitor's unread badge'. It repeats with a fresh scope each time.",
+    "evidence": "1) As coach: POST /messaging Next-Action 40f5a3550c53b4c5118c7d57ab54e30eb2474db27e body [{\"threadId\":\"u-demo-ad:u-demo-coach\",\"body\":\"x\"}]. This returns Set-Cookie cn_demo_scope=16e3fa1b67b97f4406f2eff3 and stores row 9, thread 'u-demo-ad:u-demo-coach#16e3\u2026', read_at set.\n2) curl -s -b 'cn_demo_session=employer; cn_demo_scope=16e3fa1b67b97f4406f2eff3' -X POST http://localhost:3000/messaging -H 'Next-Action: 4073bcd67599a15e7ead3c1743e39ae02e8d2bcd5b' -H 'Accept: text/x-component' -H 'Content-Type: text/plain;charset=UTF-8' --data-raw '[\"u-demo-ad:u-demo-coach#16e3fa1b67b97f4406f2eff3\"]' returns 1:{\"ok\":true}. The AD's unread count goes from 1 to 2.\n3) A fresh employer visitor with no scope cookie: GET /notifications shows aria-label=\"Messaging, 2 unread\", but the thread is invisible to them. I deleted the row afterwards.",
+    "fix": "Have otherUserIn (or the actions) reject ids containing '#', and require the other id to exist in users. Have markThread{Read,Unread} operate on `threadId` plus `scopedThreadId(threadId, readDemoScope())` only. Apply visibleTo(scope) in getShellCounts too.",
+    "severity": "minor"
+   },
+   {
+    "id": "msg-ratelimit-bypass",
+    "where": "web/src/lib/actions/messaging.ts:22-35,57-68 (sendMessage rate limit / ensureDemoScope)",
+    "problem": "The 20-messages-per-10-minutes limit is keyed on the client-supplied cn_demo_scope cookie. A client that drops the cookie gets a new scope, and a new quota, on every request, so the database can be filled without bound (2000 chars per row). sendMessage also opens brand-new threads with any existing user, e.g. employer to u-demo-avery or u-demo-dana, which the UI never offers. The scoping now hides these from other visitors, but they still add DB writes.",
+    "evidence": "22 POSTs in a row without returning the scope cookie, each: curl -s -b 'cn_demo_session=coach' -X POST http://localhost:3000/messaging -H 'Next-Action: 40f5a3550c53b4c5118c7d57ab54e30eb2474db27e' -H 'Accept: text/x-component' -H 'Content-Type: text/plain;charset=UTF-8' --data-raw '[{\"threadId\":\"u-demo-ad:u-demo-coach\",\"body\":\"SECREVIEW rl N\"}]'. Result: accepted=22/22 within 10 minutes; the DB shows 22 rows across 22 distinct scopes. Before scoping was added, an employer POST with threadId 'u-demo-ad:u-demo-avery' also created a new thread (row 7). All test rows deleted.",
+    "fix": "Rate-limit on a server-side key: client IP or IP+UA at the edge or in a middleware token bucket, plus a global cap on demo writes. Only allow sendMessage into threads that already have an unscoped seeded row, or into an explicit allowlist of demo counterparts.",
+    "severity": "minor"
+   },
+   {
+    "id": "pipeline-dup-race",
+    "where": "web/src/lib/actions/employer.ts:123-135 (addToPipeline check-then-insert); web/src/db/schema.ts:199-207 (shortlist_entries has no unique index); same pattern in web/src/lib/actions/claim.ts:44-55 / schema claims",
+    "problem": "addToPipeline selects for an existing (shortlist, person) row and then inserts, with no unique constraint and no transaction. Concurrent calls (double-click, retries, two tabs on the shared demo) create duplicate candidates at the same position. submitClaim has the same select-then-insert pattern on claims without a unique (person_id, user_id).",
+    "evidence": "Six parallel calls of POST /employers/pipeline, Next-Action 6093cab0d29001009f4820b2f0d359d2c3a88cb431, body [\"p-zbig-kepa\",1], cookie cn_demo_session=employer. Three responses returned alreadyAdded:false with different entryIds (13, 14, 15). The DB then had 3 rows for p-zbig-kepa in shortlist 1, all with position 3. Rows deleted afterwards.",
+    "fix": "Add uniqueIndex on shortlist_entries(shortlist_id, person_id) and use `.onConflictDoNothing().returning()` (then re-select on conflict). Do the same for claims(person_id, user_id) with onConflictDoUpdate.",
+    "severity": "minor"
+   },
+   {
+    "id": "missing-input-validation",
+    "where": "web/src/lib/actions/employer.ts:198-225 (restoreCandidate); messaging.ts:81,97 (markThreadRead/Unread threadId); search.ts:110 (requestConnection personId); program.ts:81 (setProgramFollow follow)",
+    "problem": "Several actions trust the declared TypeScript types, but Server Action arguments are arbitrary JSON. restoreCandidate never checks that personId exists and leaves position unbounded, so it inserts into the DB and fails with an FK or int4-overflow error: unhandled 500, and in dev the SQL text leaks in the error. markThreadRead/Unread call threadId.split on non-strings (500). setProgramFollow echoes a non-boolean `follow`. search.requestConnection has no zod schema for personId. These fail safe for authorization, but give 500s and noisy logs.",
+    "evidence": "restoreCandidate (employer, Next-Action 4013d4001b100ff7c41a09c4510cf3dfb4211f6e6b) with [{\"shortlistId\":1,\"personId\":\"does-not-exist\",\"stage\":\"sourced\",\"note\":null,\"position\":0}] returns HTTP 500 'Failed query: insert into \"shortlist_entries\" ...'. With position 9999999999 it returns HTTP 500 the same way. markThreadRead (coach, 40f4e366743cefebf9215129e40a74912e17e4fbaa) with [123] returns HTTP 500 'threadId.split is not a function'. setProgramFollow (60ab07f18e9a2565df2df8d512244df53c3f2ba81a) with [\"ncaa-2751\",{\"x\":1}] returns {\"ok\":true,\"following\":\"$T0:1\"}.",
+    "fix": "Parse every action's arguments with zod at the top: z.string().max(200) for ids/threadIds, z.boolean() for follow, position .max(1_000_000) as moveCandidate does. In restoreCandidate, verify the person exists (as addToPipeline does). Wrap inserts in try/catch and return {ok:false}.",
+    "severity": "minor"
+   },
+   {
+    "id": "host-header-reflection",
+    "where": "web/src/app/programs/[slug]/page.tsx:69-74 (siteOrigin) -> canonical, og:url, ProgramJsonLd; web/src/app/in/[slug]/tree/page.tsx:41-49 (inviteHref)",
+    "problem": "The absolute origin is built from the client-controlled X-Forwarded-Host / Host headers. It is written into <link rel=canonical>, og:url, JSON-LD url fields and the tree page's mailto invite body. Behind a shared cache or CDN that forwards X-Forwarded-Host but does not key on it, this allows cache poisoning (SEO hijack, or links pointing to an attacker's host).",
+    "evidence": "curl -s -H 'X-Forwarded-Host: evil.example' http://localhost:3000/programs/adrian | grep canonical gives `<link rel=\"canonical\" href=\"http://evil.example/programs/adrian\"/>`, `og:url content=\"http://evil.example/programs/adrian\"` and JSON-LD `\"url\":\"http://evil.example/programs/adrian\"`.",
+    "fix": "Use a configured site origin (e.g. NEXT_PUBLIC_SITE_URL / metadataBase) instead of request headers. Or trust X-Forwarded-Host only from a known proxy and validate it against an allowlist.",
+    "severity": "minor"
+   },
+   {
+    "id": "dev-gallery-private-data",
+    "where": "web/src/app/dev/components/page.tsx:11-18 (loadDemoSession('coach') for signed-out viewers); components/shell/MeMenu.tsx:81-82",
+    "problem": "/dev/components is public, with no NODE_ENV or session gate. It loads the coach demo session without a cookie and renders its Me menu, including the private 'Open to opportunities' status. The demo coach is a real, non-demo person (p-justin-leatherman, is_demo=f). Any visitor can switch to the coach demo and turn the setting on, and the gallery then broadcasts e.g. 'On \u00b7 visible to employers except Pacific (OR)' under his name to anyone. The schema comment says this setting is never shown publicly.",
+    "evidence": "`curl -s http://localhost:3000/dev/components` (no cookie) returns 200. The HTML contains `<span class=\"block\">Open to opportunities</span><span class=\"block text-caption text-fg-3\">Off \u00b7 only you see this</span>`, rendered from the availability row for p-justin-leatherman.",
+    "fix": "Gate /dev/* behind `process.env.NODE_ENV !== 'production'` (notFound()) or an env flag, and render the gallery with the FALLBACK_VIEWER fixture instead of a live session.",
+    "severity": "minor"
+   },
+   {
+    "id": "headers-cookies",
+    "where": "web/next.config.ts (no headers()); web/src/lib/actions/session.ts:12, messaging.ts:33, program.ts:94 (cookie options)",
+    "problem": "There are no security headers. CSP, frame-ancestors / X-Frame-Options (clickjacking on one-click actions such as Close listing and demo switch), X-Content-Type-Options and Referrer-Policy are all missing, and X-Powered-By: Next.js is sent. The cn_demo_session, cn_demo_scope and cn_follows cookies are httpOnly and SameSite=Lax but lack Secure.",
+    "evidence": "`curl -s -D - -o /dev/null http://localhost:3000/about` shows only Vary, link, Cache-Control, X-Powered-By: Next.js, Content-Type. The set-cookie seen above: `cn_demo_session=coach; Path=/; ...; HttpOnly; SameSite=lax` (no Secure).",
+    "fix": "Add headers() in next.config.ts: Content-Security-Policy (with frame-ancestors 'none'), X-Content-Type-Options: nosniff, Referrer-Policy: strict-origin-when-cross-origin. Set poweredByHeader: false. Add `secure: process.env.NODE_ENV === 'production'` to every cookies().set.",
+    "severity": "minor"
+   },
+   {
+    "id": "no-rate-limiting",
+    "where": "All server actions in web/src/lib/actions/*.ts; web/src/app/api/typeahead/route.ts",
+    "problem": "(Note only.) Apart from the cookie-keyed message limit, nothing is rate limited. Unbounded writes include createJob via close/repost, submitClaim (one row per person per user, so thousands of rows with arbitrary emails kept forever), saveCandidateNote and addToPipeline. Unauthenticated reads (/api/typeahead, findPrograms) run leading-wildcard ILIKE scans across people/organizations.",
+    "evidence": "Code review: no middleware.ts and no limiter anywhere in src. /api/typeahead and the findPrograms action (4093ae9ba14d4931236717a0ddb25f188af41f1c31) respond to signed-out requests; e.g. findPrograms with [\"%\"] returns [] (wildcards escaped, but no throttling).",
+    "fix": "Add an edge/middleware token-bucket limit per IP for POSTs with a Next-Action header and for /api/typeahead. Add TTL cleanup for demo-authored claims, pipeline notes and listings.",
+    "severity": "minor"
+   }
+  ],
+  "summary": "Reviewed every Server Action in web/src/lib/actions/*.ts, the only route handler (src/app/api/typeahead/route.ts), and both session modules. The messaging code was being edited by another agent during the review; the messaging findings are against the latest version (per-browser scopes). Every test request ran against http://localhost:3000. I replayed Server Actions with curl, using action ids taken from .next/server/server-reference-manifest.json. All test rows were deleted afterwards (messages, shortlist entries, job 37).\n\nWhat I found:\n- **Critical:** next 15.5.4 is affected by the React flight protocol RCE (GHSA-9qr9-h5gf-34mp) and other critical/high advisories. Upgrade to the latest 15.5.x (npm audit names 15.5.28).\n- **Major:** any anonymous visitor can switch to the shared employer demo and publish a permanent public job listing with arbitrary text and https links under a real school (Pacific University (Oregon)). Signed-out visitors can see it. One visitor can also use up the shared 25-listing cap.\n- **Minor, all demonstrated:**\n  - Open redirect plus an unvalidated role in switchDemoAccount. Cross-site use is blocked by Next's Origin check.\n  - A `__proto__` session cookie passes the `in` check in getSession and returns 500 on every session page.\n  - markThreadUnread accepts '#'-scoped thread ids, and the nav badge count ignores scope. So the employer session can create a phantom unread badge that every employer visitor sees and nobody can clear.\n  - The message rate limit is keyed on a client cookie: 22 of 22 messages were accepted after dropping it.\n  - addToPipeline has a check-then-insert race: 6 parallel calls created 3 duplicate entries (no unique index; claims has the same pattern).\n  - Missing argument validation causes 500s: restoreCandidate (FK error, int overflow), markThreadRead with a non-string id, setProgramFollow.\n  - X-Forwarded-Host is written into canonical, og:url and JSON-LD.\n  - /dev/components is public and shows the real demo coach's private availability status.\n  - There are no security headers, and cookies lack Secure.\n  - Rate limiting is absent everywhere else (note only).\n\nWhat holds up:\n- **SQL:** every query is parameterized through drizzle sql`` and operators. The only sql.raw is the constant '#'. escapeLike is applied on every live ILIKE path. The one unescaped ILIKE is in the unused listJobs (src/lib/queries/jobs.ts:17, tests only).\n- **HTML rendering:** no user text reaches dangerouslySetInnerHTML. Both JSON-LD blocks escape '<'. Job descriptions are parsed into plain data and rendered as React text, links are made only for http(s) URLs, and emails always get a mailto: prefix. Message bodies and notes render as plain text.\n- **Who can do what:** signed-out and coach sessions cannot post or close jobs or touch the pipeline. The employer cannot save availability. closeJob refuses other programs' listings. Shortlist ownership and thread membership are enforced, and signed-out sendMessage is refused.\n- **Mass assignment:** extra orgId, isDemo and status fields on createJob were ignored.\n- **CSRF:** Next's Origin check rejects cross-origin action calls ('Invalid Server Actions request.'), cookies are httpOnly and SameSite=Lax, and no GET request has side effects.\n\nHelper script I used to replay actions: /tmp/claude-0/-home-user/b13a1792-8696-5f9f-a6b8-5bf79408a2f7/scratchpad/sec/act.sh"
+ },
+ "3": {
+  "findings": [
+   {
+    "id": "S08-hunter-glenn-greensboro",
+    "where": "data/tenures.json: p-hunter-glenn @ ncaa-263 Greensboro College, 'Tight Ends Coach' 2015-2015 (bio: /home/user/klonen_cli/pipeline/work/bios/ncaa-1226__53428a0ac990.txt)",
+    "problem": "yearsExplicit is true, but the bio never gives a year for the Greensboro stint. 2015 is worked out from his graduation year plus the duration 'a year'. The org, role, sport and the year itself look right; only the flag overstates how the year was sourced.",
+    "evidence": "Bio: 'A 2015 graduate of Presbyterian College ... Following his graduation, he spent a year on the staff of Greensboro College as a tight ends coach.' The evidence quote has no year. resolve.py years_explicit() only downgrades the flag when the DURATION regex matches, and that regex (resolve.py:673-676) needs a digit or a number word, so 'a year' / 'a season' slips past the downgrade.",
+    "fix": "Set yearsExplicit=false for this row. Add 'a|an' to the quantifier in DURATION (or NUMBER_WORDS) so phrases like 'spent a year' / 'a season' trigger the downgrade, then re-run resolve and the years_explicit tests.",
+    "severity": "minor"
+   },
+   {
+    "id": "S16-vaughn-johnson-wl",
+    "where": "data/tenures.json: p-vaughn-johnson @ ncaa-752 Washington and Lee University, 'Associate Head Coach / Defensive Coordinator / Linebackers' 2022-present (bio: /home/user/klonen_cli/pipeline/work/bios/ncaa-752__4addd7b4ea79.txt)",
+    "problem": "The row puts his current combined title on a stint that starts in 2022, but he only became Associate Head Coach in 2024. For 2022-23 the row overstates his role. The DC start year, org and sport are correct.",
+    "evidence": "Bio: 'elevated to defensive coordinator prior to the 2022 season. Ahead of the 2024 season, Johnson was promoted to Associate Head Coach.' Resume: 'Associate Head Coach (2024-Present) / Defensive Coordinator (2022-Present)'. Row evidence: 'Defensive Coordinator (2022-Present)'.",
+    "fix": "Split the row into 'Defensive Coordinator / Linebackers' 2022-2023 and 'Associate Head Coach / Defensive Coordinator / Linebackers' 2024-present, or keep startYear 2022 with role 'Defensive Coordinator / Linebackers' and record the 2024 promotion separately. The current-title merge in choose_current should not carry title parts that started later back to an earlier start year.",
+    "severity": "minor"
+   },
+   {
+    "id": "S09-steve-wolf-wolf-kicking",
+    "where": "data/tenures.json: p-steve-wolf @ org-wolf-kicking Wolf Kicking, 'Founder / Clinical Director' (bio: /home/user/klonen_cli/pipeline/work/bios/ncaa-123__f3ad1ceb0d3e.txt)",
+    "problem": "isCurrent is false, but the bio describes the role in the present tense. The role, org and 'no years' are right. This is systemic: resolve.py hardcodes isCurrent=False on every stint extracted from a bio, and only the main roster stint gets marked current. Any secondary role he still holds therefore reads as a past role.",
+    "evidence": "Bio: 'Wolf is one of the top kicking/punting coaches in the country as well as founder and clinical director of Wolf Kicking.' resolve.py:1518 builds every bio row with \"isCurrent\": False, and only choose_current() sets it to True, for one row. The same pattern shows up outside the sample: Shawn Weigel's Hendrix track and field head coach role ('also serves as') is isCurrent=false.",
+    "fix": "Have the extractor emit an is_current flag, or treat present-tense evidence ('is', 'serves as', 'currently') as current, and let isCurrent be true on more than one row. Otherwise, document that isCurrent means 'primary current roster role' only.",
+    "severity": "minor"
+   }
+  ],
+  "summary": "I checked 25 coaching stints from /home/user/klonen_cli/data/tenures.json. The draw used python3 -I with random.seed(2222) and random.sample over the 6,881 rows where asPlayer is false. Each stint was joined to people.json and organizations.json and matched to its bio through pipeline/work/bios_index.json (tenure sourceUrl to index url). I read every bio file under /home/user/klonen_cli/pipeline/work/bios/.\n\nTallies:\n- correct: 22\n- partly_correct: 3 (all minor)\n- wrong: 0\n- unverifiable: 0\n\nThe three partly_correct stints:\n- **#8 Hunter Glenn @ Greensboro:** yearsExplicit is true for a year that was worked out from the bio, not stated in it. The cause is that the DURATION regex misses 'a year'.\n- **#16 Vaughn Johnson @ W&L:** the Associate Head Coach title, which started in 2024, sits on a stint that starts in 2022.\n- **#9 Steve Wolf @ Wolf Kicking:** isCurrent is false for a role the bio describes in the present tense. This is systemic: resolve.py marks every stint taken from a bio as not current, except the one main roster role.\n\nThe 22 correct stints:\n- **Org identity, role, years and sport match the bio:** Grove/Amherst 2018, McDonough/Hobart 2024-, Duvendeck/Culver-Stockton 2011-16, Sanders/New Mexico State 2000, Burleson/Hardin-Simmons 2011-, Washington/NJ Eagles (president/GM, years from 'past three years', not explicit), Goff/Cortland, Kradman/UW-Oshkosh, Jakubcin/Heidelberg GA 2009-11, Verley/Ottawa Hills HS 2017-22, Gilmartin/Salve Regina, Mills/Amherst 1997-, Tsugawa/Yelm HS, Williams/Ohio Northern 2022, Giglio/Plymouth State 2024-, Leonard/Franklin 2003-19, Soto/Irvington HS.\n- **Years inferred and honestly flagged not explicit:** Weigel/William Jewell 2021-24 and Higgins/Keystone 2018-24.\n- **Supported only by the roster title, since the bio body is empty:** Mason/WashU, Kingery/Wartburg, and Connor Martin/Wisconsin Lutheran. Martin's role 'Defensive Backs Coach' matches pipeline/work/staff.json, but his evidence string is a garbled title, 'Wisconsin Lutheran College 2025'.\n\nSmall observations I did not count against any stint:\n- Several non-NCAA orgs have no state even where the bio names one: Culver-Stockton ('in Missouri'), Yelm HS and NJ Eagles.\n- 'Ottawa Hills High School' has no state, so it is ambiguous between Grand Rapids MI and Toledo OH.\n- Sanders's New Mexico State end year (2000) is inferred from the stints that follow, but it is consistent with them.\n\nThe sampling script and sample are at /tmp/claude-0/-home-user/b13a1792-8696-5f9f-a6b8-5bf79408a2f7/scratchpad/sample.py and /tmp/claude-0/-home-user/b13a1792-8696-5f9f-a6b8-5bf79408a2f7/scratchpad/sample.json."
+ }
+}

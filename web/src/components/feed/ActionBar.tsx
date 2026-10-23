@@ -6,6 +6,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
+import { InviteSheet, type ProfilePerson } from "@/components/profile/ProfileDialogs";
 import { cn } from "@/lib/cn";
 import { useCopyLink } from "./useCopyLink";
 
@@ -21,13 +22,20 @@ type ActionBarProps = {
   /** Stable key for this item (remembers Congratulate in this browser). */
   itemKey: string;
   viewer: { name: string; tintKey: string };
+  /**
+   * The coach a person item is about. Unclaimed coaches can't receive messages yet, so Message opens
+   * the same "Invite {first} to claim" sheet as the profile (§8.4).
+   */
+  person?: ProfilePerson;
 };
 
-// Four fixed slots (§8.5 ActionBar): 40px ghost buttons with icon + 13px label on desktop;
-// 52px cells with the icon over a 12px label on phone. Slots never collapse or reorder.
+// Four fixed slots (§8.5 ActionBar): 40px ghost buttons with icon + 13px label in a wide card;
+// 52px cells with the icon over a 12px label when the card is narrower than 34rem. The switch
+// follows the card's width (container query), not the viewport, because the card is narrowest at
+// the low end of md and lg. Labels never truncate; slots never collapse or reorder.
 const SLOT =
   "h-10 w-full min-w-0 px-2 text-fg-2 hover:text-fg-1 " +
-  "max-md:h-[52px] max-md:flex-col max-md:gap-0.5 max-md:px-0.5 max-md:text-caption max-md:leading-4";
+  "@max-[34rem]:h-[52px] @max-[34rem]:flex-col @max-[34rem]:gap-0.5 @max-[34rem]:px-0.5 @max-[34rem]:text-caption @max-[34rem]:leading-4";
 
 const STORE = "cn-feed-congrats";
 
@@ -51,8 +59,9 @@ function writeCongrats(key: string, on: boolean) {
 }
 
 /** The feed item action bar. Demo actions: nothing here is sent or stored on the server. */
-export function ActionBar({ set, subject, short, sharePath, itemKey, viewer }: ActionBarProps) {
+export function ActionBar({ set, subject, short, sharePath, itemKey, viewer, person }: ActionBarProps) {
   const [congrats, setCongrats] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
   const [following, setFollowing] = useState(false);
   const [composerOpen, setComposerOpen] = useState(false);
   const [draft, setDraft] = useState("");
@@ -91,51 +100,59 @@ export function ActionBar({ set, subject, short, sharePath, itemKey, viewer }: A
           <span className="sr-only">, from you</span>
         </p>
       )}
-      <div role="group" aria-label={`Actions for ${subject}`} className={cn("grid grid-cols-4 border-t border-divider px-2 py-1 max-md:px-0 max-md:py-0.5", count > 0 ? "mt-2" : "mt-3")}>
-        <Button variant="ghost" phone="none" aria-pressed={congrats} onClick={toggleCongrats} className={cn(SLOT, congrats && "text-fg-1")}>
-          <Icon icon={Handshake} size={16} strokeWidth={congrats ? 2.25 : undefined} />
-          <span className={cn("truncate", congrats && "font-semibold")}>{congrats ? "Congratulated" : "Congratulate"}</span>
-        </Button>
-        <Button
-          variant="ghost"
-          phone="none"
-          aria-expanded={composerOpen}
-          aria-controls={composerOpen ? `${id}-comments` : undefined}
-          onClick={() => setComposerOpen((o) => !o)}
-          className={cn(SLOT, composerOpen && "text-fg-1")}
-        >
-          <Icon icon={MessageCircle} size={16} />
-          <span className="truncate">Comment</span>
-        </Button>
-        {set === "person" ? (
-          <ButtonLink href="/messaging" variant="ghost" phone="none" className={SLOT} aria-label={`Message ${subject}`}>
-            <Icon icon={Mail} size={16} />
-            <span className="truncate">Message</span>
-          </ButtonLink>
-        ) : (
+      <div className={cn("@container border-t border-divider", count > 0 ? "mt-2" : "mt-3")}>
+        <div role="group" aria-label={`Actions for ${subject}`} className="grid grid-cols-4 px-2 py-1 @max-[34rem]:px-0 @max-[34rem]:py-0.5">
+          <Button variant="ghost" phone="none" aria-pressed={congrats} onClick={toggleCongrats} className={cn(SLOT, congrats && "text-fg-1")}>
+            <Icon icon={Handshake} size={16} strokeWidth={congrats ? 2.25 : undefined} />
+            <span className={cn(congrats && "font-semibold")}>{congrats ? "Congratulated" : "Congratulate"}</span>
+          </Button>
           <Button
             variant="ghost"
             phone="none"
-            aria-pressed={following}
-            aria-label={`Follow ${subject}`}
-            onClick={() => setFollowing((f) => !f)}
-            className={cn(SLOT, following && "text-fg-1")}
+            aria-expanded={composerOpen}
+            aria-controls={composerOpen ? `${id}-comments` : undefined}
+            onClick={() => setComposerOpen((o) => !o)}
+            className={cn(SLOT, composerOpen && "text-fg-1")}
           >
-            <Icon icon={following ? Check : Plus} size={16} />
-            <span className={cn("truncate", following && "font-semibold")}>{following ? "Following" : "Follow"}</span>
+            <Icon icon={MessageCircle} size={16} />
+            <span>Comment</span>
           </Button>
-        )}
-        <Button
-          variant="ghost"
-          phone="none"
-          aria-label={`Share ${subject}`}
-          onClick={() => copy(sharePath, set === "person" ? `Link to ${short}'s profile copied` : `Link to ${subject} copied`)}
-          className={SLOT}
-        >
-          <Icon icon={Forward} size={16} />
-          <span className="truncate">Share</span>
-        </Button>
+          {set === "person" && person && !person.claimed ? (
+            <Button variant="ghost" phone="none" aria-haspopup="dialog" aria-label={`Message ${subject}`} onClick={() => setInviteOpen(true)} className={SLOT}>
+              <Icon icon={Mail} size={16} />
+              <span>Message</span>
+            </Button>
+          ) : set === "person" ? (
+            <ButtonLink href="/messaging" variant="ghost" phone="none" className={SLOT} aria-label={`Message ${subject}`}>
+              <Icon icon={Mail} size={16} />
+              <span>Message</span>
+            </ButtonLink>
+          ) : (
+            <Button
+              variant="ghost"
+              phone="none"
+              aria-pressed={following}
+              aria-label={`Follow ${subject}`}
+              onClick={() => setFollowing((f) => !f)}
+              className={cn(SLOT, following && "text-fg-1")}
+            >
+              <Icon icon={following ? Check : Plus} size={16} />
+              <span className={cn(following && "font-semibold")}>{following ? "Following" : "Follow"}</span>
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            phone="none"
+            aria-label={`Share ${subject}`}
+            onClick={() => copy(sharePath, set === "person" ? `Link to ${short}'s profile copied` : `Link to ${subject} copied`)}
+            className={SLOT}
+          >
+            <Icon icon={Forward} size={16} />
+            <span>Share</span>
+          </Button>
+        </div>
       </div>
+      {person && !person.claimed && <InviteSheet person={person} reason="message" open={inviteOpen} onOpenChange={setInviteOpen} />}
       {composerOpen && (
         <div id={`${id}-comments`} className="border-t border-divider px-4 py-3">
           {comments.length > 0 && (

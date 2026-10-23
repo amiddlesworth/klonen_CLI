@@ -99,7 +99,8 @@ type PostJobFormProps = { org: JobOrg; posterName: string };
  * Post a job (§8.13): the form (Role, Program, Location and type, Pay, Description, Application)
  * with a live preview of the JobCard and the detail header, validated with the shared zod schema
  * as you go; then a checkout stub that says payments are disabled in the demo, and Publish listing
- * (server action). On success: a toast ("View listing" opens it) and the hiring pipeline (§8.13).
+ * (server action). On success: a toast ("View listing" opens it) and the listing's own search in
+ * the hiring pipeline (§8.13).
  */
 export function PostJobForm({ org, posterName }: PostJobFormProps) {
   const [values, setValues] = useState<Values>(EMPTY);
@@ -116,12 +117,12 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
   const toast = useToast();
   const published = state?.published ?? null;
 
-  // Published: continue to the hiring pipeline (§8.13), once per listing.
+  // Published: continue to this listing's own search in the hiring pipeline (§8.13), once per listing.
   const announced = useRef<number | null>(null);
   useEffect(() => {
     if (!published || announced.current === published.id) return;
     announced.current = published.id;
-    router.push("/employers/pipeline");
+    router.push(`/employers/pipeline?list=${published.pipelineId}`);
   }, [published, router]);
 
   // The success toast shows when the form unmounts, i.e. when the pipeline replaces it, so its five
@@ -495,7 +496,7 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
                 <Icon icon={CreditCard} size={16} className="mt-0.5 text-fg-2" />
                 <p>
                   <span className="font-medium text-fg-1">Payments are disabled in the demo.</span> Nothing is charged and no card is asked for. Publishing adds this listing to the
-                  demo only, labeled as a sample listing, and takes you to your hiring pipeline.
+                  demo only, labeled as a sample listing, and opens a hiring pipeline for it.
                 </p>
               </div>
               {phonePreview(false)}

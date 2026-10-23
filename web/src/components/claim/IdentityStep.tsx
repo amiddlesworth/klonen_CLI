@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type FormEvent, type RefObject } from "rea
 import { Check, Mail } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Chip, SampleChip } from "@/components/ui/Chip";
+import { SampleChip } from "@/components/ui/Chip";
 import { Icon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 
@@ -26,7 +26,7 @@ function resendLabel(s: number) {
 /**
  * Step 1, Confirm identity (§8.11): school email + primary "Send code", then a 6-digit code
  * (numeric, one-time-code autocomplete) with "Resend code" after 30 s. Stubbed: no email is sent
- * and any six digits work, which the Demo chips say.
+ * and any six digits work; at each field a dashed Demo chip and a 12px caption say so.
  */
 export function IdentityStep({ headingRef, verifiedEmail, onVerified, onContinue, onReset }: IdentityStepProps) {
   const [email, setEmail] = useState(verifiedEmail ?? "");
@@ -177,9 +177,10 @@ export function IdentityStep({ headingRef, verifiedEmail, onVerified, onContinue
             className="num tracking-[.2em]"
             fieldClassName="mt-4 max-w-[200px]"
           />
-          <Chip kind="sample" title="Demo data, not a real record." className="mt-2">
-            Demo: any code works
-          </Chip>
+          <p className="mt-2 flex items-center gap-1.5 text-caption text-fg-3">
+            <SampleChip label="Demo" />
+            Any 6 digits work.
+          </p>
           <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
             <Button type="submit" variant="primary" className="max-md:w-full">
               Verify

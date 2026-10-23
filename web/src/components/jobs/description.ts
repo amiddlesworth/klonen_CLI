@@ -102,6 +102,21 @@ export function jobSections(src: string): DescriptionSection[] {
     .filter((s) => s.blocks.length > 0);
 }
 
+const APPLY_HEADING = /^(how to apply|to apply|application|application process)$/i;
+
+/**
+ * A closed listing's sections: the How to apply section keeps its place, but its address is
+ * replaced with one line saying applications are closed, so no live link invites an application
+ * the program no longer takes.
+ */
+export function closeApplySections(sections: DescriptionSection[], program: string): DescriptionSection[] {
+  return sections.map((s) =>
+    s.heading && APPLY_HEADING.test(s.heading)
+      ? { ...s, blocks: [{ kind: "p", inlines: [{ text: `Closed. ${program} is no longer taking applications for this listing.`, bold: false }] }] }
+      : s,
+  );
+}
+
 /** First paragraph as plain text, for meta descriptions. */
 export function descriptionSummary(src: string, max = 180): string {
   const first = parseDescription(src)

@@ -30,7 +30,7 @@ export async function AlumniTab({ org, page }: { org: ProgramOrg; page: number }
       <AlumniList
         id="played"
         title="Played here"
-        subtitle={`Former ${org.shortName} players who now coach`}
+        subtitle={`Played at ${org.shortName}, now coaching`}
         entries={players}
         kind="played"
         explainInferred={!alumni.slice((page - 1) * ALUMNI_PAGE_SIZE, page * ALUMNI_PAGE_SIZE).some((e) => rangeHasInferred(e.stints))}

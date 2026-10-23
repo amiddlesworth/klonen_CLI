@@ -1,10 +1,10 @@
 import { Briefcase } from "lucide-react";
 import { JobCard, type JobCardJob } from "@/components/jobs/JobCard";
-import { ButtonLink } from "@/components/ui/Button";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { cn } from "@/lib/cn";
-import { getProgramJobs, type ProgramOrg } from "@/lib/queries/program";
+import { getJobAlertOrgIds, getProgramJobs, type ProgramOrg } from "@/lib/queries/program";
+import { JobAlertButton } from "./JobAlertButton";
 import { jobsCount } from "./text";
 
 type Job = Awaited<ReturnType<typeof getProgramJobs>>[number];
@@ -12,10 +12,12 @@ type Job = Awaited<ReturnType<typeof getProgramJobs>>[number];
 /**
  * Jobs tab (§8.6): the jobs pages' JobCard rows (Save + View job, Sample listing chip first, salary
  * line) in one card, split by dividers, so a job looks the same here as on /jobs. Empty: "No open
- * jobs at {Program}." with Browse all jobs (the program's own athletic director posts from the header).
+ * jobs at {Program}." with a secondary "Set a job alert" (the program's own athletic director posts
+ * from the header instead).
  */
-export async function JobsTab({ org, canPost }: { org: ProgramOrg; canPost: boolean }) {
+export async function JobsTab({ org, canPost, userId }: { org: ProgramOrg; canPost: boolean; userId?: string | null }) {
   const jobs = await getProgramJobs(org.id);
+  const alertOn = !jobs.length && !canPost && (await getJobAlertOrgIds(userId)).includes(org.id);
   const samples = jobs.filter(isSample).length;
   return (
     <Card padding="main" aria-labelledby="jobs-title">
@@ -42,15 +44,9 @@ export async function JobsTab({ org, canPost }: { org: ProgramOrg; canPost: bool
         <EmptyState
           icon={Briefcase}
           title={`No open jobs at ${org.shortName}.`}
-          description={canPost ? "Post an opening and it shows up here and on the Jobs page." : "Openings posted on the network show up here first."}
+          description={canPost ? "Post an opening and it shows up here and on the Jobs page." : "Set an alert to hear when one is posted."}
           // The program's own AD already has "Post a job" as the header's primary action; no second copy here.
-          action={
-            canPost ? undefined : (
-              <ButtonLink href="/jobs" phone="large">
-                Browse all jobs
-              </ButtonLink>
-            )
-          }
+          action={canPost ? undefined : <JobAlertButton orgId={org.id} shortName={org.shortName} initialOn={alertOn} />}
           spacing="lg"
         />
       )}

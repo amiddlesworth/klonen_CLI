@@ -14,17 +14,23 @@ type OwnerActionsProps = {
   jobTitle: string;
   /** The listing is still open (Close listing is offered). */
   open: boolean;
+  /**
+   * The hiring pipeline made for this listing when it was published (a search named "{title}
+   * search"). Listings without one (a seeded listing at the program) link to the pipeline as a
+   * whole, labeled so it doesn't read as this listing's own.
+   */
+  pipelineListId: number | null;
   className?: string;
   /** Classes for each button (the header passes phone flex sizing). */
   buttonClassName?: string;
 };
 
 /**
- * The job header's actions for the athletic director who posted the listing (§8.13, §8.14): the
- * hiring pipeline as the one primary, and Close listing behind a confirmation (it can't be undone,
+ * The job header's actions for the athletic director who posted the listing (§8.13, §8.14): this
+ * listing's hiring pipeline as the one primary, and Close listing behind a confirmation (it can't be undone,
  * so Esc and the scrim don't dismiss it). Apply and Save never show on your own listing.
  */
-export function OwnerActions({ jobId, jobTitle, open, className, buttonClassName }: OwnerActionsProps) {
+export function OwnerActions({ jobId, jobTitle, open, pipelineListId, className, buttonClassName }: OwnerActionsProps) {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -47,8 +53,14 @@ export function OwnerActions({ jobId, jobTitle, open, className, buttonClassName
 
   return (
     <div className={cn("flex gap-2", className)}>
-      <ButtonLink href="/employers/pipeline" variant="primary" icon={LayoutGrid} phone="large" className={buttonClassName}>
-        Open hiring pipeline
+      <ButtonLink
+        href={pipelineListId ? `/employers/pipeline?list=${pipelineListId}` : "/employers/pipeline"}
+        variant="primary"
+        icon={LayoutGrid}
+        phone="large"
+        className={buttonClassName}
+      >
+        {pipelineListId ? "Open hiring pipeline" : "Hiring pipeline"}
       </ButtonLink>
       {/* A closed listing keeps only the pipeline here; "Post another job" sits in the note band below. */}
       {open && (

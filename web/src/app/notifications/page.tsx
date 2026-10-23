@@ -19,7 +19,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const filter = parseFilter((await searchParams).filter);
   return {
     title: LABEL[filter],
-    description: "Moves in your coaching tree, job matches and profile views.",
+    description: "Your notifications: moves, jobs, mentions and profile views.",
     robots: { index: false, follow: false },
   };
 }
@@ -42,10 +42,17 @@ export default async function NotificationsPage({ searchParams }: Props) {
     );
   }
   const filter = parseFilter((await searchParams).filter);
-  const items = await listNotifications(session.user.id);
+  const items = await listNotifications(session.user.id, session.person?.id ?? null);
   return (
     <SingleColumnLayout>
-      <NotificationsCard items={items} filter={filter} profileSlug={session.person?.slug ?? null} isDemo={session.user.isDemo} />
+      <NotificationsCard
+        items={items}
+        filter={filter}
+        role={session.user.kind === "employer" ? "employer" : "coach"}
+        profileSlug={session.person?.slug ?? null}
+        viewerOrg={session.org ? { id: session.org.id, shortName: session.org.shortName } : null}
+        isDemo={session.user.isDemo}
+      />
     </SingleColumnLayout>
   );
 }

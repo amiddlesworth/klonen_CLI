@@ -14,7 +14,7 @@ export default function NotificationsError({ reset }: { error: Error & { digest?
         <ErrorState
           message="We couldn't load your notifications."
           action={
-            <Button variant="ghost" size="sm" icon={RotateCw} onClick={() => reset()}>
+            <Button variant="ghost" icon={RotateCw} onClick={() => reset()}>
               Try again
             </Button>
           }

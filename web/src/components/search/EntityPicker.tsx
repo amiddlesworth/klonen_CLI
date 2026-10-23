@@ -3,7 +3,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
 import { CircleAlert, Search, X } from "lucide-react";
-import type { TypeaheadResponse } from "@/components/shell/typeahead";
 import { Avatar } from "@/components/ui/Avatar";
 import { CONTROL_CLASSES } from "@/components/ui/Field";
 import { Icon } from "@/components/ui/Icon";
@@ -11,11 +10,17 @@ import { OrgMark } from "@/components/ui/OrgMark";
 import { SkeletonAvatar, SkeletonText } from "@/components/ui/Skeleton";
 import { Spinner } from "@/components/ui/Spinner";
 import { cn } from "@/lib/cn";
+import type { PickerCoach, PickerOrg } from "@/lib/queries/searchx";
 import { searchHref, type SearchState } from "./params";
+import { markSearchPending } from "./pending";
 
-type Option = { slug: string; name: string; meta: string | null; shortName?: string };
+/**
+ * A pickable program or coach. `name` is the visible label (a program's short name); `orgName` is a
+ * program's full name, so its tile shows the same initials as everywhere else ("PU", not "PA").
+ */
+type Option = { slug: string; name: string; meta: string | null; shortName?: string; orgName?: string };
 
-export type PickedEntity = { slug: string; name: string; meta: string | null; shortName?: string };
+export type PickedEntity = Option;
 
 type EntityPickerProps = {
   kind: "program" | "person";
@@ -33,10 +38,15 @@ type EntityPickerProps = {
 
 const subscribe = () => () => {};
 
+/** Where each picker reads its options (GET ?q=, JSON { options }): both fetch the same way. */
+const OPTIONS_URL = { program: "/api/search/programs", person: "/api/search/coaches" } as const;
+
 /**
- * Combobox facet (§8.7 "Worked at" / "Worked under"): typeahead over /api/typeahead, ↑ ↓ Enter Esc,
- * picking navigates to the filtered URL. A chosen value shows as a row with a remove link. Without
- * JavaScript the field is a named text input in the facet form; the page resolves the text.
+ * Combobox facet (§8.7 "Worked at" / "Worked under"): programs from every organization with a coaching
+ * stint (D-I, D-II, junior colleges, high schools too) with their coach counts; coaches with how many
+ * coached under them, coaches with trees first. ↑ ↓ Enter Esc, picking navigates to the filtered URL.
+ * A chosen value shows as a row with a remove link. Without JavaScript the field is a named text input
+ * in the facet form; the page resolves the text.
  */
 export function EntityPicker({ kind, param, label, state, selected, unmatched, idPrefix }: EntityPickerProps) {
   const router = useRouter();
@@ -65,13 +75,15 @@ export function EntityPicker({ kind, param, label, state, selected, unmatched, i
     const t = window.setTimeout(async () => {
       let opts: Option[] = [];
       try {
-        const res = await fetch(`/api/typeahead?q=${encodeURIComponent(term)}`, { signal: ctrl.signal });
+        const res = await fetch(`${OPTIONS_URL[kind]}?q=${encodeURIComponent(term)}`, { signal: ctrl.signal });
         if (!res.ok) throw new Error(String(res.status));
-        const data = (await res.json()) as TypeaheadResponse;
-        opts =
-          kind === "program"
-            ? data.programs.map((o) => ({ slug: o.slug, name: o.shortName, meta: o.meta, shortName: o.shortName }))
-            : data.people.map((p) => ({ slug: p.slug, name: p.name, meta: p.meta }));
+        if (kind === "program") {
+          const { options: found } = (await res.json()) as { options: PickerOrg[] };
+          opts = found.map((o) => ({ slug: o.slug, name: o.shortName, meta: o.meta, shortName: o.shortName, orgName: o.name }));
+        } else {
+          const { options: found } = (await res.json()) as { options: PickerCoach[] };
+          opts = found.map((p) => ({ slug: p.slug, name: p.name, meta: p.meta }));
+        }
       } catch {
         opts = [];
       }
@@ -103,7 +115,9 @@ export function EntityPicker({ kind, param, label, state, selected, unmatched, i
     setOpen(false);
     setQ(o.name);
     setPending(true);
-    router.push(searchHref(state, { [param]: o.slug }), { scroll: false });
+    const href = searchHref(state, { [param]: o.slug });
+    markSearchPending(href);
+    router.push(href, { scroll: false });
   }
 
   function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
@@ -137,12 +151,17 @@ export function EntityPicker({ kind, param, label, state, selected, unmatched, i
         <p className="mb-1 text-small font-semibold text-fg-1">{label}</p>
         <input type="hidden" name={param} value={selected.slug} />
         <div className="flex min-h-11 min-w-0 items-center gap-2.5 md:min-h-10">
-          {kind === "person" ? <Avatar name={selected.name} tintKey={selected.slug} size={24} /> : <OrgMark shortName={selected.shortName ?? selected.name} name={selected.name} size={24} />}
+          {kind === "person" ? <Avatar name={selected.name} tintKey={selected.slug} size={24} /> : <OrgMark shortName={selected.shortName ?? selected.name} name={selected.orgName ?? selected.name} size={24} />}
           <span className="min-w-0 flex-1">
             <Link href={href} className="block truncate text-small font-medium text-fg-1 underline-offset-2 hover:underline">
               {selected.name}
             </Link>
-            {selected.meta && <span className="block truncate text-caption text-fg-3">{selected.meta}</span>}
+            {/* Program first, then the title, two lines at most: the program always survives the clamp. */}
+            {selected.meta && (
+              <span className="line-clamp-2 text-caption text-fg-3" title={selected.meta}>
+                {selected.meta}
+              </span>
+            )}
           </span>
           <Link
             href={removeHref}
@@ -230,7 +249,7 @@ export function EntityPicker({ kind, param, label, state, selected, unmatched, i
                   onClick={() => pick(o)}
                   className={cn("flex h-11 min-w-0 cursor-pointer items-center gap-2.5 rounded-sm px-2", active === i ? "bg-accent-subtle" : "hover:bg-hover")}
                 >
-                  {kind === "person" ? <Avatar name={o.name} tintKey={o.slug} size={24} /> : <OrgMark shortName={o.shortName ?? o.name} size={24} />}
+                  {kind === "person" ? <Avatar name={o.name} tintKey={o.slug} size={24} /> : <OrgMark shortName={o.shortName ?? o.name} name={o.orgName ?? o.name} size={24} />}
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-small font-medium leading-[18px] text-fg-1">{o.name}</span>
                     {o.meta && <span className="block truncate text-caption text-fg-3">{o.meta}</span>}

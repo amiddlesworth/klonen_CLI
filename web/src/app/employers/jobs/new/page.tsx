@@ -40,8 +40,8 @@ export default async function PostJobPage() {
             title="Posting jobs uses the athletic director demo account."
             description={
               <>
-                {who} Switch to {ad ? `${ad.name}${ad.org ? `, athletic director at ${ad.org}` : ""}` : "the athletic director account"} to fill in a listing, preview it and
-                publish it to the demo.
+                {who} Switch to {ad ? `${ad.name}${ad.org ? `, athletic director at ${ad.org},` : ""}` : "the athletic director account"} to fill in a listing, preview it
+                and publish it to the demo.
               </>
             }
             action={<SwitchToEmployer account={ad} />}

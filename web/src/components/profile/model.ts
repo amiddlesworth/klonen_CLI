@@ -5,11 +5,16 @@
 import type { OrgSummary, TenureRow, Tree, TreeLink } from "@/lib/queries/people";
 import { CURRENT_SEASON } from "@/lib/brand";
 import { ROLE_GROUP_LABEL, YEARS_NOT_IN_SOURCE, seasonRange, seasonRangeMulti, type RoleGroup } from "@/lib/format";
+import { linkYearsDisplay, type LinkYears } from "./linkYears";
 
 export type Span = { startYear: number | null; endYear: number | null; isCurrent: boolean };
 
-/** A ledger range: the range line, the count line under it, and whether there is no year at all. */
-export type RangeText = { range: string; count: string | null; undated: boolean };
+/**
+ * A ledger range: the range line, the count line under it, and whether there is no year at all.
+ * `lead` is a word before the year on a partial range ("From ", "Through "): only the year after it
+ * carries the inferred mark. `noYear` marks a range line with no year in it ("Current").
+ */
+export type RangeText = { range: string; count: string | null; undated: boolean; lead?: string; noYear?: boolean };
 
 const fullyDated = (s: Span) => !!s.startYear && (s.isCurrent || !!s.endYear);
 
@@ -19,9 +24,9 @@ const fullyDated = (s: Span) => !!s.startYear && (s.isCurrent || !!s.endYear);
  */
 export function spanText(s: Span): RangeText {
   if (fullyDated(s)) return { ...seasonRange(s.startYear, s.endYear, s.isCurrent), undated: false };
-  if (s.startYear) return { range: `From ${s.startYear}`, count: "End year not in source", undated: false };
-  if (s.isCurrent) return { range: "Current", count: "Start year not in source", undated: false };
-  if (s.endYear) return { range: `Through ${s.endYear}`, count: "Start year not in source", undated: false };
+  if (s.startYear) return { lead: "From ", range: String(s.startYear), count: "End year not in source", undated: false };
+  if (s.isCurrent) return { range: "Current", count: "Start year not in source", undated: false, noYear: true };
+  if (s.endYear) return { lead: "Through ", range: String(s.endYear), count: "Start year not in source", undated: false };
   return { range: YEARS_NOT_IN_SOURCE, count: null, undated: true };
 }
 
@@ -36,15 +41,24 @@ export function groupText(spans: Span[]): RangeText {
   const start = Math.min(...starts);
   const end = isCurrent ? null : Math.max(start, ...ends);
   const base = spanText({ startYear: start, endYear: end, isCurrent });
-  return { range: base.range, count: "Some years not in source", undated: false };
+  return { ...base, count: "Some years not in source" };
 }
 
-/** Plain-words reason for an inferred year, quoting the evidence (§6.2). */
-export function inferredReason(evidence: string | null): string {
-  if (!evidence) return "from the staff bio, not stated in it";
+/** "Ian Falconer's", "Jesse Browning's", "Chris Jones'". */
+export function possessive(name: string): string {
+  return /s$/i.test(name) ? `${name}'` : `${name}'s`;
+}
+
+/**
+ * Plain-words reason for an inferred year, quoting the evidence (§6.2). `whose` names the person whose
+ * bio it is when that isn't the profile's own (tree rows, where the year can come from either side).
+ */
+export function inferredReason(evidence: string | null, whose?: string): string {
+  const bio = whose ? `${possessive(whose)} staff bio` : "the staff bio";
+  if (!evidence) return `from ${bio}, not stated in it`;
   const q = evidence.trim().replace(/^["“]|["”]$/g, "");
   const short = q.length > 160 ? `${q.slice(0, 157).trimEnd()}…` : q;
-  return `from the staff bio, which says “${short}”`;
+  return `from ${bio}, which says “${short}”`;
 }
 
 /** Seasons covered by dated coaching stints (the season strip counts the same seasons). */
@@ -89,6 +103,8 @@ export type LedgerGroup = {
   inferred: boolean;
   reason: string;
   isCurrent: boolean;
+  /** Some role here has a year (or is current), so the group has a place in the newest-first order. */
+  dated: boolean;
 };
 
 const yearSpan = (a: number, b: number) => (a === b ? String(a) : `${a}–${b}`);
@@ -97,7 +113,8 @@ const endOf = (r: TenureRow) => (r.isCurrent ? CURRENT_SEASON : (r.endYear ?? r.
 /**
  * Experience ledger (§8.4): one group per program, in the source's order (newest first), with every
  * stint at that program inside it, even when another program came in between ("Away 2004–2005 ·
- * Oberlin College" on a dashed rail).
+ * Oberlin College" on a dashed rail). Programs with no year at all come last (`dated: false`): the source
+ * gives them no place in the order, so the card lists them under their own label.
  */
 export function buildLedger(rows: TenureRow[]): LedgerGroup[] {
   const coaching = rows.filter((r) => !r.asPlayer && r.roleGroup !== "player");
@@ -110,7 +127,7 @@ export function buildLedger(rows: TenureRow[]): LedgerGroup[] {
     }
     byOrg.get(r.org.id)!.push(r);
   }
-  return order.map((orgId) => {
+  const groups = order.map((orgId): LedgerGroup => {
     const roles = byOrg.get(orgId)!;
     const items: LedgerItem[] = [];
     roles.forEach((role, i) => {
@@ -150,13 +167,59 @@ export function buildLedger(rows: TenureRow[]): LedgerGroup[] {
       inferred: !range.undated && !head.yearsExplicit && (!!head.startYear || !!head.endYear),
       reason: inferredReason(head.evidence),
       isCurrent: roles.some((r) => r.isCurrent),
+      dated: roles.some((r) => r.isCurrent || !!r.startYear || !!r.endYear),
     };
   });
+  return [...groups.filter((g) => g.dated), ...groups.filter((g) => !g.dated)];
+}
+
+/**
+ * The header's current role, in the same words as the Experience card: the role of the current coaching
+ * stint at the current program (from the staff bio), else the staff-directory title.
+ */
+export function currentHeadline(rows: TenureRow[], currentOrgId: string | null, directoryTitle: string | null): string | null {
+  const current = rows.filter((r) => r.isCurrent && !r.asPlayer && r.roleGroup !== "player");
+  const here = current.find((r) => !currentOrgId || r.org.id === currentOrgId);
+  return here?.role || directoryTitle;
+}
+
+/** Coaching roles whose seasons aren't counted because the source gives no start year. */
+export function undatedRoleCount(rows: TenureRow[]): number {
+  return rows.filter((r) => !r.asPlayer && r.roleGroup !== "player" && !r.startYear).length;
 }
 
 export type TreeGroupKey = "mentors" | "peers" | "mentees";
 
-export type TreeRowModel = TreeLink & { context: string | null };
+/** How a link's shared seasons read in a compact row (linkYears): a range, "Current", or nothing. */
+export type TreeYearsView =
+  | { kind: "range"; startYear: number; endYear: number | null; ongoing: boolean; inferred: boolean; reason: string | null }
+  | { kind: "current" }
+  | { kind: "none" };
+
+/** The view of a link's years. `nameOf` names whose bio an inferred year comes from. */
+export function treeYearsView(years: LinkYears | undefined, nameOf: (personId: string) => string | undefined): TreeYearsView {
+  if (!years) return { kind: "none" };
+  const display = linkYearsDisplay(years);
+  if (display === "current") return { kind: "current" };
+  if (display === "none" || !years.startYear) return { kind: "none" };
+  const reason = years.inferred && years.inferredFrom ? inferredReason(years.inferredFrom.evidence, nameOf(years.inferredFrom.personId)) : null;
+  return { kind: "range", startYear: years.startYear, endYear: years.ongoing ? null : years.endYear, ongoing: years.ongoing, inferred: years.inferred, reason };
+}
+
+/**
+ * The context line under a tree row (§8.3 ContextLine): a player relationship ("Played for Ian 2024–25"),
+ * when a peer later joined the coach's staff ("Joined Ian's staff in 2020"), or the program when it isn't
+ * the coach's current one ("At Oberlin").
+ */
+export type TreeContext =
+  | { kind: "player"; text: string; years: TreeYearsView }
+  | { kind: "joined"; text: string; year: { value: number; inferred: boolean; reason: string | null } }
+  | { kind: "at"; text: string };
+
+/** A tree link as getProfileTree returns it: its years and any player relationship, checked against the stints. */
+type AnnotatedLink = TreeLink & { years?: LinkYears; player?: { kind: "played_for" | "coached"; years: LinkYears } | null };
+
+export type TreeRowModel = TreeLink & { range: TreeYearsView; context: TreeContext | null };
 
 export type TreeModel = {
   groups: { key: TreeGroupKey; label: string; rows: TreeRowModel[] }[];
@@ -164,6 +227,8 @@ export type TreeModel = {
   unique: number;
   /** Footnote: who appears in two groups and why, then how the tree is derived. */
   footnote: string;
+  /** Some year shown in the card is inferred (the page explains the dotted mark once). */
+  inferred: boolean;
 };
 
 function listNames(names: string[]): string {
@@ -173,38 +238,72 @@ function listNames(names: string[]): string {
 
 /**
  * Coaching tree card (§8.4): Worked under · Worked alongside · Coached under {first}, the unique
- * count, and a footnote naming anyone listed twice. Empty groups are left out.
+ * count, and a footnote naming anyone listed twice. Empty groups are left out. Years come only from
+ * getProfileTree's checked `years`: a link without them shows no range (never a filled-in season).
+ * `self` is the profile's person (to name whose bio an inferred year comes from).
  */
-export function buildTree(tree: Tree, firstName: string, currentOrgSlug: string | null): TreeModel {
-  const menteeById = new Map(tree.mentees.map((l) => [l.person.id, l]));
-  const at = (l: TreeLink) => (currentOrgSlug && l.org.slug === currentOrgSlug ? null : `At ${l.org.shortName}`);
+export function buildTree(tree: Tree | { mentors: AnnotatedLink[]; peers: AnnotatedLink[]; mentees: AnnotatedLink[] }, firstName: string, currentOrgSlug: string | null, self?: { id: string; fullName: string }): TreeModel {
+  const mentees = tree.mentees as AnnotatedLink[];
+  const menteeById = new Map(mentees.map((l) => [l.person.id, l]));
+  const all = [...tree.mentors, ...tree.peers, ...tree.mentees] as AnnotatedLink[];
+  const nameFor = (l: AnnotatedLink) => (id: string) => (id === l.person.id ? l.person.fullName : id === self?.id ? self.fullName : undefined);
+
+  const context = (l: AnnotatedLink, bucket: TreeGroupKey): TreeContext | null => {
+    const names = nameFor(l);
+    if (l.player) {
+      const years = treeYearsView(l.player.years, names);
+      return {
+        kind: "player",
+        text: l.player.kind === "played_for" ? `Played for ${firstName}` : `Coached ${firstName} as a player`,
+        // A run with an unknown bound reads without years ("Played for Ian"), never "Current".
+        years: years.kind === "range" ? years : { kind: "none" },
+      };
+    }
+    if (bucket === "peers") {
+      const joined = menteeById.get(l.person.id);
+      const start = joined?.years?.startYear;
+      if (joined?.years && start) {
+        const inferred = joined.years.inferred && joined.years.inferredFrom ? inferredReason(joined.years.inferredFrom.evidence, nameFor(joined)(joined.years.inferredFrom.personId)) : null;
+        return { kind: "joined", text: `Joined ${firstName}'s staff in`, year: { value: start, inferred: !!inferred, reason: inferred } };
+      }
+    }
+    return currentOrgSlug && l.org.slug === currentOrgSlug ? null : { kind: "at", text: `At ${l.org.shortName}` };
+  };
+  const row = (l: AnnotatedLink, bucket: TreeGroupKey): TreeRowModel => ({ ...l, range: treeYearsView(l.years, nameFor(l)), context: context(l, bucket) });
+
   const groups: TreeModel["groups"] = [
-    { key: "mentors" as const, label: "Worked under", rows: tree.mentors.map((l) => ({ ...l, context: at(l) })) },
-    {
-      key: "peers" as const,
-      label: "Worked alongside",
-      rows: tree.peers.map((l) => {
-        const m = menteeById.get(l.person.id);
-        return { ...l, context: m?.startYear ? `Joined ${firstName}'s staff in ${m.startYear}` : at(l) };
-      }),
-    },
-    { key: "mentees" as const, label: `Coached under ${firstName}`, rows: tree.mentees.map((l) => ({ ...l, context: at(l) })) },
+    { key: "mentors" as const, label: "Worked under", rows: (tree.mentors as AnnotatedLink[]).map((l) => row(l, "mentors")) },
+    { key: "peers" as const, label: "Worked alongside", rows: (tree.peers as AnnotatedLink[]).map((l) => row(l, "peers")) },
+    { key: "mentees" as const, label: `Coached under ${firstName}`, rows: mentees.map((l) => row(l, "mentees")) },
   ].filter((g) => g.rows.length > 0);
+
+  const inferred = groups.some((g) =>
+    g.rows.some(
+      (r) =>
+        (r.range.kind === "range" && r.range.inferred) ||
+        (r.context?.kind === "joined" && r.context.year.inferred) ||
+        (r.context?.kind === "player" && r.context.years.kind === "range" && r.context.years.inferred),
+    ),
+  );
 
   const seen = new Map<string, TreeGroupKey[]>();
   for (const g of groups) for (const r of g.rows) seen.set(r.person.id, [...(seen.get(r.person.id) ?? []), g.key]);
   const unique = seen.size;
   const twice = [...seen.entries()].filter(([, keys]) => keys.length > 1);
-  const nameOf = (id: string) => [...tree.mentors, ...tree.peers, ...tree.mentees].find((l) => l.person.id === id)!.person.fullName;
+  const nameOf = (id: string) => all.find((l) => l.person.id === id)!.person.fullName;
   const people = `${unique} ${unique === 1 ? "person" : "people"}`;
   const derived = "Derived from overlapping seasons on the same staff.";
-  if (!twice.length) return { groups, unique, footnote: `${people}, derived from overlapping seasons on the same staff.` };
+  if (!twice.length) return { groups, unique, inferred, footnote: `${people}, derived from overlapping seasons on the same staff.` };
 
+  // "Before joining" only when the source pins both years: the shared assistant seasons ended by the
+  // season the person is first known on the coach's staff.
   const beforeJoining = twice.every(([id, keys]) => {
     if (!keys.includes("peers") || !keys.includes("mentees")) return false;
-    const peer = tree.peers.find((l) => l.person.id === id);
+    const peer = (tree.peers as AnnotatedLink[]).find((l) => l.person.id === id);
     const mentee = menteeById.get(id);
-    return !!peer?.endYear && !!mentee?.startYear && peer.endYear <= mentee.startYear;
+    const peerEnd = peer?.years && !peer.years.ongoing ? peer.years.endYear : null;
+    const joined = mentee?.years?.startYear;
+    return !!peerEnd && !!joined && peerEnd <= joined;
   });
   const names = twice.map(([id]) => nameOf(id));
   let why: string;
@@ -218,7 +317,7 @@ export function buildTree(tree: Tree, firstName: string, currentOrgSlug: string 
       ? `${listNames(names)} are listed twice because they worked alongside ${firstName} before joining ${firstName}'s staff.`
       : `${listNames(names)} are listed in two groups because their roles changed over the years.`;
   }
-  return { groups, unique, footnote: `${people}. ${why} ${derived}` };
+  return { groups, unique, inferred, footnote: `${people}. ${why} ${derived}` };
 }
 
 /** The full state name for a two-letter abbreviation ("OR" → "Oregon"); other values pass through. */

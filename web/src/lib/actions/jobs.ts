@@ -2,8 +2,9 @@
 import { and, count, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
-import { jobs } from "@/db/schema";
+import { jobs, shortlists } from "@/db/schema";
 import { composeDescription, fieldErrors, postJobSchema, type PostJobState } from "@/components/jobs/post-job-schema";
+import { listingSearchName } from "@/lib/queries/jobsx";
 import { getSession } from "@/lib/session";
 
 /** Listings one demo account may publish, so the shared demo can't be flooded. */
@@ -13,8 +14,10 @@ const LISTING_DAYS = 30;
 /**
  * Publishes a job for the signed-in employer's program (§8.13). Demo only: the row is flagged
  * isDemo (it shows the "Sample listing" chip), source "native" (its posted time is real), and
- * checkout is a stub, so no payment is taken. On success it returns the new listing; the form
- * shows the success toast and takes the athletic director to the hiring pipeline (§8.13).
+ * checkout is a stub, so no payment is taken. With the listing it opens the listing's own search in
+ * the hiring pipeline ("{title} search", empty), in one transaction, so the pipeline the athletic
+ * director lands on is this listing's and not another search (§8.14 job switcher). On success it
+ * returns both; the form shows the success toast and goes to that pipeline (§8.13).
  */
 export async function createJob(_prev: PostJobState, formData: FormData): Promise<PostJobState> {
   const session = await getSession();
@@ -47,32 +50,40 @@ export async function createJob(_prev: PostJobState, formData: FormData): Promis
   }
 
   const v = parsed.data;
+  const org = session.org;
+  const userId = session.user.id;
   const now = new Date();
-  const [row] = await db
-    .insert(jobs)
-    .values({
-      orgId: session.org.id,
-      title: v.title,
-      roleGroup: v.roleGroup,
-      unit: v.unit,
-      description: composeDescription(v.description, v.howToApply),
-      // "City, ST" when the athletic director gives a city; the state always comes from the program.
-      location: [v.city || session.org.city, session.org.state].filter(Boolean).join(", ") || null,
-      employmentType: v.employmentType,
-      salaryMin: v.salaryMin ?? null,
-      salaryMax: v.salaryMax ?? null,
-      postedAt: now,
-      closesAt: new Date(now.getTime() + LISTING_DAYS * 86_400_000),
-      status: "open",
-      source: "native",
-      createdByUserId: session.user.id,
-      isDemo: true,
-    })
-    .returning({ id: jobs.id, title: jobs.title });
+  const { row, list } = await db.transaction(async (tx) => {
+    const [row] = await tx
+      .insert(jobs)
+      .values({
+        orgId: org.id,
+        title: v.title,
+        roleGroup: v.roleGroup,
+        unit: v.unit,
+        description: composeDescription(v.description, v.howToApply),
+        // "City, ST" when the athletic director gives a city; the state always comes from the program.
+        location: [v.city || org.city, org.state].filter(Boolean).join(", ") || null,
+        employmentType: v.employmentType,
+        salaryMin: v.salaryMin ?? null,
+        salaryMax: v.salaryMax ?? null,
+        postedAt: now,
+        closesAt: new Date(now.getTime() + LISTING_DAYS * 86_400_000),
+        status: "open",
+        source: "native",
+        createdByUserId: userId,
+        isDemo: true,
+      })
+      .returning({ id: jobs.id, title: jobs.title });
+    // Created at the listing's posted time: getListingPipelineId finds it by name from that moment on.
+    const [list] = await tx.insert(shortlists).values({ ownerUserId: userId, name: listingSearchName(row.title), createdAt: now }).returning({ id: shortlists.id });
+    return { row, list };
+  });
 
   revalidatePath("/jobs");
   revalidatePath(`/programs/${session.org.slug}`);
-  return { errors: {}, published: { id: row.id, title: row.title } };
+  revalidatePath("/employers/pipeline");
+  return { errors: {}, published: { id: row.id, title: row.title, pipelineId: list.id } };
 }
 
 export type CloseJobResult = { ok: true } | { ok: false; error: string };

@@ -13,6 +13,10 @@ import { ROLE_FACET, ROLE_FACET_LABEL, appliedCount, cleared, searchHref, stateN
 export type FacetPanelProps = {
   state: SearchState;
   counts: FacetCounts;
+  /** Result total (a lone value covering every result is hidden). */
+  total: number;
+  /** Every value of each facet, for groups the current filters leave empty (shown as disabled 0 rows). */
+  allValues?: FacetCounts | null;
   conferenceNames: Record<string, string>;
   workedAt: PickedEntity | null;
   workedUnder: PickedEntity | null;
@@ -29,10 +33,12 @@ export type FacetPanelProps = {
  * Search facets (§8.7): Keywords, Role group, Conference, State, Division, Worked at, Worked under.
  * Programs search shows only Keywords, Conference, State and Division.
  */
-export function FacetPanel({ state, counts, conferenceNames, workedAt, workedUnder, unmatched, variant, formId, keywords = true }: FacetPanelProps) {
+export function FacetPanel({ state, counts, total, allValues, conferenceNames, workedAt, workedUnder, unmatched, variant, formId, keywords = true }: FacetPanelProps) {
+  const values = (key: "conference" | "state" | "division", selected: string[]) => withSelected(withAll(counts[key], allValues?.[key]), selected);
   const people = state.type === "people";
   const applied = appliedCount(state);
   const idPrefix = `${variant}-facet`;
+  const collapseEmpty = variant === "rail";
 
   return (
     <FacetForm id={formId} label={people ? "Filter coaches" : "Filter programs"} className="gap-5">
@@ -76,7 +82,8 @@ export function FacetPanel({ state, counts, conferenceNames, workedAt, workedUnd
           name="role"
           label="Role group"
           selected={state.role}
-          limit={6}
+          total={total}
+          collapseEmpty={collapseEmpty}
           options={ROLE_FACET.map((r) => ({ value: r, label: ROLE_FACET_LABEL[r], count: counts.role.find((c) => c.value === r)?.count ?? 0 }))}
         />
       )}
@@ -84,19 +91,25 @@ export function FacetPanel({ state, counts, conferenceNames, workedAt, workedUnd
         name="conference"
         label="Conference"
         selected={state.conference}
-        options={withSelected(counts.conference, state.conference).map((c) => ({ value: c.value, label: c.value, title: conferenceNames[c.value], count: c.count }))}
+        total={total}
+        collapseEmpty={collapseEmpty}
+        options={values("conference", state.conference).map((c) => ({ value: c.value, label: c.value, title: conferenceNames[c.value], count: c.count }))}
       />
       <FacetGroup
         name="state"
         label="State"
         selected={state.state}
-        options={withSelected(counts.state, state.state).map((c) => ({ value: c.value, label: stateName(c.value), count: c.count }))}
+        total={total}
+        collapseEmpty={collapseEmpty}
+        options={values("state", state.state).map((c) => ({ value: c.value, label: stateName(c.value), count: c.count }))}
       />
       <FacetGroup
         name="division"
         label="Division"
         selected={state.division}
-        options={withSelected(counts.division, state.division).map((c) => ({ value: c.value, label: c.value.replace(/^D-/, "Division "), count: c.count }))}
+        total={total}
+        collapseEmpty={collapseEmpty}
+        options={values("division", state.division).map((c) => ({ value: c.value, label: c.value.replace(/^D-/, "Division "), count: c.count }))}
       />
       {people && (
         <>
@@ -113,6 +126,12 @@ export function FacetPanel({ state, counts, conferenceNames, workedAt, workedUnd
       )}
     </FacetForm>
   );
+}
+
+/** When the filters leave a group empty, its full list of values with zero counts (disabled rows). */
+function withAll(counts: { value: string; count: number }[], all: { value: string; count: number }[] | undefined) {
+  if (counts.some((c) => c.count > 0) || !all?.length) return counts;
+  return all.map((a) => ({ value: a.value, count: 0 }));
 }
 
 /** Keeps selected values that have no matches under the other filters, with a zero count. */

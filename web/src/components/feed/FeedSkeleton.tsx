@@ -1,6 +1,8 @@
 import { ThreeColumnLayout } from "@/components/shell/Layouts";
 import { Card, CardFooter } from "@/components/ui/Card";
 import { Skeleton, SkeletonAvatar, SkeletonLine, SkeletonRegion, SkeletonRows, SkeletonText } from "@/components/ui/Skeleton";
+import type { FeedFilter } from "@/lib/queries/feedx";
+import { FeedToolbar } from "./FeedToolbar";
 
 /** Feed item skeleton (§8.5 feed states): avatar, 2 headline lines, 3 record lines, the action bar outline. */
 function ItemSkeleton({ i }: { i: number }) {
@@ -32,8 +34,11 @@ function ItemSkeleton({ i }: { i: number }) {
   );
 }
 
-/** Loading state of /feed: real chrome and layout, static --hover blocks (no shimmer). */
-export function FeedSkeleton() {
+/**
+ * Loading state of /feed: real chrome and layout, static --hover blocks (no shimmer). The toolbar is
+ * the real one with the requested filter selected, so a segment responds the moment it is pressed.
+ */
+export function FeedSkeleton({ filter = "all" }: { filter?: FeedFilter }) {
   const left = (
     <Card padding="rail">
       <SkeletonAvatar size={48} />
@@ -76,11 +81,9 @@ export function FeedSkeleton() {
   );
   return (
     <ThreeColumnLayout left={left} right={right} rightLabel="Carousel and suggestions">
+      <h1 className="sr-only">Home feed</h1>
+      <FeedToolbar filter={filter} />
       <SkeletonRegion label="Loading your feed" className="flex flex-col gap-2 md:gap-3">
-        <h1 className="sr-only">Home feed</h1>
-        <div className="flex items-center max-md:px-4 max-md:pb-1 max-md:pt-3">
-          <Skeleton className="h-8 w-56 rounded-sm max-md:h-11 max-md:w-full" />
-        </div>
         {[0, 1, 2].map((i) => (
           <ItemSkeleton key={i} i={i} />
         ))}

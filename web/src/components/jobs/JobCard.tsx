@@ -9,7 +9,8 @@ import { Icon } from "@/components/ui/Icon";
 import { OrgMark } from "@/components/ui/OrgMark";
 import { cn } from "@/lib/cn";
 import { salaryRange } from "@/lib/format";
-import { LISTING_SEASON, hasRealPostedAt, isSampleJob, jobSubline, postedLabel, postedTitle, roleGroupLabel } from "./labels";
+import { LISTING_SEASON, hasRealPostedAt, isSampleJob, jobSublineParts, postedLabel, postedTitle, roleGroupLabel } from "./labels";
+import { PlaceLine } from "./PlaceLine";
 import { SaveJobButton } from "./SaveJobButton";
 
 export type JobCardJob = {
@@ -51,6 +52,8 @@ type JobCardProps = {
   proof?: JobProof | null;
   /** Non-interactive copy for the post-job preview. */
   preview?: boolean;
+  /** The signed-in athletic director's own listing: no Save (as on its page), "Your listing" in the meta line. */
+  owner?: boolean;
   headingLevel?: "h2" | "h3";
   className?: string;
 };
@@ -85,7 +88,7 @@ function Proof({ proof }: { proof: JobProof }) {
  * network proof. Actions: Save (icon, aria-pressed) and View job (secondary); on phone they become
  * a bottom row with View job full width (44px) and Save 44×44. Apply lives on the job page only.
  */
-export function JobCard({ job, variant = "row", href, selectHref, selected, meta, proof, preview, headingLevel = "h2", className }: JobCardProps) {
+export function JobCard({ job, variant = "row", href, selectHref, selected, meta, proof, preview, owner, headingLevel = "h2", className }: JobCardProps) {
   const H = headingLevel;
   const salary = salaryRange(job.salaryMin, job.salaryMax);
   const titleCls = "underline-offset-2 hover:underline target-24";
@@ -139,7 +142,9 @@ export function JobCard({ job, variant = "row", href, selectHref, selected, meta
           </p>
         )}
         <H className={cn("text-subtitle font-semibold leading-5 text-fg-1", variant === "card" && "mt-0.5")}>{title}</H>
-        <p className="mt-0.5 text-small text-fg-2">{jobSubline(job)}</p>
+        <p className="mt-0.5 text-small text-fg-2">
+          <PlaceLine parts={jobSublineParts(job)} />
+        </p>
         <Chips job={job} />
         {variant === "row" && (
           <p className="mt-2 flex flex-wrap gap-x-1.5 text-caption text-fg-3">
@@ -152,6 +157,12 @@ export function JobCard({ job, variant = "row", href, selectHref, selected, meta
               </time>
             ) : (
               <span className="num">{LISTING_SEASON}</span>
+            )}
+            {owner && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span className="font-medium text-fg-2">Your listing</span>
+              </>
             )}
           </p>
         )}
@@ -169,7 +180,7 @@ export function JobCard({ job, variant = "row", href, selectHref, selected, meta
           </>
         ) : (
           <>
-            <SaveJobButton jobId={job.id} title={job.title} large wrapperClassName="md:order-first" />
+            {!owner && <SaveJobButton jobId={job.id} title={job.title} large wrapperClassName="md:order-first" />}
             <ButtonLink href={href} variant="secondary" phone="large" className={cn("order-first flex-1 md:order-none md:flex-none", selectHref && "lg:hidden")}>
               View job
             </ButtonLink>

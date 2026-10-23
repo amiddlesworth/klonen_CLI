@@ -24,7 +24,7 @@ export function NoteDialog({ candidate, onClose, onSave }: NoteDialogProps) {
       open={!!candidate}
       onOpenChange={(open) => !open && onClose()}
       title={candidate ? `Note on ${candidate.person.fullName}` : "Note"}
-      description="Only your account sees notes."
+      description="One note per candidate: saving replaces the last one. Only your account sees notes."
       footer={(close) => (
         <>
           <Button onClick={close}>Cancel</Button>

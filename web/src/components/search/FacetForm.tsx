@@ -1,7 +1,8 @@
 "use client";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import type { FormEvent, ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import { markSearchPending, useSearchPending } from "./pending";
 
 /** Builds the clean `/search?…` URL a facet form would submit (empty fields dropped). */
 export function formHref(form: HTMLFormElement): string {
@@ -24,20 +25,18 @@ type FacetFormProps = {
 /**
  * The facet panel's form. Without JavaScript it is a plain GET form to /search (an Apply button
  * sits in <noscript>). With JavaScript a checkbox change submits at once, and submitting navigates
- * client-side to a clean URL without empty fields, keeping the scroll position.
+ * client-side to a clean URL without empty fields, keeping the scroll position. While it loads, the
+ * results dim and the Filters button shows a spinner (pending.ts).
  */
 export function FacetForm({ id, children, label, className }: FacetFormProps) {
   const router = useRouter();
-  const params = useSearchParams();
-  // Busy from submit until the URL shows the submitted search. (Not useTransition: wrapping the
-  // push in a transition kept same-route navigations from committing.)
-  const [submitted, setSubmitted] = useState<string | null>(null);
-  const current = params.size ? `/search?${params.toString()}` : "/search";
-  const pending = submitted !== null && submitted !== current;
+  // Busy from submit until the URL changes. (Not useTransition: wrapping the push in a transition
+  // kept same-route navigations from committing.)
+  const pending = useSearchPending();
 
   function go(form: HTMLFormElement) {
     const href = formHref(form);
-    setSubmitted(href);
+    markSearchPending(href);
     router.push(href, { scroll: false });
   }
 

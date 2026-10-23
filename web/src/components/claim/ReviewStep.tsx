@@ -1,11 +1,12 @@
 "use client";
-import { useRef, useState, type RefObject } from "react";
+import { useRef, useState, useSyncExternalStore, type RefObject } from "react";
 import { CircleAlert, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
 import { Textarea } from "@/components/ui/Textarea";
+import { cn } from "@/lib/cn";
 import type { ClaimStint } from "@/lib/queries/claim";
 import type { Review } from "./ReviewToggle";
 import { StintReviewRow } from "./StintReviewRow";
@@ -31,6 +32,19 @@ function plural(n: number, one: string, many: string) {
   return `${n} ${n === 1 ? one : many}`;
 }
 
+/**
+ * Capture aid (§10), kept here because html.capture-full is set only by BottomTabBar, which isn't
+ * mounted for visitors. Under an automated browser (navigator.webdriver), unless the hash contains
+ * "fold", the footer sits in place at the end of the card: full-page captures draw sticky elements
+ * at their first-viewport position. Real users are unaffected.
+ */
+function subscribeHash(onChange: () => void) {
+  window.addEventListener("hashchange", onChange);
+  return () => window.removeEventListener("hashchange", onChange);
+}
+const captureSnapshot = () => navigator.webdriver === true && !location.hash.includes("fold");
+const noCapture = () => false;
+
 /** Bring an element to the middle of the viewport (clear of the sticky footer), then focus it. */
 function reveal(el: HTMLElement | null | undefined) {
   if (!el) return;
@@ -40,14 +54,16 @@ function reveal(el: HTMLElement | null | undefined) {
 
 /**
  * Step 2, Review your career (§8.11): every stint with Correct · Needs a fix and an inline note.
- * The footer is sticky at the bottom of the viewport (above the tab bar on phone), so the reviewed
- * count, "Mark the rest correct", Back and Continue stay in reach on a 20-role career. Continue
+ * The footer is sticky at the bottom of the viewport (above the tab bar on phone when there is one;
+ * visitors have none, so there it sits flush with the screen bottom), so the reviewed count, "Mark
+ * the rest correct", Back and Continue stay in reach on a 20-role career. Continue
  * checks that every stint was reviewed and every fix has a note, then moves focus to the first one
  * that wasn't; only that row turns --danger, the other skipped rows get a neutral caption.
  */
 export function ReviewStep(props: ReviewStepProps) {
   const { headingRef, stints, isDemo, sourceDetail, reviews, notes, missing, onReview, onNote, onMarkRestCorrect, onMissing, onBack, onContinue } = props;
   const [checked, setChecked] = useState(false);
+  const captureFull = useSyncExternalStore(subscribeHash, captureSnapshot, noCapture);
   const toggles = useRef(new Map<number, HTMLDivElement | null>());
 
   const coaching = stints.filter((s) => !s.asPlayer);
@@ -149,7 +165,9 @@ export function ReviewStep(props: ReviewStepProps) {
           )}
           {hasInferred && (
             <p className="mt-4 border-t border-divider pt-3 text-caption text-fg-3">
-              <span className="inf num mr-1.5 text-fg-2">2004</span>
+              <span aria-hidden="true" className="inf num mr-1.5 cursor-default text-fg-2">
+                2004
+              </span>
               Year inferred from the bio, not stated in it
             </p>
           )}
@@ -172,11 +190,19 @@ export function ReviewStep(props: ReviewStepProps) {
       />
 
       {/*
-        Sticky footer: bleeds to the card edges and replaces the card's bottom padding. Under the
-        screenshot capture aid (§10, html.capture-full) it sits in place, since full-page captures
-        draw sticky elements at their first-viewport position.
+        Sticky footer: bleeds to the card edges and replaces the card's bottom padding. Phone: flush
+        with the screen bottom (plus the safe area) for visitors; signed in, AppShell's .has-tabbar
+        means the fixed tab bar is there, so it sits on top of the bar instead. Under the capture aid
+        it is static at the end of the card.
       */}
-      <div className="sticky bottom-[calc(var(--tabbar-h)+env(safe-area-inset-bottom))] z-10 -mx-4 -mb-4 mt-5 border-t border-divider bg-surface px-4 py-3 md:bottom-0 md:-mx-6 md:-mb-5 md:rounded-b-md md:px-6 [.capture-full_&]:static">
+      <div
+        className={cn(
+          "z-10 -mx-4 -mb-4 mt-5 border-t border-divider bg-surface px-4 py-3 md:-mx-6 md:-mb-5 md:rounded-b-md md:px-6",
+          captureFull
+            ? "static"
+            : "sticky bottom-0 max-md:pb-[calc(12px+env(safe-area-inset-bottom))] max-md:[.has-tabbar_&]:bottom-[calc(var(--tabbar-h)+env(safe-area-inset-bottom))] max-md:[.has-tabbar_&]:pb-3",
+        )}
+      >
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex min-h-7 items-center justify-between gap-3">
@@ -184,7 +210,7 @@ export function ReviewStep(props: ReviewStepProps) {
                 <span className="font-semibold text-fg-1">{reviewed}</span> of {stints.length} reviewed
               </p>
               {unreviewed > 0 && stints.length > 1 && (
-                <Button variant="ghost" size="sm" phone="none" onClick={onMarkRestCorrect} className="-mr-2.5 max-md:before:absolute max-md:before:-inset-2 md:hidden">
+                <Button variant="ghost" size="sm" phone="none" onClick={onMarkRestCorrect} className="-mr-2.5 max-md:before:absolute max-md:before:-inset-y-2 max-md:before:-left-2 max-md:before:right-0 md:hidden">
                   {reviewed === 0 ? "Mark all correct" : "Mark the rest correct"}
                 </Button>
               )}

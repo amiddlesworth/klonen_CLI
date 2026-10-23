@@ -23,6 +23,41 @@ function FacetSkeleton() {
   );
 }
 
+/** Search start page while loading: the search card, then suggested searches and conferences. */
+export function StartSkeleton() {
+  return (
+    <SidebarLayout sidebarLabel="Search filters" sidebar={<FacetSkeleton />}>
+      <SkeletonRegion label="Loading search">
+        <div className="flex flex-col gap-2 md:gap-3">
+          <Card padding="main">
+            <SkeletonLine width="48%" lineHeight={22} />
+            <SkeletonLine width="80%" lineHeight={18} className="mt-0.5" />
+            <div className="mt-4 flex gap-2">
+              <Skeleton className="h-10 flex-1 rounded-sm max-md:h-11" />
+              <Skeleton className="h-10 w-20 rounded-sm max-md:h-11" />
+            </div>
+            <Skeleton className="mt-3 h-10 w-full rounded-sm lg:hidden" />
+          </Card>
+          <Card padding="none" className="pt-4 md:pt-5">
+            <div className="px-4 md:px-6">
+              <SkeletonLine width="32%" lineHeight={22} />
+            </div>
+            <ul className="pb-2">
+              {[0, 1, 2].map((i) => (
+                <li key={i} className="flex min-h-12 items-center gap-3 px-4 py-2 md:px-6">
+                  <Skeleton className="size-4 rounded-xs" />
+                  <Skeleton className="h-2.5 flex-1" />
+                  <Skeleton className="h-2.5 w-16" />
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </div>
+      </SkeletonRegion>
+    </SidebarLayout>
+  );
+}
+
 /** Search loading state (§8.7): header and tabs, then 5 skeleton result rows. */
 export function SearchSkeleton() {
   return (
@@ -50,6 +85,8 @@ export function SearchSkeleton() {
                     <Skeleton className="h-5 w-10" />
                     <Skeleton className="h-5 w-12" />
                   </div>
+                  {/* The tree context line (12/16), so rows keep their height when content arrives. */}
+                  <SkeletonLine width={i % 2 ? "36%" : "44%"} lineHeight={16} className="mt-0.5" />
                 </div>
                 <Skeleton className="size-7 rounded-sm max-md:size-10" />
               </li>

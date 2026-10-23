@@ -6,8 +6,12 @@ import { Menu } from "@/components/ui/Menu";
 import { MenuGroup, MenuRadioItem } from "@/components/ui/MenuItems";
 import { cn } from "@/lib/cn";
 
-/** "Showing Division III ▾" (§8.5 FeedToolbar, lg only). Division III is the only division with staff data so far. */
-export function ScopeMenu() {
+/**
+ * "Showing Division III ▾" (§8.5 FeedToolbar): a ghost menu trigger, the same words at every width
+ * (the toolbar places one copy beside the segments and one under them on phone). Division III is the
+ * only division with staff data so far.
+ */
+export function ScopeMenu({ className }: { className?: string }) {
   return (
     <Menu
       trigger={
@@ -18,7 +22,7 @@ export function ScopeMenu() {
       }
       triggerLabel="Showing Division III. Change division"
       label="Division"
-      triggerClassName={cn(buttonClasses({ variant: "ghost" }), "hidden gap-1 pl-2.5 pr-2 font-normal lg:inline-flex")}
+      triggerClassName={cn(buttonClasses({ variant: "ghost", phone: "large" }), "inline-flex gap-1 pl-2.5 pr-2 font-normal", className)}
       focusChecked
       minWidth={240}
     >

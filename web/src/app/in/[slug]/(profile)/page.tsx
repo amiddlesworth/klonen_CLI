@@ -4,10 +4,10 @@ import type { StripStint } from "@/components/data/SeasonStrip";
 import { AboutCard } from "@/components/profile/AboutCard";
 import { EducationCard, PlayingCard } from "@/components/profile/CareerEntries";
 import { ExperienceCard } from "@/components/profile/ExperienceCard";
-import { buildLedger, buildTree, coachingSeasons, firstSeason } from "@/components/profile/model";
+import { buildLedger, buildTree, coachingSeasons, currentHeadline, firstSeason, undatedRoleCount } from "@/components/profile/model";
 import type { ProfileViewer } from "@/components/profile/ProfileActions";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
-import { AlsoViewedCard, CurrentProgramCard, ProfileBreadcrumb, SameTreeCard } from "@/components/profile/RailCards";
+import { AlsoViewedCard, CurrentProgramCard, ProfileBreadcrumb, SameTreeCard, sameTreeInferred } from "@/components/profile/RailCards";
 import { TreeCard } from "@/components/profile/TreeCard";
 import { TwoColumnLayout } from "@/components/shell/Layouts";
 import { BRAND } from "@/lib/brand";
@@ -17,9 +17,9 @@ import {
   getAlsoViewed,
   getConnectionState,
   getProfileCached,
+  getProfileTreeCached,
   getProgramCard,
   getSameTree,
-  getTreeCached,
   type ConnectionState,
 } from "@/lib/queries/profile";
 import { getSession } from "@/lib/session";
@@ -29,11 +29,11 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const profile = await getProfileCached(slug);
-  // Unknown slug: the page calls notFound(), which adds robots noindex; loading.tsx streams the
-  // shell first, so the HTTP status stays 200 in this setup.
+  // Unknown slug: the segment layout answers with a real 404 before anything streams.
   if (!profile) return { title: "Coach not found", robots: { index: false } };
   const { person, currentOrg } = profile;
-  const role = [person.currentTitle, currentOrg?.name].filter(Boolean).join(" at ");
+  const headline = currentHeadline(profile.experience.flatMap((g) => g.roles), currentOrg?.id ?? null, person.currentTitle);
+  const role = [headline, currentOrg?.name].filter(Boolean).join(" at ");
   const description = `${person.fullName}${role ? `, ${role}` : ""}. Coaching career, coaching tree and education, built from public sources.`;
   return {
     title: person.fullName,
@@ -54,13 +54,14 @@ export default async function ProfilePage({ params }: Props) {
   const viewer: ProfileViewer = isOwner ? "owner" : !session ? "visitor" : session.user.kind === "employer" ? "employer" : "coach";
   const firstName = person.firstName || person.fullName.split(" ")[0];
 
-  const tree = await getTreeCached(person.id);
+  const tree = await getProfileTreeCached(person.id);
   const treeIds = [...tree.mentors, ...tree.peers, ...tree.mentees].map((l) => l.person.id);
   const conference = currentOrg?.conferenceAbbr ?? null;
   const [accounts, program, sameTree, alsoViewed, almaOrg, connection] = await Promise.all([
     getDemoAccounts().catch(() => []),
     currentOrg ? getProgramCard(currentOrg.id) : Promise.resolve(null),
-    currentOrg ? getSameTree(person.id, currentOrg.id, treeIds) : Promise.resolve([]),
+    // A fictional demo candidate is two steps from no one: no Same tree.
+    currentOrg && !person.isDemo ? getSameTree(person.id, currentOrg.id, treeIds) : Promise.resolve([]),
     conference ? getAlsoViewed(person.id, person.slug, conference) : Promise.resolve([]),
     person.almaMater ? getAlmaMaterOrg(person.almaMater) : Promise.resolve(null),
     session?.person && !isOwner && person.claimed ? getConnectionState(session.person.id, person.id) : Promise.resolve<ConnectionState>("none"),
@@ -71,7 +72,9 @@ export default async function ProfilePage({ params }: Props) {
   const ledger = buildLedger(rows);
   const seasons = coachingSeasons(rows);
   const first = firstSeason(rows);
-  const treeModel = buildTree(tree, firstName, currentOrg?.slug ?? null);
+  const treeModel = buildTree(tree, firstName, currentOrg?.slug ?? null, { id: person.id, fullName: person.fullName });
+  const headline = currentHeadline(rows, currentOrg?.id ?? null, person.currentTitle);
+  const undatedRoles = undatedRoleCount(rows);
   const strip: StripStint[] = rows
     .filter((r) => !r.asPlayer)
     .map((r) => ({
@@ -86,6 +89,19 @@ export default async function ProfilePage({ params }: Props) {
     }));
   const ledgerInferred = ledger.some((g) => g.inferred || g.items.some((i) => i.kind === "role" && i.inferred && g.roleCount > 1));
   const playingInferred = playing.some((r) => !r.yearsExplicit && (r.startYear || r.endYear));
+  const sameInferred = sameTreeInferred(sameTree);
+  // Every page that shows an inferred year explains the mark once (§6.2): the Experience legend, or,
+  // without an Experience list, the first card below that shows one.
+  const anyInferred = ledgerInferred || playingInferred || treeModel.inferred || sameInferred;
+  const explainIn = !anyInferred
+    ? null
+    : ledger.length
+      ? "experience"
+      : playing.length
+        ? "playing"
+        : treeModel.groups.length && treeModel.inferred
+          ? "tree"
+          : "same-tree";
   const sources = [...new Set([person.sourceUrl, ...profile.sources].filter((u): u is string => !!u))];
 
   const profilePerson = { id: person.id, slug: person.slug, fullName: person.fullName, firstName, claimed: person.claimed };
@@ -93,7 +109,7 @@ export default async function ProfilePage({ params }: Props) {
     "@context": "https://schema.org",
     "@type": "Person",
     name: person.fullName,
-    ...(person.currentTitle ? { jobTitle: person.currentTitle } : {}),
+    ...(headline ? { jobTitle: headline } : {}),
     ...(currentOrg ? { worksFor: { "@type": "SportsOrganization", name: currentOrg.name, ...(program?.athleticsUrl ? { url: program.athleticsUrl } : {}) } } : {}),
     ...(person.almaMater ? { alumniOf: { "@type": "CollegeOrUniversity", name: person.almaMater } } : {}),
   };
@@ -106,7 +122,14 @@ export default async function ProfilePage({ params }: Props) {
         <>
           {program && <CurrentProgramCard program={program} />}
           {currentOrg && (
-            <SameTreeCard links={sameTree} firstName={firstName} programShortName={currentOrg.shortName} signedIn={!!session} accounts={accounts} />
+            <SameTreeCard
+              links={sameTree}
+              firstName={firstName}
+              programShortName={currentOrg.shortName}
+              signedIn={!!session}
+              accounts={accounts}
+              explainInferred={explainIn === "same-tree"}
+            />
           )}
           {conference && <AlsoViewedCard people={alsoViewed} conferenceAbbr={conference} />}
         </>
@@ -114,12 +137,12 @@ export default async function ProfilePage({ params }: Props) {
     >
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <ProfileHeader
-        person={{ ...profilePerson, currentTitle: person.currentTitle, isDemo: person.isDemo }}
+        person={{ ...profilePerson, headline, isDemo: person.isDemo }}
         currentOrg={currentOrg}
         viewer={viewer}
         accounts={accounts}
         connection={connection}
-        stats={{ seasons: seasons.length || null, stops: ledger.length, treeSize: treeModel.unique, first }}
+        stats={{ seasons: seasons.length || null, seasonsPlus: undatedRoles > 0, stops: ledger.length, treeSize: treeModel.unique, first }}
         sources={sources}
         hasRoles={rows.length > 0}
       />
@@ -128,14 +151,15 @@ export default async function ProfilePage({ params }: Props) {
         groups={ledger}
         strip={strip}
         seasons={seasons.length}
+        undatedRoles={undatedRoles}
         personName={person.fullName}
         firstName={firstName}
         slug={slug}
         owner={isOwner}
-        showInferredKey={ledgerInferred}
+        showInferredKey={explainIn === "experience"}
       />
-      <PlayingCard rows={playing} personName={person.fullName} explainInferred={playingInferred && (!ledgerInferred || !ledger.length)} />
-      <TreeCard model={treeModel} slug={slug} firstName={firstName} personName={person.fullName} />
+      <PlayingCard rows={playing} personName={person.fullName} explainInferred={explainIn === "playing"} />
+      <TreeCard model={treeModel} slug={slug} firstName={firstName} personName={person.fullName} explainInferred={explainIn === "tree"} />
       <EducationCard almaMater={person.almaMater} org={almaOrg} />
     </TwoColumnLayout>
   );

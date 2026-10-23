@@ -30,6 +30,8 @@ export function PeopleYouMayKnow({ rows }: { rows: PymkRow[] }) {
             return (
               <li key={r.id} className="border-t border-divider py-3 first:border-t-0 last:pb-0">
                 <PersonRow
+                  // Name links get the full 24px target (§8.1 Link): inline-block so the padding counts.
+                  className="[&_a.target-24]:inline-block [&_a.target-24]:max-w-full [&_a.target-24]:truncate [&_a.target-24]:align-top"
                   name={r.fullName}
                   href={`/in/${r.slug}`}
                   tintKey={r.slug}

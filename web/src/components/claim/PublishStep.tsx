@@ -6,6 +6,7 @@ import { Card, CardFooter } from "@/components/ui/Card";
 import { SampleChip } from "@/components/ui/Chip";
 import { Icon } from "@/components/ui/Icon";
 import type { ClaimStint, ClaimSubject } from "@/lib/queries/claim";
+import type { ClaimMode } from "./ClaimFlow";
 import { ProfilePreview } from "./ProfilePreview";
 import type { Review } from "./ReviewToggle";
 
@@ -17,8 +18,8 @@ type PublishStepProps = {
   notes: Record<number, string>;
   missing: string;
   publishing: boolean;
-  /** False for signed-out visitors: their walk-through isn't saved. */
-  saves: boolean;
+  /** Only "own" (the coach demo on its own profile) records the claim. */
+  mode: ClaimMode;
   error: string | null;
   onBack: () => void;
   onPublish: () => void;
@@ -28,7 +29,7 @@ type PublishStepProps = {
  * Step 3, Publish (§8.11): the header as it will appear (no banner, no Unclaimed chip), a summary of
  * the review, the demo boundary in plain words, then primary "Publish profile" and secondary Back.
  */
-export function PublishStep({ headingRef, subject, email, reviews, notes, missing, publishing, saves, error, onBack, onPublish }: PublishStepProps) {
+export function PublishStep({ headingRef, subject, email, reviews, notes, missing, publishing, mode, error, onBack, onPublish }: PublishStepProps) {
   const fixes: ClaimStint[] = subject.stints.filter((s) => reviews[s.id] === "fix");
   const correct = subject.stints.length - fixes.length;
   const first = subject.person.firstName ?? subject.person.fullName.split(" ")[0];
@@ -45,6 +46,16 @@ export function PublishStep({ headingRef, subject, email, reviews, notes, missin
       <div className="-mx-4 mt-4 border-y border-divider bg-surface-2 px-4 pb-1 pt-4 md:-mx-6 md:px-6">
         <p className="mb-3 text-caption font-medium text-fg-3">Preview</p>
         <ProfilePreview subject={subject} />
+        {/* Explains the dotted First season (§6.2): tooltips don't exist on touch, and the step 2 legend is gone.
+            Phone hides First season, as the profile does, so the legend goes with it. */}
+        {subject.stats.firstSeason?.inferred && (
+          <p className="flex items-center gap-1.5 border-t border-divider py-2.5 text-caption text-fg-3 max-md:hidden">
+            <span aria-hidden="true" className="inf num cursor-default text-fg-2">
+              2004
+            </span>
+            Year inferred from the bio, not stated in it
+          </p>
+        )}
       </div>
 
       <dl className="mt-1 divide-y divide-divider text-small">
@@ -85,8 +96,12 @@ export function PublishStep({ headingRef, subject, email, reviews, notes, missin
         <SampleChip label="Demo" className="mt-px" />
         <p className="min-w-0">
           In the live product, Publish makes this profile yours: the Unclaimed label and source banner come off and you can edit everything.{" "}
-          {saves ? "In this demo it only records your claim." : "In this demo nothing is saved for visitors."} {first}&apos;s public profile and records stay
-          exactly as they are, and correction notes aren&apos;t saved.
+          {mode === "own"
+            ? "In this demo it only records your claim."
+            : mode === "other"
+              ? "In this demo nothing is saved when you walk through someone else's profile."
+              : "In this demo nothing is saved for visitors."}{" "}
+          {first}&apos;s public profile and records stay exactly as they are, and correction notes aren&apos;t saved.
         </p>
       </div>
 

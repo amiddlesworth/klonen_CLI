@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type RefObject } from "react";
 import { Search } from "lucide-react";
 import { TypeaheadPanel } from "@/components/shell/TypeaheadPanel";
 import { typeaheadOptions, type TypeaheadOption, type TypeaheadResponse } from "@/components/shell/typeahead";
@@ -14,14 +14,24 @@ import { cn } from "@/lib/cn";
  * from /api/typeahead (↑ ↓ Enter Esc, same panel as the global search). Without JS it is a GET form
  * to /search?q=.
  */
-export function LandingSearch({ className }: { className?: string }) {
+export function LandingSearch({
+  className,
+  inputRef: inputRefProp,
+  placeholder = "Search coaches and programs",
+}: {
+  className?: string;
+  /** Lets the hero's "Find your profile" focus the field. */
+  inputRef?: RefObject<HTMLInputElement | null>;
+  placeholder?: string;
+}) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   // Results are kept with the term they answer, so a stale term's rows never show.
   const [fetched, setFetched] = useState<{ term: string; data: TypeaheadResponse } | null>(null);
   const [active, setActive] = useState(-1);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const ownRef = useRef<HTMLInputElement>(null);
+  const inputRef = inputRefProp ?? ownRef;
   const listId = useId();
   const inputId = useId();
   const term = q.trim();
@@ -123,7 +133,7 @@ export function LandingSearch({ className }: { className?: string }) {
             type="search"
             name="q"
             value={q}
-            placeholder="Search coaches and programs"
+            placeholder={placeholder}
             autoComplete="off"
             spellCheck={false}
             enterKeyHint="search"

@@ -61,10 +61,11 @@ export function AlumniList({ id, title, subtitle, entries, kind, empty, page = 1
                         {displayTitle(e.role) ?? e.role}
                         {extraRoles > 0 && (
                           <>
-                            {" "}
-                            {/* Wraps as a unit, so a bare number never ends a line. */}
+                            {/* The "·" is glued to the title's last word (no-break space), so a wrapped line never starts with it;
+                                the note wraps as a unit, so a bare number never ends a line. */}
+                            <span className="text-fg-3">{" ·"}</span>{" "}
                             <span className="whitespace-nowrap text-fg-3">
-                              · {extraRoles} earlier {extraRoles === 1 ? "role" : "roles"} here
+                              {extraRoles} earlier {extraRoles === 1 ? "role" : "roles"} here
                             </span>
                           </>
                         )}

@@ -27,8 +27,9 @@ type ThreadViewProps = {
 
 /** Messages from one sender within 5 minutes of each other share a header (§8.15). */
 const GROUP_GAP_MS = 5 * 60_000;
-/** Composer grows with its text up to 6 lines (20px each, 8px padding, 1px border). */
-const COMPOSER_MAX_PX = 6 * 20 + 16 + 2;
+/** The composer grows with its text up to 6 lines, then scrolls. */
+const COMPOSER_MAX_LINES = 6;
+const OFFLINE = "Your message wasn't sent. Check your connection and try again.";
 
 type Group = { key: string; day: string | null; from: string; messages: ThreadViewMessage[] };
 
@@ -54,8 +55,11 @@ function groupMessages(messages: ThreadViewMessage[], now: Date, timeZone: strin
 /**
  * The conversation and its composer (§8.15). Messages are flat, not bubbles: avatar 32, name 13/600,
  * time 12 --fg-3, text 14/20, grouped by sender within 5 minutes, with date dividers. The composer
- * auto-grows to 6 lines; Send (the view's one primary) is disabled while it's empty. A sent message
- * shows at once ("Sending…") and is replaced by the saved one when the page refreshes.
+ * auto-grows to 6 lines; Send (the view's one primary) is disabled while it's empty. On phone the
+ * composer is one row (a 44px, one-line textarea with Send beside it); on md and up the textarea is
+ * two lines with the keyboard hint and Send on a row below. A sent message shows at once ("Sending…")
+ * and is replaced by the saved one when the page refreshes; if the request fails (offline), the draft
+ * comes back with an error.
  */
 export function ThreadView({ threadId, me, other, messages, scrollPageOnPhone, intro }: ThreadViewProps) {
   const [optimistic, addOptimistic] = useOptimistic(messages, (state, m: ThreadViewMessage) => [...state, m]);
@@ -91,9 +95,22 @@ export function ThreadView({ threadId, me, other, messages, scrollPageOnPhone, i
   function resize() {
     const el = textareaRef.current;
     if (!el) return;
+    const css = getComputedStyle(el);
+    const chrome = parseFloat(css.paddingTop) + parseFloat(css.paddingBottom) + parseFloat(css.borderTopWidth) + parseFloat(css.borderBottomWidth);
+    const max = COMPOSER_MAX_LINES * parseFloat(css.lineHeight) + chrome;
     el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight + 2, COMPOSER_MAX_PX)}px`;
-    el.style.overflowY = el.scrollHeight + 2 > COMPOSER_MAX_PX ? "auto" : "hidden";
+    const needed = el.scrollHeight + parseFloat(css.borderTopWidth) + parseFloat(css.borderBottomWidth);
+    el.style.height = `${Math.min(needed, max)}px`;
+    el.style.overflowY = needed > max ? "auto" : "hidden";
+  }
+
+  function restore(text: string, message: string) {
+    setError(message);
+    setBody(text);
+    requestAnimationFrame(() => {
+      resize();
+      textareaRef.current?.focus();
+    });
   }
 
   const trimmed = body.trim();
@@ -108,14 +125,12 @@ export function ThreadView({ threadId, me, other, messages, scrollPageOnPhone, i
     requestAnimationFrame(resize);
     startTransition(async () => {
       addOptimistic({ id: -Date.now(), fromUserId: me.userId, body: text, sentAt: new Date().toISOString(), pending: true });
-      const res = await sendMessage({ threadId, body: text });
-      if (!res.ok) {
-        setError(res.error);
-        setBody(text);
-        requestAnimationFrame(() => {
-          resize();
-          textareaRef.current?.focus();
-        });
+      try {
+        const res = await sendMessage({ threadId, body: text });
+        if (!res.ok) restore(text, res.error);
+      } catch {
+        // Offline, a dropped connection or a stale action id: keep the page and the draft.
+        restore(text, OFFLINE);
       }
     });
   }
@@ -192,7 +207,7 @@ export function ThreadView({ threadId, me, other, messages, scrollPageOnPhone, i
       <form
         ref={formRef}
         onSubmit={submit}
-        className="z-10 border-t border-divider bg-surface px-4 py-3 max-md:sticky max-md:bottom-[calc(var(--tabbar-h)+env(safe-area-inset-bottom))] md:px-6"
+        className="z-10 flex flex-wrap items-end gap-x-2 border-t border-divider bg-surface px-4 py-3 max-md:sticky max-md:bottom-[calc(var(--tabbar-h)+env(safe-area-inset-bottom))] md:items-center md:gap-x-3 md:px-6"
       >
         <label htmlFor={composerId} className="sr-only">
           Write a message to {other.name}
@@ -200,7 +215,7 @@ export function ThreadView({ threadId, me, other, messages, scrollPageOnPhone, i
         <Textarea
           ref={textareaRef}
           id={composerId}
-          rows={2}
+          rows={1}
           value={body}
           maxLength={MAX_MESSAGE_LENGTH + 200}
           placeholder="Write a message…"
@@ -211,25 +226,23 @@ export function ThreadView({ threadId, me, other, messages, scrollPageOnPhone, i
             resize();
           }}
           onKeyDown={onKeyDown}
-          className="min-h-[62px] resize-none overflow-y-hidden max-md:min-h-[62px]"
+          className="min-h-11 flex-1 resize-none overflow-y-hidden py-[11px] md:min-h-[62px] md:basis-full md:py-2"
         />
         {(error || tooLong) && (
-          <p id={errorId} className="mt-1.5 flex items-start gap-1 text-caption text-danger">
+          <p id={errorId} className="order-last mt-1.5 flex basis-full items-start gap-1 text-caption text-danger md:order-none">
             <Icon icon={CircleAlert} size={12} className="mt-0.5" />
             <span>{error ?? `Keep messages under ${MAX_MESSAGE_LENGTH.toLocaleString("en-US")} characters.`}</span>
           </p>
         )}
-        <div className="mt-2 flex items-center justify-end gap-3">
-          <p className="mr-auto text-caption text-fg-3 max-md:hidden">Enter to send · Shift+Enter for a new line</p>
-          {trimmed.length > MAX_MESSAGE_LENGTH - 200 && (
-            <span className={cn("num text-caption", tooLong ? "text-danger" : "text-fg-3")}>
-              {trimmed.length.toLocaleString("en-US")} / {MAX_MESSAGE_LENGTH.toLocaleString("en-US")}
-            </span>
-          )}
-          <Button type="submit" variant="primary" disabled={!trimmed || tooLong} loading={pending}>
-            Send
-          </Button>
-        </div>
+        <p className="mr-auto mt-2 text-caption text-fg-3 max-md:hidden">Enter to send · Shift+Enter for a new line</p>
+        {trimmed.length > MAX_MESSAGE_LENGTH - 200 && (
+          <span className={cn("num text-caption max-md:order-last max-md:mt-1.5 max-md:basis-full max-md:text-right md:mt-2", tooLong ? "text-danger" : "text-fg-3")}>
+            {trimmed.length.toLocaleString("en-US")} / {MAX_MESSAGE_LENGTH.toLocaleString("en-US")}
+          </span>
+        )}
+        <Button type="submit" variant="primary" phone="large" disabled={!trimmed || tooLong} loading={pending} className="md:mt-2">
+          Send
+        </Button>
       </form>
     </>
   );

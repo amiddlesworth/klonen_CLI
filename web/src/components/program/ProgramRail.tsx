@@ -149,13 +149,13 @@ export function HiringCard() {
 
 /**
  * Rail: Your hiring, for the athletic director of this program (from the session). The header carries
- * "Post a job" as the page's primary action, so this card holds what the AD tracks: the program's open
- * jobs and the way into the pipeline they own.
+ * "Post a job" as the page's primary action and the "your program" strip, so this card holds what the
+ * AD tracks: the program's open jobs and the way into the pipeline they own.
  */
-export function YourHiringCard({ programShortName, jobs, sampleJobs, jobsHref }: { programShortName: string; jobs: number; sampleJobs: number; jobsHref: string }) {
+export function YourHiringCard({ jobs, sampleJobs, jobsHref }: { jobs: number; sampleJobs: number; jobsHref: string }) {
   return (
     <Card padding="rail" aria-labelledby="your-hiring-title">
-      <CardHeader id="your-hiring-title" size="rail" title="Your hiring" subtitle={`${programShortName} · your program`} />
+      <CardHeader id="your-hiring-title" size="rail" title="Your hiring" subtitle="Jobs and candidate pipeline" />
       <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-small text-fg-2">
         <Link href={jobsHref} className="target-24 rounded-xs font-medium text-fg-1 underline-offset-2 hover:underline">
           <span className="num">{jobsCount(jobs)}</span>

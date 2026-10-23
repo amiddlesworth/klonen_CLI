@@ -12,7 +12,7 @@ import { Icon } from "@/components/ui/Icon";
 import { TextLink } from "@/components/ui/TextLink";
 import { BRAND } from "@/lib/brand";
 import { cn } from "@/lib/cn";
-import { seasonRangeMulti, titleShort } from "@/lib/format";
+import { YEARS_NOT_IN_SOURCE, seasonRangeMulti, titleShort } from "@/lib/format";
 import type { JobOrg, NetworkProof, ProgramAlumnus, ProgramNetwork } from "@/lib/queries/jobsx";
 import type { PersonSummary } from "@/lib/queries/people";
 import type { JobProof } from "./JobCard";
@@ -81,7 +81,8 @@ function PersonChips({ person }: { person: { isDemo: boolean; claimed: boolean }
 
 /**
  * Someone who coached or played here: avatar 40, name, "{role here} · {seasons here}" (the range
- * never truncates; the role does) and a "Now {title} at {program}" context line. The row is one link.
+ * never truncates; the role does; with no dated stint, "Years not in source") and a "Now {title}
+ * at {program}" context line. The row is one link.
  */
 function AlumnusRow({ entry }: { entry: ProgramAlumnus }) {
   const { person } = entry;
@@ -98,11 +99,14 @@ function AlumnusRow({ entry }: { entry: ProgramAlumnus }) {
         </span>
         <span className="flex min-w-0 text-small text-fg-2">
           <span className="min-w-0 truncate">{titleShort(entry.role)}</span>
-          {range && (
+          {range ? (
             <span className="num shrink-0 whitespace-pre">
               {" · "}
               {entry.inferred ? <InferredYear reason={inferredReason(entry.inferredEvidence)}>{range}</InferredYear> : range}
             </span>
+          ) : (
+            // The same words as the program page's Alumni tab (§6.1, §11 rule 11).
+            <span className="ml-2 shrink-0 whitespace-nowrap text-caption leading-[18px] text-fg-3">{YEARS_NOT_IN_SOURCE}</span>
           )}
         </span>
         {now && <ContextLine>{now}</ContextLine>}

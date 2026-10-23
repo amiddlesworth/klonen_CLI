@@ -1,5 +1,5 @@
 "use client";
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
@@ -74,16 +74,26 @@ type SaveJobButtonProps = {
   large?: boolean;
   className?: string;
   wrapperClassName?: string;
+  /**
+   * A closed listing: nothing to save any more, so the control shows only when the viewer saved
+   * the job earlier, to let them remove it. Once shown it stays until the page changes, so focus
+   * isn't lost when it is pressed.
+   */
+  removeOnly?: boolean;
 };
 
 /** Save job (§7 bookmark): a toggle with aria-pressed and a toast. */
-export function SaveJobButton({ jobId, title, variant = "icon", large, className, wrapperClassName }: SaveJobButtonProps) {
+export function SaveJobButton({ jobId, title, variant = "icon", large, className, wrapperClassName, removeOnly }: SaveJobButtonProps) {
   const [saved, toggle] = useSavedJob(jobId);
+  const [shown, setShown] = useState(false);
   const toast = useToast();
+  // Remembered from an earlier render (React's "adjust state while rendering" pattern).
+  if (removeOnly && saved && !shown) setShown(true);
   const onClick = () => {
     const now = toggle();
     toast.show(now ? `Saved "${title}" in this browser` : `Removed "${title}" from saved jobs`);
   };
+  if (removeOnly && !saved && !shown) return null;
   if (variant === "label") {
     return (
       <Button variant="secondary" icon={saved ? BookmarkCheck : Bookmark} aria-pressed={saved} phone={large ? "large" : "default"} onClick={onClick} className={className}>

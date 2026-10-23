@@ -97,7 +97,7 @@ export function parseMoney(v: string): number | undefined {
   return r.success ? r.data : undefined;
 }
 
-export type PostJobState = { errors: PostJobErrors; formError?: string; published?: { id: number; title: string } } | null;
+export type PostJobState = { errors: PostJobErrors; formError?: string; published?: { id: number; title: string; pipelineId: number } } | null;
 
 /** The stored description: the text as written, plus a "How to apply" section when one is given. */
 export function composeDescription(description: string, howToApply?: string | null): string {

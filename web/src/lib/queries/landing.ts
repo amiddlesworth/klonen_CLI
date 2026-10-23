@@ -1,39 +1,50 @@
 import "server-only";
 import { cache } from "react";
-import { asc, count, eq, inArray, sql } from "drizzle-orm";
+import { asc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { organizations, people, tenures, treeEdges } from "@/db/schema";
 import { seasonsCovered } from "@/lib/format";
-import { getDatasetStats } from "./feed";
 import { conferenceKey } from "./orgs";
 
 /* Queries for the signed-out landing page (DESIGN.md §8.10). */
 
 export type LandingStats = {
-  /** Registry programs with at least one coach on staff. */
+  /** Programs with at least one real coach on staff (the search page's "196 of the 244"). */
   programs: number;
   /** All NCAA Division III football programs in the registry. */
   registryPrograms: number;
-  /** Real (non-demo) coaches. */
+  /**
+   * Real (non-demo) people: coaches plus a few football staff (operations, equipment), so the
+   * landing labels it "Coaches and staff". Same definition as the search page's sourced count.
+   */
   coaches: number;
-  /** Coaching stints (playing stints excluded) of real coaches. */
-  stints: number;
-  /** Derived coaching-tree edges (worked under + worked alongside). */
-  edges: number;
+  /**
+   * Distinct pairs of real people joined by a derived tree edge. tree_edges holds one row per pair,
+   * program, overlap and kind, so a pair that overlapped at two programs, or both worked under and
+   * alongside each other, is still one connection.
+   */
+  connections: number;
 };
 
-/** Dataset-wide proof points: getDatasetStats plus the size of the program registry. */
+/** Dataset-wide proof points for the landing band (DESIGN.md §8.10), in one round trip. */
 export async function getLandingStats(): Promise<LandingStats> {
-  const [base, [registry]] = await Promise.all([
-    getDatasetStats(),
-    db.select({ n: count() }).from(organizations).where(eq(organizations.inRegistry, true)),
-  ]);
+  const r = await db.execute<LandingStats>(sql`SELECT
+    (SELECT count(DISTINCT current_org_id) FROM ${people} WHERE is_demo = false)::int AS "programs",
+    (SELECT count(*) FROM ${organizations} WHERE in_registry = true)::int AS "registryPrograms",
+    (SELECT count(*) FROM ${people} WHERE is_demo = false)::int AS "coaches",
+    (SELECT count(*) FROM (
+      SELECT DISTINCT least(e.mentor_id, e.mentee_id), greatest(e.mentor_id, e.mentee_id)
+      FROM ${treeEdges} e
+      JOIN ${people} a ON a.id = e.mentor_id
+      JOIN ${people} b ON b.id = e.mentee_id
+      WHERE a.is_demo = false AND b.is_demo = false
+    ) pairs)::int AS "connections"`);
+  const row = r.rows[0];
   return {
-    programs: base?.programs ?? 0,
-    registryPrograms: registry?.n ?? 0,
-    coaches: base?.coaches ?? 0,
-    stints: base?.stints ?? 0,
-    edges: base?.edges ?? 0,
+    programs: row?.programs ?? 0,
+    registryPrograms: row?.registryPrograms ?? 0,
+    coaches: row?.coaches ?? 0,
+    connections: row?.connections ?? 0,
   };
 }
 
@@ -66,7 +77,7 @@ const conferenceSlot = sql<string>`coalesce(${conferenceKey}, ${organizations.id
  * of the dataset. Only careers whose stints are mostly dated (≥ 80 %), so the season count means
  * something. Deterministic: ties break on the slug.
  */
-export async function getSampleProfiles(limit = 4): Promise<SampleProfile[]> {
+export async function getSampleProfiles(limit = 3): Promise<SampleProfile[]> {
   const stops = sql<number>`count(distinct ${tenures.orgId})::int`;
   const dated = sql<number>`count(*) filter (where ${tenures.startYear} is not null)::int`;
   const tree = sql<number>`(select count(distinct case when e.mentor_id = ${people.id} then e.mentee_id else e.mentor_id end)

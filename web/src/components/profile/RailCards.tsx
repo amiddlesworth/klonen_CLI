@@ -10,12 +10,30 @@ import { SampleChip } from "@/components/ui/Chip";
 import { Icon } from "@/components/ui/Icon";
 import { OrgMark } from "@/components/ui/OrgMark";
 import { TextLink } from "@/components/ui/TextLink";
-import { BRAND, CURRENT_SEASON } from "@/lib/brand";
-import { conferenceShort, seasonRangeCompact, sourceDomain, titleShort } from "@/lib/format";
+import { BRAND } from "@/lib/brand";
+import { conferenceShort, sourceDomain, titleShort } from "@/lib/format";
 import type { PersonSummary } from "@/lib/queries/people";
 import type { ProgramCard, SameTreeLink } from "@/lib/queries/profile";
-import { stateName } from "./model";
+import { stateName, treeYearsView, type TreeYearsView } from "./model";
 import { RowConnectButton } from "./ProfileActions";
+import { InlineYears } from "./TreeYears";
+
+/** Rail rows abbreviate titles sooner than tree rows (§6.3 titleShort), so the program fits beside them. */
+const RAIL_TITLE_MAX = 28;
+
+/**
+ * The "Title · Program · Conf" line of a rail person row (§12: truncate the title, keep the context):
+ * the title truncates on its own and the program part stays whole.
+ */
+function TitleOrg({ title, org }: { title: string | null; org: string | null }) {
+  if (!title) return org ? <span className="block truncate">{org}</span> : null;
+  return (
+    <span className="flex min-w-0">
+      <span className="min-w-0 truncate">{title}</span>
+      {org && <span className="max-w-[75%] shrink-0 truncate">{`\u00a0·\u00a0${org}`}</span>}
+    </span>
+  );
+}
 
 /** Rail: Current program (§8.4): the program, staff on the network, open jobs, View staff and the athletics site. */
 export function CurrentProgramCard({ program }: { program: ProgramCard }) {
@@ -28,7 +46,7 @@ export function CurrentProgramCard({ program }: { program: ProgramCard }) {
       title="Current program"
       action={
         href ? (
-          <TextLink href={href} arrow className="text-small" aria-label={`View program: ${program.name}`}>
+          <TextLink href={href} arrow target24 className="text-small" aria-label={`View program: ${program.name}`}>
             View program
           </TextLink>
         ) : undefined
@@ -60,7 +78,15 @@ export function CurrentProgramCard({ program }: { program: ProgramCard }) {
             Open jobs
             {program.sampleJobs > 0 && <SampleChip label="Sample" />}
           </dt>
-          <dd className="num font-semibold text-fg-1">{program.openJobs}</dd>
+          <dd className="num font-semibold text-fg-1">
+            {href && program.openJobs > 0 ? (
+              <Link href={`${href}?tab=jobs`} className="target-24 underline-offset-2 hover:underline" aria-label={`${program.openJobs} open ${program.openJobs === 1 ? "job" : "jobs"} at ${program.shortName}`}>
+                {program.openJobs}
+              </Link>
+            ) : (
+              program.openJobs
+            )}
+          </dd>
         </div>
       </dl>
       {(href || program.athleticsUrl) && (
@@ -82,18 +108,41 @@ export function CurrentProgramCard({ program }: { program: ProgramCard }) {
   );
 }
 
-/** "Via Rob Hutchins · Chris's head coach at Colorado, 1989–90": how a Same tree person connects. */
-function viaLine(l: SameTreeLink): string {
-  const ongoing = !!l.endYear && l.endYear >= CURRENT_SEASON;
-  const years = l.startYear ? `, ${seasonRangeCompact(l.startYear, ongoing ? null : l.endYear, ongoing)}` : "";
+/**
+ * "Via Nic Brockhoff · both at George Fox, 2015–24": how a Same tree person connects. The years are
+ * shown only when the source pins them, dotted when inferred.
+ */
+function ViaLine({ link: l }: { link: SameTreeLink }) {
+  const view: TreeYearsView = treeYearsView(l.years, (id) => (id === l.person.id ? l.person.fullName : id === l.via.id ? l.via.fullName : undefined));
+  const years =
+    view.kind === "range" ? (
+      <>
+        , <InlineYears view={view} />
+      </>
+    ) : null;
   const first = l.person.fullName.split(" ")[0];
-  const how =
-    l.relation === "alongside"
-      ? `both at ${l.orgShortName}${years}`
-      : l.relation === "via_coached"
-        ? `${first}'s head coach at ${l.orgShortName}${years}`
-        : `coached under ${first} at ${l.orgShortName}${years}`;
-  return `Via ${l.via.fullName} · ${how}`;
+  return (
+    <>
+      Via {l.via.fullName} ·{" "}
+      {l.relation === "alongside" ? (
+        <>both at {l.orgShortName}</>
+      ) : l.relation === "via_coached" ? (
+        <>
+          {first}&apos;s head coach at {l.orgShortName}
+        </>
+      ) : (
+        <>
+          coached under {first} at {l.orgShortName}
+        </>
+      )}
+      {years}
+    </>
+  );
+}
+
+/** Whether a Same tree card shows an inferred year (the page explains the mark once). */
+export function sameTreeInferred(links: SameTreeLink[]): boolean {
+  return links.some((l) => treeYearsView(l.years, () => undefined).kind === "range" && l.years.inferred);
 }
 
 /**
@@ -106,12 +155,15 @@ export function SameTreeCard({
   programShortName,
   signedIn,
   accounts,
+  explainInferred,
 }: {
   links: SameTreeLink[];
   firstName: string;
   programShortName: string;
   signedIn: boolean;
   accounts: DemoAccountOption[];
+  /** Explain the dotted year here (when nothing else on the page does). */
+  explainInferred?: boolean;
 }) {
   if (!links.length) return null;
   return (
@@ -127,9 +179,12 @@ export function SameTreeCard({
                 tintKey={p.slug}
                 avatarSize={36}
                 size="sm"
-                title={p.currentTitle ? titleShort(p.currentTitle) : null}
-                org={p.org?.shortName}
-                context={<ContextLine icon={Network}>{viaLine(l)}</ContextLine>}
+                title={<TitleOrg title={p.currentTitle ? titleShort(p.currentTitle, RAIL_TITLE_MAX) : null} org={p.org?.shortName ?? null} />}
+                context={
+                  <ContextLine icon={Network}>
+                    <ViaLine link={l} />
+                  </ContextLine>
+                }
                 action={
                   <RowConnectButton
                     person={{ id: p.id, slug: p.slug, fullName: p.fullName, firstName: p.fullName.split(" ")[0], claimed: p.claimed }}
@@ -142,6 +197,7 @@ export function SameTreeCard({
           );
         })}
       </ul>
+      {explainInferred && sameTreeInferred(links) && <p className="mt-3 border-t border-divider pt-3 text-caption text-fg-3">Dotted years are inferred from a bio, not stated in it.</p>}
     </SectionCard>
   );
 }
@@ -165,8 +221,9 @@ export function AlsoViewedCard({ people, conferenceAbbr }: { people: PersonSumma
               avatarSize={32}
               size="sm"
               linkRow
-              title={p.currentTitle ? titleShort(p.currentTitle) : null}
-              org={[p.org?.shortName, conferenceShort(p.org?.conferenceAbbr)].filter(Boolean).join(" · ")}
+              title={
+                <TitleOrg title={p.currentTitle ? titleShort(p.currentTitle, RAIL_TITLE_MAX) : null} org={[p.org?.shortName, conferenceShort(p.org?.conferenceAbbr)].filter(Boolean).join(" · ") || null} />
+              }
             />
           </li>
         ))}

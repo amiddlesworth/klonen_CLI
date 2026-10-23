@@ -35,13 +35,13 @@ function CareerLine({ p }: { p: SampleProfile }) {
 /**
  * Compact profile card (§8.10): avatar 48, name, "{title} at {program}", division and conference
  * chips, Unclaimed chip where true, the most recent earlier stop, then the career numbers. The name
- * is the link and its hit area stretches over the whole card. Phone: avatar left of the text.
+ * is the link and its hit area stretches over the whole card. Below lg: avatar left of the text.
  */
 function SampleProfileCard({ p }: { p: SampleProfile }) {
   const more = p.previous.length - 1;
   return (
     <article className="group/card relative flex h-full flex-col border-y border-border bg-surface p-4 md:rounded-md md:border">
-      <div className="flex flex-1 gap-3 md:flex-col">
+      <div className="flex flex-1 gap-3 lg:flex-col">
         <Avatar name={p.fullName} tintKey={p.slug} size={48} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -61,22 +61,18 @@ function SampleProfileCard({ p }: { p: SampleProfile }) {
           </p>
           <ProgramBadges level={p.org.level} conferenceAbbr={p.org.conferenceAbbr} conference={p.org.conference} className="mt-2" />
           {p.previous.length > 0 && (
+            // One line: a long program name truncates (full name in the title); the stop count never does.
             <ContextLine className="mt-2">
-              <span className="line-clamp-2">
-                Previously {p.previous[0]}
-                {more > 0 && (
-                  <>
-                    {" "}
-                    and <span className="whitespace-nowrap">{plural(more, "more stop", "more stops")}</span>
-                  </>
-                )}
+              <span className="flex min-w-0" title={p.previous[0]}>
+                <span className="truncate">Previously {p.previous[0]}</span>
+                {more > 0 && <span className="shrink-0 whitespace-nowrap">&nbsp;and {plural(more, "more stop", "more stops")}</span>}
               </span>
             </ContextLine>
           )}
         </div>
       </div>
-      {/* Phone: on the text column (48 avatar + 12 gap), so the card reads as avatar | facts. */}
-      <div className="mt-3 border-t border-divider pt-3 max-md:ml-15">
+      {/* Below lg: on the text column (48 avatar + 12 gap), so the card reads as avatar | facts. */}
+      <div className="mt-3 border-t border-divider pt-3 max-lg:ml-15">
         <CareerLine p={p} />
       </div>
     </article>
@@ -84,8 +80,8 @@ function SampleProfileCard({ p }: { p: SampleProfile }) {
 }
 
 /**
- * Sample profiles (§8.10): real current head coaches with long careers, linking to their profiles.
- * Four across on desktop, two on tablet, a stack of full-bleed cards on phone.
+ * Sample profiles (§8.10): three real current head coaches with long careers, linking to their
+ * profiles. The same three at every width: three across from lg, a stack of cards below.
  */
 export function SampleProfiles({ profiles }: { profiles: SampleProfile[] | null }) {
   return (
@@ -114,10 +110,9 @@ export function SampleProfiles({ profiles }: { profiles: SampleProfile[] | null 
           />
         </Card>
       ) : (
-        <ul className="grid gap-2 md:grid-cols-2 md:gap-3 lg:grid-cols-4">
-          {profiles.map((p, i) => (
-            // Three on phone (§8.10), so the stack stays short; four from md.
-            <li key={p.id} className={i >= 3 ? "min-w-0 max-md:hidden" : "min-w-0"}>
+        <ul className="grid gap-2 md:gap-3 lg:grid-cols-3">
+          {profiles.map((p) => (
+            <li key={p.id} className="min-w-0">
               <SampleProfileCard p={p} />
             </li>
           ))}

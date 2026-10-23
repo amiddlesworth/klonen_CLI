@@ -86,7 +86,7 @@ function FilterMenu({ group, label, options, selected, onChange, pending }: Filt
  * open checkbox menus. Everything lives in the URL; the keyword box is a plain GET form, so it
  * works before JavaScript loads.
  */
-export function JobFilters({ query, facets }: { query: JobsQuery; facets: JobFacets }) {
+export function JobFilters({ query, facets, showClear = true }: { query: JobsQuery; facets: JobFacets; /** False when the results' empty state offers Clear filters instead. */ showClear?: boolean }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   // Checkboxes update at once; the list follows when the server render arrives.
@@ -122,7 +122,7 @@ export function JobFilters({ query, facets }: { query: JobsQuery; facets: JobFac
         <FilterMenu group="roles" label="Role group" options={facets.roles} selected={shown.roles} onChange={onChange} pending={pending} />
         <FilterMenu group="states" label="State" options={facets.states} selected={shown.states} onChange={onChange} pending={pending} />
         <FilterMenu group="conferences" label="Conference" options={facets.conferences} selected={shown.conferences} onChange={onChange} pending={pending} />
-        {any && (
+        {any && showClear && (
           <Link href="/jobs" scroll={false} className={buttonClasses({ variant: "ghost" })}>
             Clear filters
           </Link>

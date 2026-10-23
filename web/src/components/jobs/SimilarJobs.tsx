@@ -4,7 +4,8 @@ import { SampleChip } from "@/components/ui/Chip";
 import { OrgMark } from "@/components/ui/OrgMark";
 import { TextLink } from "@/components/ui/TextLink";
 import type { JobListItem } from "@/lib/queries/jobsx";
-import { isSampleJob, jobSubline, jobsHref } from "./labels";
+import { isSampleJob, jobSublineParts, jobsHref } from "./labels";
+import { PlaceLine } from "./PlaceLine";
 
 /** Rail card "Similar jobs" (§8.9): tile 32, title (whole row links), "Program · ST · Conf", Sample chip. Hidden when empty. */
 export function SimilarJobs({ jobs, roleGroup }: { jobs: JobListItem[]; roleGroup: string }) {
@@ -28,7 +29,7 @@ export function SimilarJobs({ jobs, roleGroup }: { jobs: JobListItem[]; roleGrou
               <OrgMark shortName={j.org.shortName} name={j.org.name} size={32} />
               <span className="min-w-0 flex-1">
                 <span className="block text-small font-semibold text-fg-1 underline-offset-2 group-hover/row:underline">{j.title}</span>
-                <span className="block truncate text-caption text-fg-2">{jobSubline(j, { type: false })}</span>
+                <PlaceLine parts={jobSublineParts(j, { type: false })} className="block text-caption text-fg-2" />
                 {isSampleJob(j) && <SampleChip label="Sample listing" className="mt-1" />}
               </span>
             </Link>

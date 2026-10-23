@@ -6,16 +6,17 @@ import { TwoColumnLayout } from "@/components/shell/Layouts";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
-import { descriptionSummary, jobSections } from "@/components/jobs/description";
+import { closeApplySections, descriptionSummary, jobSections } from "@/components/jobs/description";
 import { DescriptionBlocks } from "@/components/jobs/JobDescription";
 import { JobHeader } from "@/components/jobs/JobHeader";
 import { JobNotes } from "@/components/jobs/JobNotes";
 import { ProgramCard } from "@/components/jobs/ProgramCard";
 import { ProgramPeople, proofFor } from "@/components/jobs/ProgramPeople";
 import { SimilarJobs } from "@/components/jobs/SimilarJobs";
+import { isOpenJob } from "@/components/jobs/labels";
 import { isJobOwner, viewerContext } from "@/components/jobs/viewer";
 import { BRAND } from "@/lib/brand";
-import { getJobDetail, getNetworkProof, getProgramCounts, getProgramNetwork, getSimilarJobs } from "@/lib/queries/jobsx";
+import { getJobDetail, getListingPipelineId, getNetworkProof, getProgramCounts, getProgramNetwork, getSimilarJobs } from "@/lib/queries/jobsx";
 import { getSession } from "@/lib/session";
 
 type PageProps = { params: Promise<{ id: string }> };
@@ -43,6 +44,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
  * bands: closed, sample, or "Your listing"), one card per description section (About the role,
  * Responsibilities, Qualifications…) and the people from this program on the network. Rail: the
  * program card and similar jobs. The athletic director who posted the listing gets the owner view.
+ * A closed listing keeps its page: no Apply, and How to apply says it is closed instead of linking.
  */
 export default async function JobPage({ params }: PageProps) {
   const id = parseId((await params).id);
@@ -53,13 +55,15 @@ export default async function JobPage({ params }: PageProps) {
   const { viewerPersonId, viewerOrgId } = viewerContext(session);
   const ownProgram = !!viewerPersonId && viewerOrgId === job.org.id;
   const owner = isJobOwner(session, job);
-  const [network, counts, similar, proof] = await Promise.all([
+  const [network, counts, similar, proof, pipelineListId] = await Promise.all([
     getProgramNetwork(job.org.id, { viewerPersonId }),
     getProgramCounts(job.org.id),
     getSimilarJobs(job, 3),
     viewerPersonId ? getNetworkProof(viewerPersonId, job.org.id) : Promise.resolve(null),
+    owner && session ? getListingPipelineId(session.user.id, job) : Promise.resolve(null),
   ]);
-  const sections = jobSections(job.description);
+  const parsed = jobSections(job.description);
+  const sections = isOpenJob(job) ? parsed : closeApplySections(parsed, job.org.shortName);
 
   return (
     <TwoColumnLayout
@@ -91,7 +95,7 @@ export default async function JobPage({ params }: PageProps) {
     >
       <Card padding="none" aria-labelledby="job-title" className="overflow-hidden">
         <div className="px-4 pt-4 md:px-6 md:pt-6">
-          <JobHeader job={job} titleId="job-title" owner={owner} />
+          <JobHeader job={job} titleId="job-title" owner={owner} employer={session?.user.kind === "employer"} pipelineListId={pipelineListId} />
         </div>
         <JobNotes job={job} owner={owner} />
       </Card>

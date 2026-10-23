@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
 import { SampleChip } from "@/components/ui/Chip";
 import { cn } from "@/lib/cn";
 import { timeAgo } from "@/lib/format";
 import type { ThreadSummary } from "@/lib/queries/messaging";
 import { fullDateTime, threadHref } from "./format";
+import { InboxRowLink } from "./InboxSelection";
 
 type InboxListProps = {
   threads: ThreadSummary[];
@@ -18,7 +18,8 @@ type InboxListProps = {
 
 /**
  * Inbox (§8.15): 64px rows, avatar 40, name 13/600 with the Demo chip, a one-line snippet 12 --fg-2
- * and the time 12 --fg-3. Unread rows have a 600 snippet and an 8px ink dot; the open row is --hover.
+ * and the time 12 --fg-3. Unread rows have a 600 snippet and an 8px ink dot; the open row is --hover
+ * (and a clicked row takes that look at once, while its thread loads).
  */
 export function InboxList({ threads, selectedId, explicit, now, className }: InboxListProps) {
   return (
@@ -29,13 +30,12 @@ export function InboxList({ threads, selectedId, explicit, now, className }: Inb
         const snippet = t.last.fromMe ? `You: ${t.last.body}` : t.last.body;
         return (
           <li key={t.id}>
-            <Link
+            <InboxRowLink
+              threadId={t.id}
               href={threadHref(t.id)}
-              aria-current={selected ? "true" : undefined}
-              className={cn(
-                "relative flex min-h-16 items-center gap-3 px-4 py-3 transition-colors hover:bg-hover focus-visible:-outline-offset-2",
-                selected && (explicit ? "bg-hover" : "md:bg-hover"),
-              )}
+              selected={selected}
+              explicit={explicit}
+              className="relative flex min-h-16 items-center gap-3 px-4 py-3 transition-colors hover:bg-hover focus-visible:-outline-offset-2"
             >
               <Avatar name={t.other.name} tintKey={t.other.tintKey} size={40} />
               <span className="min-w-0 flex-1">
@@ -53,7 +53,7 @@ export function InboxList({ threads, selectedId, explicit, now, className }: Inb
                 </span>
                 {unread && <span className="sr-only">{`, ${t.unread} unread`}</span>}
               </span>
-            </Link>
+            </InboxRowLink>
           </li>
         );
       })}

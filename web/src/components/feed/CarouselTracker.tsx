@@ -10,6 +10,8 @@ import { cn } from "@/lib/cn";
 import type { CarouselTracker as Tracker, TrackerRow } from "@/lib/queries/feedx";
 
 const MOVES_HREF = "/feed?filter=moves";
+/** The Moves list narrowed to one KPI (§8.3: each KPI links to its filtered list). */
+const kindHref = (kind: "hires" | "promotions" | "other") => `${MOVES_HREF}&kind=${kind}`;
 
 function Row({ row, max, separate }: { row: TrackerRow; max: number; separate?: boolean }) {
   const pct = Math.round((row.hires / max) * 100);
@@ -33,15 +35,20 @@ function Row({ row, max, separate }: { row: TrackerRow; max: number; separate?: 
 
 /**
  * Carousel tracker (§8.5): title + season chip; "Division III · N programs with staff data"; KPI
- * strip (Hires · Promotions · Open jobs with a Sample chip); box score of the top five conferences by
+ * strip (Hires · Promotions · Open jobs with a Sample chip), each KPI linking to its filtered list,
+ * and a caption for the role changes that count in neither; box score of the top five conferences by
  * hires plus the viewer's conference (bold, "· yours", Iris bar); footer "All moves →".
+ *
+ * On phone the rail sits below the feed, so the Moves filter also shows this card at the top of the
+ * list (the "tracker view" the phone summary opens); `idPrefix` keeps the two copies' ids apart.
  */
-export function CarouselTracker({ tracker }: { tracker: Tracker }) {
+export function CarouselTracker({ tracker, idPrefix = "", className }: { tracker: Tracker; idPrefix?: string; className?: string }) {
   const empty = tracker.hires + tracker.promotions === 0;
+  const titleId = `${idPrefix}tracker-title`;
   return (
-    <Card id="carousel-tracker" padding="rail" aria-labelledby="tracker-title" className="scroll-mt-16 md:scroll-mt-20">
+    <Card id={`${idPrefix}carousel-tracker`} padding="rail" aria-labelledby={titleId} className={cn("scroll-mt-16 md:scroll-mt-20", className)}>
       <div className="flex items-baseline justify-between gap-2">
-        <h2 id="tracker-title" className="text-body font-semibold">
+        <h2 id={titleId} className="text-body font-semibold">
           Carousel tracker
         </h2>
         <Chip className="num">{String(tracker.season)}</Chip>
@@ -54,8 +61,8 @@ export function CarouselTracker({ tracker }: { tracker: Tracker }) {
         label={`${tracker.season} carousel totals`}
         className="mt-3"
         stats={[
-          { value: tracker.hires, label: "Hires", href: MOVES_HREF },
-          { value: tracker.promotions, label: "Promotions", href: MOVES_HREF },
+          { value: tracker.hires, label: "Hires", href: kindHref("hires") },
+          { value: tracker.promotions, label: "Promotions", href: kindHref("promotions") },
           {
             value: tracker.openJobs,
             label: "Open jobs",
@@ -64,6 +71,16 @@ export function CarouselTracker({ tracker }: { tracker: Tracker }) {
           },
         ]}
       />
+      {tracker.otherMoves > 0 && (
+        // Every move is in the Moves list; these count in neither KPI, so the numbers add up (§11 rule 11).
+        <p className="mt-2 text-caption text-fg-3">
+          Plus{" "}
+          <Link href={kindHref("other")} className="num font-medium text-link underline underline-offset-2">
+            {tracker.otherMoves} other role {tracker.otherMoves === 1 ? "change" : "changes"}
+          </Link>{" "}
+          at the same program
+        </p>
+      )}
       {empty ? (
         <EmptyState icon={Repeat} title={`No moves recorded for ${tracker.season} yet.`} description="Hires and promotions show up as staff pages update." spacing="sm" align="start" />
       ) : (
@@ -102,10 +119,15 @@ export function CarouselTracker({ tracker }: { tracker: Tracker }) {
   );
 }
 
-/** Phone only, first in the feed (§8.5 PhoneTrackerSummary): links to the full tracker in the rail below. */
+/**
+ * Phone only, first in the feed (§8.5 PhoneTrackerSummary): opens the tracker view, the Moves list
+ * with the full tracker on top. The jobs number is the rail's Open jobs KPI; while every one is a
+ * sample it reads "sample jobs", otherwise "open jobs" with the dashed Sample chip.
+ */
 export function PhoneTrackerSummary({ tracker }: { tracker: Tracker }) {
+  const allSample = tracker.sampleJobs > 0 && tracker.sampleJobs === tracker.openJobs;
   return (
-    <Link href="#carousel-tracker" className="flex min-h-16 items-center gap-3 border-y border-border bg-surface px-4 py-3 md:hidden">
+    <Link href={MOVES_HREF} className="flex min-h-16 items-center gap-3 border-y border-border bg-surface px-4 py-3 md:hidden">
       <span className="min-w-0 flex-1">
         <span className="block text-body font-semibold">Carousel tracker · {tracker.season}</span>
         <span className="mt-0.5 flex flex-wrap gap-x-3 text-small text-fg-2">
@@ -115,8 +137,11 @@ export function PhoneTrackerSummary({ tracker }: { tracker: Tracker }) {
           <span>
             <b className="num font-semibold text-fg-1">{tracker.promotions}</b> promotions
           </span>
-          <span>
-            <b className="num font-semibold text-fg-1">{tracker.sampleJobs}</b> sample jobs
+          <span className="inline-flex items-center gap-1.5">
+            <span>
+              <b className="num font-semibold text-fg-1">{tracker.openJobs}</b> {allSample ? "sample jobs" : "open jobs"}
+            </span>
+            {!allSample && tracker.sampleJobs > 0 && <SampleChip label="Sample" className="h-[18px] px-1" />}
           </span>
         </span>
       </span>

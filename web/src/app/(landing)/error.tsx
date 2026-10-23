@@ -1,5 +1,6 @@
 "use client";
 import { RotateCw } from "lucide-react";
+import { LANDING_SUB } from "@/components/landing/copy";
 import { LandingFrame } from "@/components/landing/LandingFrame";
 import { LandingSearch } from "@/components/landing/LandingSearch";
 import { Button } from "@/components/ui/Button";
@@ -18,7 +19,7 @@ export default function LandingError({ reset }: { error: Error & { digest?: stri
         <h1 id="landing-title" className="balance text-hero-sm md:text-hero">
           {BRAND.tagline}
         </h1>
-        <p className="mx-auto mt-3 max-w-[560px] text-subtitle text-fg-2">{BRAND.description}</p>
+        <p className="mx-auto mt-3 max-w-[560px] text-subtitle text-fg-2">{LANDING_SUB}</p>
         <LandingSearch className="mx-auto mt-6 max-w-[560px] md:mt-8" />
       </section>
       <Card className="mx-auto w-full max-w-[640px] px-4 py-3 md:px-6">

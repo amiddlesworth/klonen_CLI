@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Briefcase } from "lucide-react";
+import { ALUMNI_PAGE_SIZE } from "@/components/program/AlumniList";
 import { AlumniTab } from "@/components/program/AlumniTab";
 import { FollowButton } from "@/components/program/FollowButton";
 import { JobsTab } from "@/components/program/JobsTab";
@@ -19,7 +20,7 @@ import {
   YourHiringCard,
 } from "@/components/program/ProgramRail";
 import { ProgramListSkeleton } from "@/components/program/ProgramSkeleton";
-import { redirectToCanonicalSlug, resolveProgramSlug } from "@/components/program/resolve";
+import { isCanonicalSlug, redirectToCanonicalSlug, resolveProgramSlug } from "@/components/program/resolve";
 import { rangeHasInferred } from "@/components/program/LedgerRange";
 import { StaffTab } from "@/components/program/StaffTab";
 import { ButtonLink } from "@/components/ui/Button";
@@ -35,6 +36,7 @@ import {
   getProgramPlayers,
   getProgramStaff,
   getStaffStints,
+  staffLedger,
   type ProgramCounts,
   type ProgramOrg,
 } from "@/lib/queries/program";
@@ -90,18 +92,25 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   const sp = await searchParams;
   const org = await resolveProgramSlug(slug);
   if (!org) notFound();
-  // Crawlers get metadata before the page streams, so the uppercase-slug 308 (query kept) happens here first.
-  redirectToCanonicalSlug(slug, org, sp);
+  // An uppercase slug (/programs/PACIFIC-OR) is redirected by the page, inside the streamed loading
+  // boundary, so the response is a 200 with a refresh rather than a 308 (a real 308 needs a middleware
+  // rule). Until then its head names the canonical URL and asks not to be indexed, so it is never a duplicate.
+  const duplicate = !isCanonicalSlug(slug, org);
   const tab = org.inRegistry ? parseTab(sp.tab) : "staff";
   const [counts, origin] = await Promise.all([getProgramCounts(org.id), siteOrigin()]);
   const base = org.inRegistry ? `${org.name} football` : org.name;
   const title = tab === "alumni" ? `Alumni coaches · ${base}` : tab === "jobs" ? `Jobs · ${base}` : org.inRegistry ? `${base} staff` : base;
   const description = describe(org, counts);
-  const canonical = `${origin}${tabHref(org.slug, tab)}`;
+  // Paginated lists (Alumni coaches tab, light pages) keep their page in the canonical URL.
+  const pages = Math.max(1, Math.ceil(counts.coached / ALUMNI_PAGE_SIZE));
+  const page = tab === "alumni" || !org.inRegistry ? Math.min(parsePage(sp.page), pages) : 1;
+  const path = tabHref(org.slug, tab);
+  const canonical = `${origin}${path}${page > 1 ? `${path.includes("?") ? "&" : "?"}page=${page}` : ""}`;
   return {
     title,
     description,
     alternates: { canonical },
+    ...(duplicate ? { robots: { index: false, follow: true } } : {}),
     openGraph: { title: `${title} · ${BRAND.name}`, description, type: "website", url: canonical, siteName: BRAND.name },
     twitter: { card: "summary", title: `${title} · ${BRAND.name}`, description },
   };
@@ -163,8 +172,9 @@ export default async function ProgramPage({ params, searchParams }: PageProps) {
       label: "Open jobs",
     },
     // The fourth column adds what the tabs don't count (§8.6 asks for a founded/restarted year, which the data lacks).
-    // Linked only when the "Played here" list it points to exists.
-    { value: counts.played, label: "Coaches from here", href: counts.played ? `${tabHref(org.slug, "alumni")}#played` : undefined, hideOnPhone: true },
+    // Same label as the list it links to (and the light org pages), so it never reads as a second count of
+    // alumni coaches. Linked only when that "Played here" list exists.
+    { value: counts.played, label: "Played here", href: counts.played ? `${tabHref(org.slug, "alumni")}#played` : undefined, hideOnPhone: true },
   ];
   const tabs = [
     { href: tabHref(org.slug, "staff"), label: "Staff", count: staffRead ? counts.staff : null, active: tab === "staff" },
@@ -174,13 +184,13 @@ export default async function ProgramPage({ params, searchParams }: PageProps) {
   const tabLabel = tab === "alumni" ? "Alumni coaches" : tab === "jobs" ? "Jobs" : "Staff";
 
   // Dotted years are explained once per page: by the staff list when it shows one, else by the rail card.
-  const staffExplains = tab === "staff" && staff.some((u) => u.people.some((p) => rangeHasInferred(staffStints.get(p.id) ?? [])));
+  const staffExplains = tab === "staff" && staff.some((u) => u.people.some((p) => staffLedger(staffStints.get(p.id) ?? []).inferred));
   const railShowsInferred = players.slice(0, COACHES_FROM_HERE_LIMIT).some((e) => rangeHasInferred(e.stints, "compact"));
 
   const rail = (
     <>
       {isOwnEmployer && (
-        <YourHiringCard programShortName={org.shortName} jobs={counts.jobs} sampleJobs={counts.sampleJobs} jobsHref={tabHref(org.slug, "jobs")} />
+        <YourHiringCard jobs={counts.jobs} sampleJobs={counts.sampleJobs} jobsHref={tabHref(org.slug, "jobs")} />
       )}
       <ConferencePeersCard peers={peers} conferenceAbbr={org.conferenceAbbr} conferenceName={org.conference} />
       {/* On the Alumni coaches tab the main column already lists these people under "Played here". */}
@@ -224,10 +234,10 @@ export default async function ProgramPage({ params, searchParams }: PageProps) {
         }
       />
       <div role="tabpanel" aria-label={`${tabLabel}, ${org.shortName}`} className="flex min-w-0 flex-col gap-2 md:gap-3">
-        <Suspense key={`${tab}-${page}`} fallback={<ProgramListSkeleton shape={tab === "jobs" ? "tile" : "circle"} />}>
+        <Suspense key={`${tab}-${page}`} fallback={<ProgramListSkeleton shape={tab === "jobs" ? "tile" : "circle"} title={tab === "jobs" ? "Open jobs" : tab === "alumni" ? "Alumni coaches" : "Head coach"} />}>
           {tab === "staff" && <StaffTab org={org} viewerPersonId={isOwnCoach ? session?.person?.id : null} />}
           {tab === "alumni" && <AlumniTab org={org} page={page} />}
-          {tab === "jobs" && <JobsTab org={org} canPost={isOwnEmployer} />}
+          {tab === "jobs" && <JobsTab org={org} canPost={isOwnEmployer} userId={session?.user.id} />}
         </Suspense>
       </div>
     </TwoColumnLayout>

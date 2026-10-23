@@ -3,28 +3,42 @@ import { Card } from "@/components/ui/Card";
 import { Skeleton, SkeletonAvatar, SkeletonLine, SkeletonRegion, SkeletonText } from "@/components/ui/Skeleton";
 
 /**
- * Open to opportunities skeleton, matching the form: back link (44px tall on phone), title, the switch
- * row, the privacy band, three radio rows for "Who can see it", then chip rows for Roles and Regions.
+ * Open to opportunities skeleton, matching the form: back link (44px tall on phone), title and its
+ * two-line description, the switch row, the privacy band (title and four rows), three radio rows for "Who can see it", chip rows for Roles and Regions, then
+ * the footer row with Cancel and Save.
  */
 export default function AvailabilityLoading() {
   return (
     <SingleColumnLayout>
-      <SkeletonRegion label="Loading Open to opportunities">
-        <div className="mb-0 flex items-center max-md:min-h-11 max-md:px-4 max-md:pt-1 md:mb-1 md:h-[18px]">
+      {/* The page's main gap (8 phone, 12 desktop) sits between the back link and the card; the link is 42px on phone (44 tall, -3px margins). */}
+      <SkeletonRegion label="Loading Open to opportunities" className="flex flex-col gap-2 md:gap-3">
+        <div className="flex items-center max-md:h-[42px] max-md:px-4 max-md:pt-1 md:h-[21px]">
           <Skeleton className="h-2.5 w-16" />
         </div>
         <Card padding="none">
           <div className="px-4 pb-4 pt-4 md:px-6 md:pt-5">
             <h1 className="text-title">Open to opportunities</h1>
-            <SkeletonText className="mt-1" lines={1} widths={["70%"]} lineHeight={18} />
+            <SkeletonText className="mt-1 max-w-prose" lines={2} widths={["94%", "36%"]} lineHeight={18} />
             <div className="mt-3 flex min-h-11 items-center justify-between gap-3">
               <SkeletonText className="flex-1" lines={2} widths={["40%", "30%"]} />
               <Skeleton className="h-5 w-8 rounded-full" />
             </div>
             <SkeletonLine className="mt-1" width={180} lineHeight={16} />
           </div>
+          {/* How this stays private: title, then four icon rows (two lines each on phone; only the first wraps on desktop). */}
           <div className="border-t border-divider bg-surface-2 px-4 py-3.5 md:px-6">
-            <SkeletonText lines={3} widths={["36%", "88%", "76%"]} />
+            <SkeletonLine width={140} lineHeight={18} />
+            <div className="mt-2 space-y-2">
+              {["92%", "96%", "84%", "80%"].map((w, i) => (
+                <span key={i} className="flex items-start gap-2">
+                  <Skeleton className="mt-0.5 size-4 shrink-0" />
+                  <span className="flex-1">
+                    <SkeletonLine width={w} lineHeight={18} />
+                    <SkeletonLine width={i % 2 ? "38%" : "52%"} lineHeight={18} className={i > 0 ? "md:hidden" : undefined} />
+                  </span>
+                </span>
+              ))}
+            </div>
           </div>
           <div className="divide-y divide-divider px-4 md:px-6">
             {/* Who can see it: three radio rows (circle and two lines). */}
@@ -51,6 +65,14 @@ export default function AvailabilityLoading() {
                 </div>
               </div>
             ))}
+          </div>
+          {/* Footer: the (empty) status line, then Cancel and Save, a 2-column grid of 40px buttons on phone. */}
+          <div className="flex flex-col gap-3 border-t border-divider px-4 py-3 md:flex-row md:items-center md:px-6">
+            <div className="min-w-0 flex-1" />
+            <div className="grid grid-cols-2 gap-2 md:flex">
+              <Skeleton className="h-8 rounded-sm max-md:h-10 md:w-[68px]" />
+              <Skeleton className="h-8 rounded-sm max-md:h-10 md:w-[52px]" />
+            </div>
           </div>
         </Card>
       </SkeletonRegion>

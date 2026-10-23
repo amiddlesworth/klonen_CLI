@@ -17,13 +17,19 @@ import { ProfileActions, type ProfileViewer } from "./ProfileActions";
 import type { ProfilePerson } from "./ProfileDialogs";
 
 type ProfileHeaderProps = {
-  person: ProfilePerson & { currentTitle: string | null; isDemo: boolean };
+  /**
+   * headline: the current role in the record's own words (the current coaching stint's role, so the
+   * header and the Experience card name the job the same way), else the directory title.
+   */
+  person: ProfilePerson & { headline: string | null; isDemo: boolean };
   currentOrg: OrgSummary | null;
   viewer: ProfileViewer;
   accounts: DemoAccountOption[];
   connection: "none" | "pending" | "accepted";
   stats: {
     seasons: number | null;
+    /** Some coaching roles have no start year, so the season count is a floor ("34+"). */
+    seasonsPlus: boolean;
     stops: number;
     treeSize: number;
     first: { year: number; inferred: boolean; reason: string } | null;
@@ -52,7 +58,22 @@ export function ProfileHeader({ person, currentOrg, viewer, accounts, connection
   const programHref = currentOrg?.inRegistry ? `/programs/${currentOrg.slug}` : null;
   const place = stateName(currentOrg?.state);
   const statList: Stat[] = [
-    { label: "Seasons coached", value: stats.seasons ?? <Missing /> },
+    {
+      label: "Seasons coached",
+      value: stats.seasons ? (
+        stats.seasonsPlus ? (
+          <>
+            {stats.seasons}
+            <span aria-hidden="true">+</span>
+            <span className="sr-only"> or more (some roles have no years in the source)</span>
+          </>
+        ) : (
+          stats.seasons
+        )
+      ) : (
+        <Missing />
+      ),
+    },
     { label: "Coaching stops", value: stats.stops },
     { label: "In coaching tree", value: stats.treeSize, href: stats.treeSize > 0 ? `/in/${person.slug}/tree` : undefined },
     {
@@ -80,17 +101,17 @@ export function ProfileHeader({ person, currentOrg, viewer, accounts, connection
         <div className="min-w-0 [grid-area:id] md:pt-0.5">
           <h1 id="profile-name" className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-display max-md:gap-x-2 max-md:text-display-sm">
             <span className="min-w-0">{person.fullName}</span>
-            {!person.claimed && (
+            {!person.claimed && !person.isDemo && (
               <Chip kind="outline" title={`Built from public sources. ${first} hasn't claimed this profile yet.`}>
                 Unclaimed
               </Chip>
             )}
             {person.isDemo && <DemoLabel />}
           </h1>
-          {(person.currentTitle || currentOrg) && (
+          {(person.headline || currentOrg) && (
             <p className="mt-0.5 text-body max-md:text-body md:text-subtitle">
-              {person.currentTitle}
-              {person.currentTitle && currentOrg && " at "}
+              {person.headline}
+              {person.headline && currentOrg && " at "}
               {currentOrg &&
                 (programHref ? (
                   <Link href={programHref} className="target-24 font-medium underline-offset-2 hover:underline">
@@ -114,13 +135,29 @@ export function ProfileHeader({ person, currentOrg, viewer, accounts, connection
             </div>
           )}
         </div>
-        <ProfileActions person={person} viewer={viewer} accounts={accounts} connection={connection} className="[grid-area:act] max-md:w-full" />
+        <ProfileActions person={person} viewer={viewer} accounts={accounts} connection={connection} demo={person.isDemo} className="[grid-area:act] max-md:w-full" />
       </div>
 
       <StatGroup stats={statList} label="Career stats" className="mt-4 md:mt-5" />
 
-      {!person.claimed && <SourceBanner person={person} sources={sources} hasRoles={hasRoles} owner={viewer === "owner"} />}
+      {person.isDemo ? <DemoBanner /> : !person.claimed && <SourceBanner person={person} sources={sources} hasRoles={hasRoles} owner={viewer === "owner"} />}
     </Card>
+  );
+}
+
+/**
+ * In place of the source banner on a fictional demo candidate (§6.4, ARCHITECTURE "Demo data honesty"):
+ * nothing here comes from a public source, and there is no one to claim the profile.
+ */
+function DemoBanner() {
+  return (
+    <div
+      role="note"
+      className="-mx-4 flex items-start gap-x-3 border-t border-divider bg-surface-2 px-4 py-3 text-small leading-5 text-fg-2 md:-mx-6 md:px-6"
+    >
+      <SampleChip label="Demo" className="mt-px shrink-0" />
+      <p className="min-w-0 flex-1">Fictional demo candidate: the name and career are invented for the hiring-pipeline demo.</p>
+    </div>
   );
 }
 

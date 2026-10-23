@@ -6,8 +6,12 @@ import { cn } from "@/lib/cn";
 import { plural } from "./params";
 import type { PopularSearch } from "./popular";
 
-/** "Popular searches" card: each row is one link (44px+) with a real result count. */
-export function PopularSearches({ items, title = "Popular searches", headingLevel = "h2", className }: { items: PopularSearch[]; title?: string; headingLevel?: "h2" | "h3"; className?: string }) {
+/**
+ * "Suggested searches" card (curated, not usage-ranked, so it doesn't claim popularity): each row is one
+ * link (44px+) with a real result count. A personal note ("your conference") sits on its own caption
+ * line on phone and inline after a middot from tablet up, so it never dangles.
+ */
+export function PopularSearches({ items, title = "Suggested searches", headingLevel = "h2", className }: { items: PopularSearch[]; title?: string; headingLevel?: "h2" | "h3"; className?: string }) {
   if (!items.length) return null;
   return (
     <Card padding="none" className={cn("pt-4 md:pt-5", className)}>
@@ -22,7 +26,12 @@ export function PopularSearches({ items, title = "Popular searches", headingLeve
               <Icon icon={Search} size={16} className="text-fg-2" />
               <span className="min-w-0 flex-1">
                 <span className="text-body font-medium text-fg-1 underline-offset-2 group-hover/row:underline">{p.label}</span>
-                {p.note && <span className="text-small text-fg-3"> · {p.note}</span>}
+                {p.note && (
+                  <span className="block text-caption text-fg-3 md:inline md:text-small">
+                    <span className="max-md:hidden"> · </span>
+                    {p.note}
+                  </span>
+                )}
               </span>
               <span className="num shrink-0 text-caption text-fg-3">{plural(p.count, p.noun, p.noun === "coach" ? "coaches" : "programs")}</span>
               <Icon icon={ChevronRight} size={16} className="text-fg-3" />

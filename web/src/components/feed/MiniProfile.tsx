@@ -1,29 +1,47 @@
 import Link from "next/link";
-import { Bookmark, Briefcase, ChevronRight, Lock, Network, Users, type LucideIcon } from "lucide-react";
-import { DemoFootnote } from "@/components/data/Badges";
+import { Building2, Briefcase, ChevronRight, Lock, Network, Users, type LucideIcon } from "lucide-react";
+import { DemoFootnote, DemoLabel } from "@/components/data/Badges";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { Divider } from "@/components/ui/Divider";
 import { Icon } from "@/components/ui/Icon";
 import { MenuGroup, MenuLink } from "@/components/ui/MenuItems";
 import { OrgMark } from "@/components/ui/OrgMark";
-import type { FeedViewer, MiniProfileStats } from "@/lib/queries/feedx";
+import type { FeedViewer, FollowedProgram, MiniProfileStats } from "@/lib/queries/feedx";
+import { SavedJobsMenu, SavedJobsShortcut, type SavedJobRef } from "./SavedJobs";
+import { ShortcutCount, ShortcutDisclosure, ShortcutItem, ShortcutLink } from "./ShortcutRows";
 
-export type Shortcut = { href: string; label: string; icon: LucideIcon; count?: number };
+export type Shortcut =
+  | { type: "link"; href: string; label: string; icon: LucideIcon; count?: number }
+  /** Programs the viewer follows (Follow on a program page): they open in place. */
+  | { type: "programs"; programs: FollowedProgram[] }
+  /** Open jobs; the ones saved in this browser show, with their count. */
+  | { type: "savedJobs"; jobs: SavedJobRef[] };
 
-/** Shortcuts for the viewer: coaches get their tree and saved jobs; athletic directors their hiring tools. */
-export function shortcutsFor(viewer: FeedViewer, stats: MiniProfileStats | null): Shortcut[] {
+const PROGRAMS_LABEL = "Programs I follow";
+/** Where to find programs to follow when there are none yet. */
+const FIND_PROGRAMS = "/search?type=programs";
+
+/**
+ * Shortcuts (§8.5): coaches get My coaching tree, Programs I follow and Saved jobs, each with its
+ * count; athletic directors their hiring tools and the programs they follow.
+ */
+export function shortcutsFor(viewer: FeedViewer, stats: MiniProfileStats | null, followed: FollowedProgram[], jobs: SavedJobRef[]): Shortcut[] {
   if (viewer.role === "employer") {
     return [
-      { href: "/employers/pipeline", label: "Hiring pipeline", icon: Users },
-      { href: "/employers/jobs/new", label: "Post a job", icon: Briefcase },
+      { type: "link", href: "/employers/pipeline", label: "Hiring pipeline", icon: Users },
+      { type: "link", href: "/employers/jobs/new", label: "Post a job", icon: Briefcase },
+      { type: "programs", programs: followed },
     ];
   }
   return [
-    ...(viewer.slug ? [{ href: `/in/${viewer.slug}/tree`, label: "My coaching tree", icon: Network, count: stats?.treeSize }] : []),
-    { href: "/jobs", label: "Saved jobs", icon: Bookmark },
+    ...(viewer.slug ? [{ type: "link" as const, href: `/in/${viewer.slug}/tree`, label: "My coaching tree", icon: Network, count: stats?.treeSize }] : []),
+    { type: "programs", programs: followed },
+    { type: "savedJobs", jobs },
   ];
 }
+
+const shortcutKey = (s: Shortcut) => (s.type === "link" ? s.href : s.type);
 
 function searchHref(name: string) {
   return `/search?q=${encodeURIComponent(name)}`;
@@ -47,14 +65,16 @@ export function MiniProfile({ viewer, stats, status }: MiniProfileProps) {
   return (
     <Card padding="rail" aria-labelledby="mini-name">
       <Avatar name={viewer.name} tintKey={viewer.tintKey} size={48} />
-      <p id="mini-name" className="mt-3 text-subtitle font-semibold leading-5">
+      <p id="mini-name" className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-subtitle font-semibold leading-5">
         {profileHref ? (
-          <Link href={profileHref} className="target-24 underline-offset-2 hover:underline">
+          <Link href={profileHref} className="target-24 inline-block underline-offset-2 hover:underline">
             {viewer.name}
           </Link>
         ) : (
-          viewer.name
+          <span>{viewer.name}</span>
         )}
+        {/* A fictional demo account (the athletic director) is labeled where it appears (§6.4). */}
+        {viewer.fictional && <DemoLabel />}
       </p>
       {viewer.title && <p className="mt-0.5 text-small text-fg-2">{viewer.title}</p>}
       {org && (
@@ -108,19 +128,35 @@ export function MiniProfile({ viewer, stats, status }: MiniProfileProps) {
   );
 }
 
-/** Shortcuts card (§8.5): 8px padding, 36px rows (icon 16, label 13 --fg-2, count 12 --fg-3). */
+/**
+ * Shortcuts card (§8.5): 8px padding, 36px rows (icon 16, label 13 --fg-2, count 12 --fg-3).
+ * Programs I follow and Saved jobs open in place to list their items; with none yet, they link to
+ * where to find some.
+ */
 export function Shortcuts({ items }: { items: Shortcut[] }) {
   if (!items.length) return null;
   return (
     <Card as="nav" aria-label="Shortcuts" className="p-2">
       <ul>
         {items.map((s) => (
-          <li key={s.href}>
-            <Link href={s.href} className="flex h-9 items-center gap-2.5 rounded-sm px-2 text-small text-fg-2 transition-colors hover:bg-hover hover:text-fg-1">
-              <Icon icon={s.icon} size={16} />
-              <span className="min-w-0 flex-1 truncate">{s.label}</span>
-              {s.count !== undefined && <span className="num text-caption text-fg-3">{s.count}</span>}
-            </Link>
+          <li key={shortcutKey(s)}>
+            {s.type === "link" ? (
+              <ShortcutLink href={s.href} icon={s.icon} label={s.label} count={s.count} />
+            ) : s.type === "programs" ? (
+              s.programs.length ? (
+                <ShortcutDisclosure icon={Building2} label={PROGRAMS_LABEL} count={s.programs.length}>
+                  {s.programs.map((p) => (
+                    <ShortcutItem key={p.id} href={p.inRegistry ? `/programs/${p.slug}` : `/search?q=${encodeURIComponent(p.shortName)}`}>
+                      {p.shortName}
+                    </ShortcutItem>
+                  ))}
+                </ShortcutDisclosure>
+              ) : (
+                <ShortcutLink href={FIND_PROGRAMS} icon={Building2} label={PROGRAMS_LABEL} count={0} />
+              )
+            ) : (
+              <SavedJobsShortcut jobs={s.jobs} />
+            )}
           </li>
         ))}
       </ul>
@@ -146,11 +182,29 @@ export function MeMenuStats({ viewer, stats, shortcuts }: { viewer: FeedViewer; 
           </MenuLink>
         </MenuGroup>
       )}
-      {shortcuts.map((s) => (
-        <MenuLink key={s.href} href={s.href} icon={s.icon} trailing={s.count !== undefined ? <span className="num text-caption text-fg-3">{s.count}</span> : undefined}>
-          {s.label}
-        </MenuLink>
-      ))}
+      {shortcuts.map((s) =>
+        s.type === "link" ? (
+          <MenuLink key={shortcutKey(s)} href={s.href} icon={s.icon} trailing={s.count !== undefined ? <ShortcutCount n={s.count} /> : undefined}>
+            {s.label}
+          </MenuLink>
+        ) : s.type === "programs" ? (
+          s.programs.length ? (
+            <MenuGroup key={shortcutKey(s)} label={`${PROGRAMS_LABEL} · ${s.programs.length}`}>
+              {s.programs.map((p) => (
+                <MenuLink key={p.id} href={p.inRegistry ? `/programs/${p.slug}` : `/search?q=${encodeURIComponent(p.shortName)}`}>
+                  {p.shortName}
+                </MenuLink>
+              ))}
+            </MenuGroup>
+          ) : (
+            <MenuLink key={shortcutKey(s)} href={FIND_PROGRAMS} icon={Building2} trailing={<ShortcutCount n={0} />}>
+              {PROGRAMS_LABEL}
+            </MenuLink>
+          )
+        ) : (
+          <SavedJobsMenu key={shortcutKey(s)} jobs={s.jobs} />
+        ),
+      )}
     </>
   );
 }

@@ -4,6 +4,7 @@ import { and, asc, eq, max } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { people, shortlistEntries, shortlists } from "@/db/schema";
+import { searchDisplayName } from "@/components/employer/presets";
 import { NOTE_MAX, PIPELINE_STAGES, type PipelineStage } from "@/components/employer/stages";
 import { getSession } from "@/lib/session";
 
@@ -67,12 +68,13 @@ async function endOfStage(shortlistId: number, stage: PipelineStage): Promise<nu
 /**
  * Adds a coach to the employer's pipeline in Sourced (the first search, or `shortlistId`). Creates
  * a search when the employer has none. Adding someone already in the search is a no-op that
- * reports where they are.
+ * reports where they are. `shortlistLabel` is the search's name as the page shows it (no
+ * "(demo)" suffix, which the page's Demo chip carries).
  */
 export async function addToPipeline(
   personId: string,
   shortlistId?: number,
-): Promise<ActionResult<{ entryId: number; stage: PipelineStage; shortlistId: number; shortlistName: string; alreadyAdded: boolean }>> {
+): Promise<ActionResult<{ entryId: number; stage: PipelineStage; shortlistId: number; shortlistName: string; shortlistLabel: string; alreadyAdded: boolean }>> {
   const userId = await employerUserId();
   if (!userId) return { ok: false, error: NOT_EMPLOYER };
   const pid = personIdSchema.safeParse(personId);
@@ -100,7 +102,8 @@ export async function addToPipeline(
     .from(shortlistEntries)
     .where(and(eq(shortlistEntries.shortlistId, list.id), eq(shortlistEntries.personId, person.id)))
     .limit(1);
-  if (existing) return { ok: true, entryId: existing.id, stage: existing.stage, shortlistId: list.id, shortlistName: list.name, alreadyAdded: true };
+  const shortlistLabel = searchDisplayName(list.name);
+  if (existing) return { ok: true, entryId: existing.id, stage: existing.stage, shortlistId: list.id, shortlistName: list.name, shortlistLabel, alreadyAdded: true };
 
   const position = await endOfStage(list.id, "sourced");
   const [entry] = await db
@@ -108,7 +111,7 @@ export async function addToPipeline(
     .values({ shortlistId: list.id, personId: person.id, stage: "sourced", position })
     .returning({ id: shortlistEntries.id });
   revalidatePath(PIPELINE_PATH);
-  return { ok: true, entryId: entry.id, stage: "sourced", shortlistId: list.id, shortlistName: list.name, alreadyAdded: false };
+  return { ok: true, entryId: entry.id, stage: "sourced", shortlistId: list.id, shortlistName: list.name, shortlistLabel, alreadyAdded: false };
 }
 
 /**

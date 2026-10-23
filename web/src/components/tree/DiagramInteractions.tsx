@@ -1,6 +1,9 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
+import { Network } from "lucide-react";
+import { ButtonLink } from "@/components/ui/Button";
+import { Dialog } from "@/components/ui/Dialog";
 import { cn } from "@/lib/cn";
 
 type Dir = "up" | "down" | "left" | "right";
@@ -57,23 +60,61 @@ function neighbour(nodes: NodeInfo[], from: NodeInfo, dir: Dir): NodeInfo | null
   return null;
 }
 
+/**
+ * Put each dotted mark exactly under its inferred year and the range tooltip area over the range, from
+ * the browser's own text metrics (the server places them from estimated glyph widths). Skipped while the
+ * diagram is hidden (the other breakpoint's layout), and redone when it shows.
+ */
+function measureMarks(root: HTMLElement) {
+  for (const node of root.querySelectorAll<SVGGElement>("[data-node]")) {
+    const range = node.querySelector<SVGTSpanElement>("[data-range]");
+    if (!range) continue;
+    let box: DOMRect;
+    try {
+      box = range.getBBox();
+    } catch {
+      continue;
+    }
+    if (!box.width) continue;
+    const hit = node.querySelector<SVGRectElement>("[data-hit]");
+    if (hit) {
+      hit.setAttribute("x", String(box.x - 2));
+      hit.setAttribute("width", String(box.width + 4));
+    }
+    for (const line of node.querySelectorAll<SVGLineElement>("[data-mark]")) {
+      const part = node.querySelector<SVGTSpanElement>(`[data-part="${line.dataset.mark}"]`);
+      if (!part) continue;
+      try {
+        const b = part.getBBox();
+        if (!b.width) continue;
+        line.setAttribute("x1", String(b.x + 0.75));
+        line.setAttribute("x2", String(b.x + b.width - 0.75));
+      } catch {
+        /* keep the server position */
+      }
+    }
+  }
+}
+
 type DiagramInteractionsProps = {
   children: ReactNode;
-  /** Element that Escape returns focus to. */
+  /** Element that Escape returns focus to (visible and focusable). */
   exitTargetId: string;
   className?: string;
 };
 
 /**
- * Behaviour for the server-rendered tree SVG (DESIGN.md §8.8): Tab enters at the focal coach (one
- * tab stop for the whole diagram, plus the focused node's own tree link), arrow keys move between
- * rows and along them, Enter opens, Escape returns to the page. Hovering or focusing a node turns its
- * edges --fg-2 and fades the rest to 40%. Links navigate client-side. Wide diagrams scroll
- * horizontally inside the card, starting centred on the focal coach.
+ * Behaviour for the server-rendered tree SVG (DESIGN.md §8.8): Tab enters at the focal coach (one tab
+ * stop for the whole diagram), arrow keys move between rows and along them, Enter opens, Escape returns
+ * to the page (focus moves to the diagram card, which shows its focus ring). Hovering or focusing a node
+ * shows its merged highlight path and fades the rest to 40%. Links navigate client-side. A diagram wider
+ * than its card scrolls horizontally, starting centred on the focal coach, with a fade on the cut edge.
  */
 export function DiagramInteractions({ children, exitTargetId, className }: DiagramInteractionsProps) {
   const ref = useRef<HTMLDivElement>(null);
   const focused = useRef<string | null>(null);
+  const pointer = useRef<string>("mouse");
+  const [selected, setSelected] = useState<{ key: string; slug: string; name: string; about: string; focal: boolean } | null>(null);
   const router = useRouter();
 
   function setTabStop(key: string | null) {
@@ -91,35 +132,39 @@ export function DiagramInteractions({ children, exitTargetId, className }: Diagr
     if (!root) return;
     if (key) root.setAttribute("data-active", key);
     else root.removeAttribute("data-active");
-    const layer = root.querySelector("[data-edges]");
-    for (const p of root.querySelectorAll<SVGPathElement>("[data-edge]")) {
-      const on = !!key && (p.dataset.ends ?? "").split(" ").includes(key);
-      p.toggleAttribute("data-on", on);
-      // Highlighted edges paint last, over the shared trunks.
-      if (on && layer) layer.appendChild(p);
-    }
+    for (const p of root.querySelectorAll<SVGPathElement>("[data-hl]")) p.toggleAttribute("data-on", !!key && p.dataset.hl === key);
   }
 
   useEffect(() => {
     const root = ref.current;
     if (!root) return;
     setTabStop(null);
-    if (root.scrollWidth > root.clientWidth) root.scrollLeft = (root.scrollWidth - root.clientWidth) / 2;
+    let centred = false;
     // When the diagram is wider than the card, fade the edge it continues past (a scroll cue).
-    const fade = () => {
+    const update = () => {
       const max = root.scrollWidth - root.clientWidth;
+      if (!centred && root.clientWidth > 0) {
+        centred = true;
+        if (max > 0) root.scrollLeft = max / 2;
+      }
       const left = max > 1 && root.scrollLeft > 1;
       const right = max > 1 && root.scrollLeft < max - 1;
       const mask = left || right ? `linear-gradient(to right, ${left ? "transparent" : "black"}, black 32px, black calc(100% - 32px), ${right ? "transparent" : "black"})` : "";
       root.style.maskImage = mask;
       root.style.webkitMaskImage = mask;
     };
-    fade();
-    root.addEventListener("scroll", fade, { passive: true });
-    window.addEventListener("resize", fade);
+    const measure = () => {
+      measureMarks(root);
+      update();
+    };
+    measure();
+    document.fonts?.ready.then(measure).catch(() => undefined);
+    const observer = new ResizeObserver(measure);
+    observer.observe(root);
+    root.addEventListener("scroll", update, { passive: true });
     return () => {
-      root.removeEventListener("scroll", fade);
-      window.removeEventListener("resize", fade);
+      observer.disconnect();
+      root.removeEventListener("scroll", update);
     };
   }, []);
 
@@ -153,6 +198,17 @@ export function DiagramInteractions({ children, exitTargetId, className }: Diagr
     const href = a?.getAttribute("href");
     if (!a || !href?.startsWith("/")) return;
     e.preventDefault();
+    // Touch (DESIGN.md §8.8): a tap selects the coach and opens a sheet with who they are and "Open
+    // profile", since there is no hover tooltip on touch. Mouse and keyboard open the profile directly.
+    const node = nodeOf(a);
+    if (pointer.current === "touch" && node?.dataset.node) {
+      const name = node.dataset.name ?? "";
+      const label = a.querySelector("title")?.textContent ?? "";
+      const about = label.startsWith(name) ? label.slice(name.length).replace(/^ \(you\)/, "").replace(/^[,.]\s*/, "") : label;
+      setSelected({ key: node.dataset.node, slug: href.replace(/^\/in\//, ""), name, about, focal: node.dataset.kind === "focal" });
+      activate(node.dataset.node);
+      return;
+    }
     router.push(href);
   }
 
@@ -162,6 +218,9 @@ export function DiagramInteractions({ children, exitTargetId, className }: Diagr
       className={cn("overflow-x-auto overscroll-x-contain", className)}
       onKeyDown={onKeyDown}
       onClick={onClick}
+      onPointerDown={(e) => {
+        pointer.current = e.pointerType;
+      }}
       onPointerOver={(e) => activate(nodeOf(e.target)?.dataset.node ?? focused.current)}
       onPointerLeave={() => activate(focused.current)}
       onFocus={(e) => {
@@ -179,6 +238,30 @@ export function DiagramInteractions({ children, exitTargetId, className }: Diagr
       }}
     >
       {children}
+      <Dialog
+        open={!!selected}
+        onOpenChange={(open) => {
+          if (open) return;
+          setSelected(null);
+          activate(focused.current);
+        }}
+        title={selected?.name ?? ""}
+        description={selected?.about}
+        footer={
+          selected && (
+            <>
+              {!selected.focal && (
+                <ButtonLink href={`/in/${selected.slug}/tree`} icon={Network}>
+                  Coaching tree
+                </ButtonLink>
+              )}
+              <ButtonLink href={`/in/${selected.slug}`} variant="primary">
+                Open profile
+              </ButtonLink>
+            </>
+          )
+        }
+      />
     </div>
   );
 }

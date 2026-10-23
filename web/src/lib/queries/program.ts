@@ -66,6 +66,34 @@ export const getProgramCounts = cache(async (orgId: string): Promise<ProgramCoun
 });
 
 /**
+ * Staff and alumni-coach counts for many programs in one round trip (search result cards, peers lists),
+ * with exactly the policy getProgramCounts uses, so "12 staff · 3 alumni coaches" on a card equals the
+ * program page's header and tabs: demo people never count, only football stints place a person at a
+ * program, and anyone currently on staff counts as staff, not as an alumni coach.
+ */
+export async function getProgramListCounts(orgIds: string[]): Promise<Map<string, { staff: number; coached: number }>> {
+  const out = new Map<string, { staff: number; coached: number }>(orgIds.map((id) => [id, { staff: 0, coached: 0 }]));
+  if (!orgIds.length) return out;
+  const ids = sql.join(
+    orgIds.map((id) => sql`${id}`),
+    sql`, `,
+  );
+  const [staff, coached] = await Promise.all([
+    db.execute<{ org_id: string; n: number }>(sql`
+      select current_org_id as org_id, count(*)::int as n from people
+      where current_org_id in (${ids}) and not is_demo group by current_org_id`),
+    db.execute<{ org_id: string; n: number }>(sql`
+      select t.org_id, count(distinct t.person_id)::int as n from tenures t join people p on p.id = t.person_id
+      where t.org_id in (${ids}) and not t.as_player and t.sport = 'football' and not p.is_demo
+        and p.current_org_id is distinct from t.org_id
+      group by t.org_id`),
+  ]);
+  for (const r of staff.rows) out.get(r.org_id)!.staff = r.n;
+  for (const r of coached.rows) out.get(r.org_id)!.coached = r.n;
+  return out;
+}
+
+/**
  * A stint at the program with its year provenance (tenures.years_explicit and the evidence quote), so
  * the ledger can dot exactly the years that are inferred (§6.2; components/program/LedgerRange).
  */
@@ -142,14 +170,82 @@ function lastDatedSeason(stints: StintSpan[]): number | null {
   return lasts.length ? Math.max(...lasts) : null;
 }
 
+/** A current staff member's stint here, with its role (staffLedger tells the current role from earlier ones). */
+export type StaffStint = LedgerStint & { role: string };
+
 /**
- * For each current staff member: all their coaching stints here (not just the current role), so the
- * ledger reads time on staff ("2018–Present · 9 seasons") the way the profile's program group does.
+ * Time at the program for the Staff tab's second line, when it differs from the current role:
+ * - "since": one unbroken run of seasons here through the present that starts before the current role
+ *   ("At Pacific (OR) since 2010");
+ * - "runs": the seasons here with gaps the source states ("At Allegheny 2017–2018, 2023–Present");
+ * - "first": the first season here, when the source leaves the stretch after it open (an earlier stint
+ *   with a start year but no end year, or a current role with no start year): "First at Marietta in
+ *   2017". It never claims the person stayed, or left.
  */
-export const getStaffStints = cache(async (orgId: string): Promise<Map<string, LedgerStint[]>> => {
+export type StaffTenure = { kind: "since"; year: RangeYear } | { kind: "first"; year: RangeYear } | { kind: "runs"; pieces: RangePiece[] };
+
+export type StaffLedger = {
+  /** The current role's stints (the ledger column: "2020–Present · 7 seasons", or "Start year not in source"). */
+  current: LedgerStint[];
+  /** Time here when it says more than the current role's range; null otherwise. */
+  tenure: StaffTenure | null;
+  /** Distinct earlier roles here (titles other than the current one). */
+  earlierRoles: number;
+  /** The first inferred year the row prints (ledger or tenure line), so the page explains the dotted mark once. */
+  inferred: RangeYear | null;
+};
+
+const roleKey = (role: string) => role.trim().toLowerCase();
+
+/**
+ * The Staff tab ledger for one person (§8.6): the ledger column holds the current role's range, so a
+ * head coach's tenure reads as time in that job ("Head Football Coach · 2020–Present"), not time at the
+ * school. Time here goes in a second line only when it differs (StaffTenure). A past stint with a start
+ * year but no end year never creates a stint break or a one-season count here: the line falls back to
+ * "First at {Program} in {year}".
+ */
+export function staffLedger(stints: StaffStint[]): StaffLedger {
+  const currentStints = stints.filter((s) => s.isCurrent);
+  // Every staff member has a current stint here; if the data ever lacks one, the whole record stands in.
+  const current = currentStints.length ? currentStints : stints;
+  const past = currentStints.length ? stints.filter((s) => !s.isCurrent) : [];
+  const currentRoles = new Set(current.map((s) => roleKey(s.role)));
+  const earlierRoles = new Set(past.map((s) => roleKey(s.role)).filter((r) => !currentRoles.has(r))).size;
+
+  let tenure: StaffTenure | null = null;
+  const datedStarts = stints.filter((s) => s.startYear).map((s) => s.startYear!);
+  // A past stint with no start year (undated, or only an end year) could sit anywhere, so no first year or gap is claimed.
+  if (past.length && datedStarts.length && !past.some((s) => !s.startYear)) {
+    const first = Math.min(...datedStarts);
+    const currentStarts = current.filter((s) => s.startYear).map((s) => s.startYear!);
+    const currentStart = currentStarts.length ? Math.min(...currentStarts) : null;
+    if (currentStart === null) tenure = { kind: "first", year: markYear(stints, first, "start") };
+    else if (first < currentStart) {
+      const runs = seasonSpans(stints);
+      const openEnded = past.some((s) => s.endYear == null);
+      if (runs.length === 1) tenure = { kind: "since", year: markYear(stints, first, "start") };
+      else if (openEnded) tenure = { kind: "first", year: markYear(stints, first, "start") };
+      else {
+        const pieces = ledgerRangePieces(stints);
+        if (pieces) tenure = { kind: "runs", pieces };
+      }
+    }
+  }
+
+  const tenureInferred =
+    tenure && (tenure.kind === "runs" ? ((tenure.pieces.find((p) => typeof p !== "string" && p.inferred) as RangeYear | undefined) ?? null) : tenure.year.inferred ? tenure.year : null);
+  return { current, tenure, earlierRoles, inferred: firstInferredYear(current) ?? tenureInferred ?? null };
+}
+
+/**
+ * For each current staff member: their football coaching stints here (every role, with its title), the
+ * input to staffLedger().
+ */
+export const getStaffStints = cache(async (orgId: string): Promise<Map<string, StaffStint[]>> => {
   const rows = await db
     .select({
       personId: tenures.personId,
+      role: tenures.role,
       startYear: tenures.startYear,
       endYear: tenures.endYear,
       isCurrent: tenures.isCurrent,
@@ -168,7 +264,7 @@ export const getStaffStints = cache(async (orgId: string): Promise<Map<string, L
       ),
     )
     .orderBy(asc(tenures.personId), asc(tenures.sortOrder));
-  const byPerson = new Map<string, LedgerStint[]>();
+  const byPerson = new Map<string, StaffStint[]>();
   for (const { personId, ...stint } of rows) {
     const list = byPerson.get(personId) ?? [];
     list.push(stint);
@@ -223,17 +319,46 @@ function unitFromTitle(title: string): Extract<ProgramStaffUnit, "offense" | "de
 const COACH_TITLE = /\bcoach|\bassistant\b|\bgraduate\b|\bga\b|\bfellow\b|\bquality control\b|\banalyst\b/i;
 
 /**
- * Staff unit for one person. Head coaches first; a title that leads with special teams ("Special Teams
- * Coordinator / Defensive Backs Coach") files under Special teams whatever the stored unit; then the
- * stored unit; coaches without one are placed by their title, and the rest go to Assistant coaches.
+ * Non-coaching duties. A title whose first "/" segment names one ("Football Equipment Operations /
+ * Quality Control", "Assistant Coach - Community Outreach", "Director of Recruiting") is support staff
+ * even when it says Coach or Quality Control, unless the title also names a position.
  */
-function programStaffUnit(roleGroup: string | null, unit: string | null, title: string | null): ProgramStaffUnit {
+const SUPPORT_DUTY =
+  /\boperations?\b|\bequipment\b|\boutreach\b|\bcommunity\b|\bvideo\b|\bfilm(?:er|ing)?\b|\bdirector\b|\bstrength\b|\bconditioning\b|\bperformance\b|\bspeed\b|\brecruit(?:ing|er|ment)?\b|\bscouting\b|\bpersonnel\b|\bchief of staff\b|\bspecial assistant\b|\bassistant to\b|\bmanager\b|\badministrat|\btrainer\b|\bnutrition|\bchaplain\b|\blife coach\b|\bleadership\b|\bconsultant\b|\badvisor\b|\bfacilit|\balumni\b|\bacademic\b|\blia(?:i)?son\b|\bwellness\b/i;
+
+/** The side an explicit "Offensive Coordinator" / "Defensive Coordinator" in the title names (earliest wins). */
+function coordinatorSide(title: string): "offense" | "defense" | null {
+  const m = /\b(offensive|defensive)\s+coordinator\b/i.exec(title);
+  return m ? (m[1].toLowerCase() === "offensive" ? "offense" : "defense") : null;
+}
+
+/**
+ * Staff unit for one person, trusting the published title before the stored unit:
+ * 1. head coaches; a title that leads with special teams ("Special Teams Coordinator / Defensive Backs")
+ *    files under Special teams; an explicit Offensive / Defensive Coordinator files by that side;
+ * 2. a title led by a non-coaching duty (operations, equipment, outreach, video, director, strength,
+ *    recruiting…) and naming no position is Support staff;
+ * 3. the stored offense / defense / special teams unit, unless the title names a position on the other
+ *    side of the ball ("Assistant Football Coach - Defensive Line" stored as offense files under Defense);
+ * 4. a position in the title ("Recruiting Coordinator / Wide Receivers" stored as support -> Offense);
+ * 5. any other coaching title ("Assistant Football Coach", even stored as support) -> Assistant coaches;
+ *    the rest -> Support staff.
+ */
+export function programStaffUnit(roleGroup: string | null, unit: string | null, title: string | null): ProgramStaffUnit {
   if (roleGroup === "head_coach") return "head";
   const t = title?.trim() ?? "";
-  if (/^special teams\b/i.test(t.split("/")[0].trim())) return "special_teams";
-  if (unit === "offense" || unit === "defense" || unit === "special_teams") return unit;
-  if (unit === "staff" || roleGroup === "support" || roleGroup === "other" || roleGroup === "player" || !roleGroup) return "support";
-  return unitFromTitle(t) ?? (COACH_TITLE.test(t) || !t ? "assistant" : "support");
+  const lead = t.split("/")[0].trim();
+  if (/^special teams\b/i.test(lead)) return "special_teams";
+  const coordinator = coordinatorSide(t);
+  if (coordinator) return coordinator;
+  const fromTitle = unitFromTitle(t);
+  if (!fromTitle && SUPPORT_DUTY.test(lead)) return "support";
+  if (unit === "offense" || unit === "defense" || unit === "special_teams") {
+    const otherSide = (unit === "offense" && fromTitle === "defense") || (unit === "defense" && fromTitle === "offense");
+    return otherSide ? fromTitle! : unit;
+  }
+  if (fromTitle) return fromTitle;
+  return COACH_TITLE.test(lead) || !t ? "assistant" : "support";
 }
 
 const ROLE_RANK: Record<string, number> = { head_coach: 0, coordinator: 1, position_coach: 2, ga_analyst: 3, support: 4, other: 5 };
@@ -426,4 +551,16 @@ export function parseFollowCookie(value: string | undefined): FollowMap {
 export async function getFollowedOrgIds(userId: string | null | undefined): Promise<string[]> {
   if (!userId) return [];
   return parseFollowCookie((await cookies()).get(FOLLOW_COOKIE)?.value)[userId] ?? [];
+}
+
+/**
+ * Demo job alerts ("Set a job alert" on a program's empty Jobs tab, §8.6), stored like follows: a JSON
+ * object of organization ids per demo user, same limits and parsing.
+ */
+export const JOB_ALERT_COOKIE = "cn_job_alerts";
+
+/** Programs a demo user has a job alert on (none when signed out). */
+export async function getJobAlertOrgIds(userId: string | null | undefined): Promise<string[]> {
+  if (!userId) return [];
+  return parseFollowCookie((await cookies()).get(JOB_ALERT_COOKIE)?.value)[userId] ?? [];
 }

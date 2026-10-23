@@ -1,5 +1,5 @@
 import { MessageSquareOff } from "lucide-react";
-import { PageContainer } from "@/components/shell/Layouts";
+import { SingleColumnLayout } from "@/components/shell/Layouts";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 /** ?thread= names a conversation that doesn't exist or belongs to another account. */
 export default function MessagingNotFound() {
   return (
-    <PageContainer className="max-w-[640px] md:box-content">
+    <SingleColumnLayout>
       <Card padding="main">
         <CardHeader as="h1" title="Messaging" />
         <EmptyState
@@ -18,6 +18,6 @@ export default function MessagingNotFound() {
           spacing="lg"
         />
       </Card>
-    </PageContainer>
+    </SingleColumnLayout>
   );
 }

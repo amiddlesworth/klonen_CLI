@@ -25,6 +25,11 @@ export function roleGroupLabel(v: string | null | undefined): string {
   return (v && ROLE_GROUP_LABEL[v as RoleGroup]) || "Other";
 }
 
+/** The listing still takes applications (a closed listing keeps its page, marked closed). */
+export function isOpenJob(j: { status?: string | null }): boolean {
+  return (j.status ?? "open") === "open";
+}
+
 /** A job is a sample when it is demo data or seeded as a sample listing (§6.4: "Sample listing"). */
 export function isSampleJob(j: { isDemo: boolean; source: string }): boolean {
   return j.isDemo || j.source === "sample";
@@ -33,7 +38,7 @@ export function isSampleJob(j: { isDemo: boolean; source: string }): boolean {
 type SublineJob = {
   employmentType: string;
   location?: string | null;
-  org: { shortName: string; city: string | null; state: string | null; conferenceAbbr: string | null };
+  org: { shortName: string; name?: string | null; city: string | null; state: string | null; conferenceAbbr: string | null };
 };
 
 /**
@@ -49,10 +54,35 @@ export function jobPlace(j: Pick<SublineJob, "location" | "org">): string | null
   return [city, stateInName ? null : state].filter(Boolean).join(", ") || null;
 }
 
-/** "Allegheny · PA · PAC · Full-time", "Pacific (OR) · NWC · Full-time". */
-export function jobSubline(j: SublineJob, opts: { org?: boolean; type?: boolean } = {}): string {
+/**
+ * The program as lines name it: its full name, as in the job header ("Austin College", never the
+ * short "Austin", which reads as the city). Short names are for tiles only.
+ */
+export function programName(org: { name?: string | null; shortName: string }): string {
+  return org.name?.trim() || org.shortName;
+}
+
+/**
+ * The segments of a job's place line, in order: program, place, conference, employment type.
+ * "Allegheny College · Meadville · PAC · Full-time", "Austin College · TX · SCAC · Full-time".
+ */
+export function jobSublineParts(j: SublineJob, opts: { org?: boolean; type?: boolean } = {}): string[] {
   const { org = true, type = true } = opts;
-  return [org ? j.org.shortName : null, jobPlace(j), conferenceShort(j.org.conferenceAbbr), type ? j.employmentType : null].filter(Boolean).join(" · ");
+  return [org ? programName(j.org) : null, jobPlace(j), conferenceShort(j.org.conferenceAbbr), type ? j.employmentType : null].filter((s): s is string => !!s);
+}
+
+/** The place line as one string (titles, metadata). Rendered lines use PlaceLine, which keeps each segment whole. */
+export function jobSubline(j: SublineJob, opts: { org?: boolean; type?: boolean } = {}): string {
+  return jobSublineParts(j, opts).join(" · ");
+}
+
+/**
+ * A segment short enough to keep on one line in the narrowest column it appears in (the 360px
+ * post-job preview, the phone header, the rail): lines then break only at the dots. A longer name
+ * ("State University of New York at Morrisville") may still wrap at its own spaces.
+ */
+export function keepWhole(segment: string): boolean {
+  return segment.length <= 34;
 }
 
 /**

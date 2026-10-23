@@ -12,9 +12,17 @@ import { getSession } from "@/lib/session";
 type Params = Promise<{ slug: string }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-function readOptions(sp: Record<string, string | string[] | undefined>): { view: "diagram" | "list"; depth: 1 | 2 } {
+type Options = { view: "diagram" | "list" | null; depth: 1 | 2 };
+
+function readOptions(sp: Record<string, string | string[] | undefined>): Options {
   const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
-  return { view: one(sp.view) === "list" ? "list" : "diagram", depth: one(sp.depth) === "2" ? 2 : 1 };
+  const view = one(sp.view);
+  return { view: view === "list" || view === "diagram" ? view : null, depth: one(sp.depth) === "2" ? 2 : 1 };
+}
+
+/** Phones (not tablets) get the list by default (DESIGN.md §8.8), so they don't download the hidden diagrams. */
+function isPhone(userAgent: string | null): boolean {
+  return !!userAgent && /iPhone|iPod|Android.+Mobile|Windows Phone|Mobile.+Firefox/i.test(userAgent);
 }
 
 export async function generateMetadata({ params, searchParams }: { params: Params; searchParams: SearchParams }): Promise<Metadata> {
@@ -38,8 +46,7 @@ export async function generateMetadata({ params, searchParams }: { params: Param
 }
 
 /** An "Invite a colleague" email that links to the coach's profile (no backend: a mailto link). */
-async function inviteHref(slug: string, name: string): Promise<string> {
-  const h = await headers();
+function inviteHref(h: Headers, slug: string, name: string): string {
   const host = h.get("x-forwarded-host") ?? h.get("host");
   const proto = h.get("x-forwarded-proto") ?? "http";
   const url = host ? `${proto}://${host}/in/${slug}` : `/in/${slug}`;
@@ -48,26 +55,31 @@ async function inviteHref(slug: string, name: string): Promise<string> {
   return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
-/** Coaching tree explorer /in/[slug]/tree (DESIGN.md §8.8). */
+/** Coaching tree explorer /in/[slug]/tree (DESIGN.md §8.8). The route layout 404s an unknown slug. */
 export default async function TreePage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const { slug } = await params;
-  const { view, depth } = readOptions(await searchParams);
-  const [data, session] = await Promise.all([getTreeExplorer(slug, depth), getSession().catch(() => null)]);
+  const options = readOptions(await searchParams);
+  const [data, session, h] = await Promise.all([getTreeExplorer(slug, options.depth), getSession().catch(() => null), headers()]);
   if (!data) notFound();
   const empty = data.uniqueCount === 0;
   // The signed-in coach's own node is marked "you" (from the session, never hard-coded).
   const viewerId = session?.person?.id ?? null;
+  // Default view: the diagram (md and up show it; phone widths always show the list), except on phones,
+  // which skip the diagrams' markup entirely unless ?view=diagram asks for them.
+  const phoneDefault = options.view === null && isPhone(h.get("user-agent"));
+  const view = options.view ?? (phoneDefault ? "list" : "diagram");
+  const explicitView = isPhone(h.get("user-agent"));
 
   return (
     <PageContainer>
       <TreeBreadcrumb data={data} />
-      <TreeHeader data={data} view={view} depth={depth} />
+      <TreeHeader data={data} view={view} depth={options.depth} explicitView={explicitView} />
       {empty ? (
-        <TreeEmptyCard data={data} inviteHref={await inviteHref(slug, data.focal.fullName)} />
+        <TreeEmptyCard data={data} inviteHref={inviteHref(h, slug, data.focal.fullName)} />
       ) : (
         <>
-          {/* Phone always shows the list (the diagram needs width); md and up follow ?view=. */}
-          {view === "diagram" && <TreeDiagramCard data={data} depth={depth} viewerId={viewerId} className="max-md:hidden" />}
+          {/* Phone widths always show the list (the diagram needs width); md and up follow the view. */}
+          {view === "diagram" && <TreeDiagramCard data={data} depth={options.depth} viewerId={viewerId} className="max-md:hidden" />}
           <TreeListCard data={data} viewerId={viewerId} className={view === "diagram" ? "md:hidden" : undefined} />
         </>
       )}

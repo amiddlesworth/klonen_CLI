@@ -1,4 +1,6 @@
-import { AppliedFilterChip } from "@/components/ui/FilterChip";
+import Link from "next/link";
+import { X } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
 import { ROLE_FACET_LABEL, searchHref, stateName, without, type SearchState } from "./params";
 
@@ -26,8 +28,32 @@ export function appliedChips(state: SearchState, names: AppliedFiltersProps["nam
 }
 
 /**
+ * An applied filter with its own remove control: the ui AppliedFilterChip's look (§8.1 FilterChip,
+ * selected), with a label that truncates, so a long one ("Worked under Justin Leatherman") never pushes
+ * its × under the row's fade mask. The full label stays in the remove control's name and the title.
+ */
+function RemovableChip({ label, removeHref }: { label: string; removeHref: string }) {
+  return (
+    <span
+      title={label}
+      className="inline-flex h-8 max-w-full min-w-0 items-center gap-1 rounded-sm border border-fg-1 bg-fg-1 pl-3 pr-1 text-small font-medium text-surface max-md:h-10"
+    >
+      <span className="min-w-0 truncate">{label}</span>
+      <Link
+        href={removeHref}
+        scroll={false}
+        aria-label={`Remove filter: ${label}`}
+        className="relative grid size-6 shrink-0 place-items-center rounded-xs hover:bg-fg-2 before:absolute before:-inset-2.5"
+      >
+        <Icon icon={X} size={14} />
+      </Link>
+    </span>
+  );
+}
+
+/**
  * Applied filters on tablet and phone (§8.7): removable FilterChips in one horizontally scrollable
- * row with a fade mask on the right edge.
+ * row with a fade mask on the right edge. A chip is never wider than the row's unmasked width.
  */
 export function AppliedFilters({ state, names, className }: AppliedFiltersProps) {
   const chips = appliedChips(state, names);
@@ -41,8 +67,8 @@ export function AppliedFilters({ state, names, className }: AppliedFiltersProps)
       )}
     >
       {chips.map((c) => (
-        <li key={c.key} className="shrink-0">
-          <AppliedFilterChip label={c.label} removeHref={c.removeHref} />
+        <li key={c.key} className="flex max-w-full shrink-0">
+          <RemovableChip label={c.label} removeHref={c.removeHref} />
         </li>
       ))}
     </ul>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { DemoLabel } from "@/components/data/Badges";
 import { StatGroup, type Stat } from "@/components/data/StatGroup";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
@@ -44,6 +45,8 @@ type TreeHeaderProps = {
   data: TreeExplorer;
   view: "diagram" | "list";
   depth: 1 | 2;
+  /** The page defaulted to the list (a phone): links spell out view=diagram. */
+  explicitView?: boolean;
 };
 
 /**
@@ -51,7 +54,7 @@ type TreeHeaderProps = {
  * role, "{n} people · derived from overlapping seasons", the Diagram · List control (md and up; the
  * phone always shows the list), the "Two steps away" toggle (?depth=2) and the group counts.
  */
-export function TreeHeader({ data, view, depth }: TreeHeaderProps) {
+export function TreeHeader({ data, view, depth, explicitView = false }: TreeHeaderProps) {
   const { focal } = data;
   const first = focal.firstName;
   const empty = data.uniqueCount === 0;
@@ -78,9 +81,13 @@ export function TreeHeader({ data, view, depth }: TreeHeaderProps) {
         <div className="flex min-w-0 flex-1 items-start gap-3 md:gap-4">
           <Avatar name={focal.fullName} tintKey={focal.slug} size={56} className="max-md:size-12 max-md:text-[17px]" />
           <div className="min-w-0">
-            <h1 id="tree-title" tabIndex={-1} className="text-display outline-none max-md:text-display-sm">
-              {possessive(focal.fullName)} coaching tree
-            </h1>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <h1 id="tree-title" tabIndex={-1} className="text-display outline-none max-md:text-display-sm">
+                {possessive(focal.fullName)} coaching tree
+              </h1>
+              {/* A fictional demo coach says so on the record itself (ARCHITECTURE "Demo data honesty"). */}
+              {focal.isDemo && <DemoLabel />}
+            </div>
             {focal.currentTitle && (
               <p className="mt-0.5 text-body text-fg-2">
                 {focal.currentTitle}
@@ -101,6 +108,7 @@ export function TreeHeader({ data, view, depth }: TreeHeaderProps) {
             <p className="mt-0.5 text-small text-fg-3">
               <span className="num">{peopleCount(data.uniqueCount)}</span> · derived from overlapping seasons
             </p>
+            {!empty && <p className="mt-0.5 text-caption text-fg-3 md:hidden">Shown as a list on phones; the diagram opens on wider screens.</p>}
           </div>
         </div>
         {!empty && (
@@ -111,18 +119,18 @@ export function TreeHeader({ data, view, depth }: TreeHeaderProps) {
               fullWidthOnPhone={false}
               className="max-md:hidden"
               options={[
-                { value: "diagram", label: "Diagram", href: treeHref(focal.slug, { depth }) },
+                { value: "diagram", label: "Diagram", href: treeHref(focal.slug, { view: "diagram", depth, explicit: explicitView }) },
                 { value: "list", label: "List", href: treeHref(focal.slug, { view: "list", depth }) },
               ]}
             />
-            <FilterChip href={treeHref(focal.slug, { view, depth: depth === 2 ? 1 : 2 })} selected={depth === 2}>
+            <FilterChip href={treeHref(focal.slug, { view, depth: depth === 2 ? 1 : 2, explicit: explicitView })} selected={depth === 2}>
               Two steps away
             </FilterChip>
           </div>
         )}
       </div>
-      {/* Labels may wrap on phone: "Coached under {first}" must never be cut off in a 3-column band. */}
-      {!empty && <StatGroup stats={stats} label="Coaching tree counts" className="mt-4 max-md:[&_span]:whitespace-normal" />}
+      {/* Labels may wrap on phone ("Coached under {first}" is never cut off in a 3-column band); balanced, so no word is left alone. */}
+      {!empty && <StatGroup stats={stats} label="Coaching tree counts" className="mt-4 max-md:[&_span]:whitespace-normal max-md:[&_span]:[text-wrap:balance]" />}
     </Card>
   );
 }

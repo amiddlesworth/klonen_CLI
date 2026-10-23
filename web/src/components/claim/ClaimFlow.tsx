@@ -13,25 +13,29 @@ import { PublishStep } from "./PublishStep";
 import { ReviewStep } from "./ReviewStep";
 import type { Review } from "./ReviewToggle";
 
+/**
+ * Who is walking through the flow: the coach demo on its own profile ("own", the only case that
+ * records a claim), the coach demo on someone else's ("other") or a signed-out visitor.
+ */
+export type ClaimMode = "own" | "other" | "visitor";
+
 type ClaimFlowProps = {
   subject: ClaimSubject;
-  /** Server-rendered identity block (h1, avatar, name, Unclaimed chip) for the header card. */
+  /** Server-rendered identity block (h1, avatar, name, Unclaimed chip, headline) for the header card. */
   identity: ReactNode;
-  /** The same block once the claim is recorded: a dashed Demo chip in place of Unclaimed. */
-  identityDone: ReactNode;
   /** Shown under the stepper, e.g. when the coach demo opens someone else's claim. */
   notice?: ReactNode;
-  /** False for signed-out visitors: their walk-through isn't saved. */
-  saves: boolean;
+  mode: ClaimMode;
 };
 
 /**
  * Claim flow (§8.11): header card with the stepper, then one card per step. Step state lives here
- * (a reload starts over). Publishing calls submitClaim, which records the claim (coach demo only)
- * and changes nothing on the public profile. The success card is the confirmation and takes focus;
- * there is no toast repeating it, and no redirect (the public profile wouldn't show the claim).
+ * (a reload starts over). Publishing calls submitClaim, which records the claim (the coach demo on
+ * its own profile only) and changes nothing on the public profile. The success card is the
+ * confirmation and takes focus; there is no toast repeating it, and no redirect (the public profile
+ * wouldn't show the claim).
  */
-export function ClaimFlow({ subject, identity, identityDone, notice, saves }: ClaimFlowProps) {
+export function ClaimFlow({ subject, identity, notice, mode }: ClaimFlowProps) {
   const [step, setStep] = useState(0);
   const [email, setEmail] = useState<string | null>(null);
   const [reviews, setReviews] = useState<Record<number, Review>>({});
@@ -77,7 +81,7 @@ export function ClaimFlow({ subject, identity, identityDone, notice, saves }: Cl
   return (
     <>
       <Card padding="none" className="overflow-hidden">
-        <div className="p-4 md:px-6 md:pb-4 md:pt-5">{done ? identityDone : identity}</div>
+        <div className="p-4 md:px-6 md:pb-4 md:pt-5">{identity}</div>
         <div className="border-t border-divider px-4 py-3 md:px-6 md:py-4">
           <ClaimStepper current={done ? CLAIM_STEPS.length : step} />
         </div>
@@ -94,7 +98,7 @@ export function ClaimFlow({ subject, identity, identityDone, notice, saves }: Cl
           <div className="flex items-center gap-2">
             <Icon icon={ShieldCheck} size={20} className="text-fg-2" />
             <h2 id="claim-step-title" ref={headingRef} tabIndex={-1} className="text-title outline-none">
-              {result.recorded ? "Claim recorded" : "Claim complete"}
+              {result.recorded ? "Claim recorded" : "Walk-through complete"}
             </h2>
           </div>
           <p className="mt-2 max-w-prose text-body">
@@ -104,8 +108,8 @@ export function ClaimFlow({ subject, identity, identityDone, notice, saves }: Cl
               </>
             ) : (
               <>
-                You confirmed <span className="break-words font-medium">{email}</span> and reviewed {person.fullName}&apos;s career. Visitors&apos; claims
-                aren&apos;t saved in this demo.
+                You confirmed <span className="break-words font-medium">{email}</span> and reviewed {person.fullName}&apos;s career.{" "}
+                {mode === "visitor" ? "Visitors' claims aren't saved in this demo." : "Claims to someone else's profile aren't saved in this demo."}
               </>
             )}
           </p>
@@ -168,7 +172,7 @@ export function ClaimFlow({ subject, identity, identityDone, notice, saves }: Cl
           notes={notes}
           missing={missing}
           publishing={publishing}
-          saves={saves}
+          mode={mode}
           error={error}
           onBack={() => go(1)}
           onPublish={publish}

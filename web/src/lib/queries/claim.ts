@@ -2,7 +2,7 @@ import "server-only";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { availability, organizations } from "@/db/schema";
-import { buildLedger, buildTree, coachingSeasons, firstSeason, inferredReason, spanText, type RangeText } from "@/components/profile/model";
+import { buildLedger, buildTree, coachingSeasons, currentHeadline, firstSeason, inferredReason, spanText, undatedRoleCount, type RangeText } from "@/components/profile/model";
 import type { AvailabilityAudience, RoleGroup } from "@/lib/format";
 import type { OrgSummary } from "./people";
 import { getProfileCached, getTreeCached } from "./profile";
@@ -42,6 +42,11 @@ export type ClaimSubject = {
     fullName: string;
     firstName: string | null;
     currentTitle: string | null;
+    /**
+     * The profile header's headline (currentHeadline): the current stint's role in the bio's words,
+     * else the directory title. Every place on the claim page that names the job uses it.
+     */
+    headline: string | null;
     claimed: boolean;
     isDemo: boolean;
     sourceUrl: string | null;
@@ -52,6 +57,8 @@ export type ClaimSubject = {
   /** The profile header's numbers, from the profile's own model functions on the same rows. */
   stats: {
     seasonsCoached: number | null;
+    /** Some coaching roles have no start year, so the season count is a floor ("34+"), as on the profile. */
+    seasonsPlus: boolean;
     stops: number;
     treeSize: number;
     firstSeason: { year: number; inferred: boolean; reason: string } | null;
@@ -108,6 +115,7 @@ export async function getClaimSubject(slug: string): Promise<ClaimSubject | null
       fullName: person.fullName,
       firstName: person.firstName,
       currentTitle: person.currentTitle,
+      headline: currentHeadline(rows, currentOrg?.id ?? null, person.currentTitle),
       claimed: person.claimed,
       isDemo: person.isDemo,
       sourceUrl: person.sourceUrl,
@@ -116,6 +124,7 @@ export async function getClaimSubject(slug: string): Promise<ClaimSubject | null
     stints,
     stats: {
       seasonsCoached: coachingSeasons(rows).length || null,
+      seasonsPlus: undatedRoleCount(rows) > 0,
       stops: buildLedger(rows).length,
       treeSize: buildTree(tree, firstName, currentOrg?.slug ?? null).unique,
       firstSeason: firstSeason(rows),

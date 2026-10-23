@@ -2,10 +2,12 @@ import "server-only";
 import { cache } from "react";
 import { aliasedTable, and, asc, desc, eq, inArray, ne, or, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { connections, jobs, organizations, people, treeEdges } from "@/db/schema";
-import { getPeopleSummaries, getProfile, getTree, personSummaryCols, toSummary, type PersonSummary } from "./people";
+import { connections, jobs, organizations, people, tenures, treeEdges } from "@/db/schema";
+import { edgeYears, linkYearsDisplay, playedUnder, type EdgeRef, type LinkYears, type YearStint } from "@/components/profile/linkYears";
+import { aggregateTree, getPeopleSummaries, getProfile, getTree, personSummaryCols, toSummary, type PersonSummary, type TreeLink } from "./people";
 
 export type { ExperienceGroup, PersonSummary, Profile, TenureRow, Tree, TreeLink } from "./people";
+export type { LinkYears } from "@/components/profile/linkYears";
 
 /*
  * Extra queries for the coach profile /in/[slug] (DESIGN.md §8.4). The core record comes from
@@ -17,6 +19,118 @@ export const getProfileCached = cache(getProfile);
 
 /** getTree, deduplicated per request. */
 export const getTreeCached = cache(getTree);
+
+/** Every stint (coaching and playing) of these people at these organizations, as linkYears reads them. */
+async function getYearStints(personIds: string[], orgIds?: string[]): Promise<YearStint[]> {
+  if (!personIds.length || (orgIds && !orgIds.length)) return [];
+  return db
+    .select({
+      personId: tenures.personId,
+      orgId: tenures.orgId,
+      roleGroup: tenures.roleGroup,
+      sport: tenures.sport,
+      startYear: tenures.startYear,
+      endYear: tenures.endYear,
+      isCurrent: tenures.isCurrent,
+      asPlayer: tenures.asPlayer,
+      yearsExplicit: tenures.yearsExplicit,
+      evidence: tenures.evidence,
+    })
+    .from(tenures)
+    .where(orgIds ? and(inArray(tenures.personId, personIds), inArray(tenures.orgId, orgIds)) : inArray(tenures.personId, personIds));
+}
+
+/** A player relationship between the coach and a tree person ("Played for Ian 2024–25"). */
+export type PlayerLink = {
+  /** "played_for": the tree person played for the coach. "coached": the tree person coached the coach as a player. */
+  kind: "played_for" | "coached";
+  years: LinkYears;
+};
+
+/**
+ * A tree link with what its years can honestly show (linkYears): no start year the source never gave
+ * (an undated current stint is not a 2026 hire), inferred years flagged with their evidence.
+ */
+export type ProfileTreeLink = TreeLink & { years: LinkYears; player: PlayerLink | null };
+export type ProfileTree = { mentors: ProfileTreeLink[]; mentees: ProfileTreeLink[]; peers: ProfileTreeLink[] };
+
+const NO_YEARS: LinkYears = { ongoing: false, startYear: null, endYear: null, inferred: false, inferredFrom: null };
+
+/**
+ * Order inside a tree group: links with a range first, by end (current first), then start (longest-serving
+ * first), then name; links whose years the source doesn't pin go last (current first, then name).
+ */
+function byTenure(a: ProfileTreeLink, b: ProfileTreeLink): number {
+  const da = linkYearsDisplay(a.years) === "range";
+  const dbb = linkYearsDisplay(b.years) === "range";
+  if (da !== dbb) return da ? -1 : 1;
+  const end = (l: ProfileTreeLink) => (l.years.ongoing ? Infinity : (l.years.endYear ?? l.endYear ?? -Infinity));
+  if (da) {
+    const e = end(b) - end(a);
+    if (e) return e;
+    const s = (a.years.startYear ?? 0) - (b.years.startYear ?? 0);
+    if (s) return s;
+  } else if (a.years.ongoing !== b.years.ongoing) return a.years.ongoing ? -1 : 1;
+  return a.person.fullName.localeCompare(b.person.fullName);
+}
+
+/**
+ * The coach's coaching tree for the profile card (§8.4): getTree's buckets, each link annotated with
+ * honest years from both people's stints at the edge's organization, a player relationship when one
+ * played for the other, and ordered by tenure.
+ */
+export async function getProfileTree(personId: string): Promise<ProfileTree> {
+  const org = aliasedTable(organizations, "edge_org");
+  const edges = await db
+    .select({
+      kind: treeEdges.kind,
+      mentorId: treeEdges.mentorId,
+      menteeId: treeEdges.menteeId,
+      orgId: treeEdges.orgId,
+      startYear: treeEdges.startYear,
+      endYear: treeEdges.endYear,
+      orgSlug: org.slug,
+      orgShortName: org.shortName,
+    })
+    .from(treeEdges)
+    .innerJoin(org, eq(org.id, treeEdges.orgId))
+    .where(or(eq(treeEdges.mentorId, personId), eq(treeEdges.menteeId, personId)))
+    .orderBy(desc(treeEdges.endYear), desc(treeEdges.startYear));
+  const otherIds = [...new Set(edges.map((e) => (e.mentorId === personId ? e.menteeId : e.mentorId)))];
+  const [summaries, stints] = await Promise.all([getPeopleSummaries(otherIds), getYearStints([personId, ...otherIds])]);
+  const tree = aggregateTree(personId, edges, summaries);
+
+  const stintsByPerson = new Map<string, YearStint[]>();
+  for (const t of stints) stintsByPerson.set(t.personId, [...(stintsByPerson.get(t.personId) ?? []), t]);
+  const mine = stintsByPerson.get(personId) ?? [];
+  const pairStints = (otherId: string) => [...mine, ...(stintsByPerson.get(otherId) ?? [])];
+
+  const annotate = (bucket: keyof ProfileTree, l: TreeLink): ProfileTreeLink => {
+    const otherId = l.person.id;
+    const match = (e: (typeof edges)[number]) =>
+      e.orgSlug === l.org.slug &&
+      e.startYear === l.startYear &&
+      e.endYear === l.endYear &&
+      (bucket === "peers"
+        ? e.kind === "worked_alongside" && ((e.mentorId === personId && e.menteeId === otherId) || (e.mentorId === otherId && e.menteeId === personId))
+        : e.kind === "worked_under" && (bucket === "mentees" ? e.mentorId === personId && e.menteeId === otherId : e.mentorId === otherId && e.menteeId === personId));
+    const edge = edges.find(match);
+    const both = pairStints(otherId);
+    const years = edge ? edgeYears(edge as EdgeRef, both) : NO_YEARS;
+    const playedFor = playedUnder(otherId, personId, both);
+    const coached = playedFor ? null : playedUnder(personId, otherId, both);
+    const player: PlayerLink | null = playedFor ? { kind: "played_for", years: playedFor } : coached ? { kind: "coached", years: coached } : null;
+    return { ...l, years, player };
+  };
+  return {
+    mentors: tree.mentors.map((l) => annotate("mentors", l)).sort(byTenure),
+    mentees: tree.mentees.map((l) => annotate("mentees", l)).sort(byTenure),
+    peers: tree.peers.map((l) => annotate("peers", l)).sort(byTenure),
+  };
+}
+
+/** getProfileTree, deduplicated per request. */
+export const getProfileTreeCached = cache(getProfileTree);
 
 export type ProgramCard = {
   id: string;
@@ -31,7 +145,7 @@ export type ProgramCard = {
   state: string | null;
   athleticsUrl: string | null;
   inRegistry: boolean;
-  /** Current staff on the network (people whose current program this is). */
+  /** Current staff on the network (people whose current program this is; demo candidates excluded). */
   staffCount: number;
   openJobs: number;
   /** Open jobs that are sample listings created for the demo. */
@@ -43,7 +157,8 @@ export async function getProgramCard(orgId: string): Promise<ProgramCard | null>
   const [org] = await db.select().from(organizations).where(eq(organizations.id, orgId)).limit(1);
   if (!org) return null;
   const [[staff], [open]] = await Promise.all([
-    db.select({ n: sql<number>`count(*)::int` }).from(people).where(eq(people.currentOrgId, orgId)),
+    // Fictional demo candidates are not staff anywhere: leave them out of the count.
+    db.select({ n: sql<number>`count(*)::int` }).from(people).where(and(eq(people.currentOrgId, orgId), eq(people.isDemo, false))),
     db
       .select({
         n: sql<number>`count(*)::int`,
@@ -74,12 +189,12 @@ export async function getProgramCard(orgId: string): Promise<ProgramCard | null>
 export type SameTreeLink = {
   person: PersonSummary;
   /** The staff member of the coach's current program who connects them. */
-  via: { slug: string; fullName: string; firstName: string };
+  via: { id: string; slug: string; fullName: string; firstName: string };
   /** How the staff member and the person are connected. */
   relation: "via_coached" | "via_worked_under" | "alongside";
   orgShortName: string;
-  startYear: number | null;
-  endYear: number | null;
+  /** What the shared seasons can honestly show (linkYears): no filled-in start years, inferred flagged. */
+  years: LinkYears;
 };
 
 /**
@@ -101,6 +216,7 @@ export async function getSameTree(personId: string, currentOrgId: string, exclud
       kind: treeEdges.kind,
       mentorId: treeEdges.mentorId,
       menteeId: treeEdges.menteeId,
+      orgId: treeEdges.orgId,
       startYear: treeEdges.startYear,
       endYear: treeEdges.endYear,
       orgShortName: org.shortName,
@@ -112,7 +228,7 @@ export async function getSameTree(personId: string, currentOrgId: string, exclud
     .limit(300);
 
   const skip = new Set([personId, ...staffIds, ...exclude]);
-  type Pick = Omit<SameTreeLink, "person"> & { personId: string; viaId: string };
+  type Pick = Omit<SameTreeLink, "person" | "years"> & { personId: string; viaId: string; edge: EdgeRef };
   const candidates: Pick[] = [];
   const seen = new Set<string>();
   for (const e of edges) {
@@ -125,11 +241,10 @@ export async function getSameTree(personId: string, currentOrgId: string, exclud
     candidates.push({
       personId: otherId,
       viaId,
-      via: { slug: via.slug, fullName: via.fullName, firstName: via.firstName || via.fullName.split(" ")[0] },
+      via: { id: via.id, slug: via.slug, fullName: via.fullName, firstName: via.firstName || via.fullName.split(" ")[0] },
       relation: e.kind === "worked_alongside" ? "alongside" : viaIsMentor ? "via_coached" : "via_worked_under",
       orgShortName: e.orgShortName,
-      startYear: e.startYear,
-      endYear: e.endYear,
+      edge: e,
     });
   }
   // One per staff member first, then fill.
@@ -145,10 +260,17 @@ export async function getSameTree(personId: string, currentOrgId: string, exclud
     if (picked.length >= limit) break;
     if (!picked.includes(c)) picked.push(c);
   }
-  const summaries = await getPeopleSummaries(picked.map((p) => p.personId));
+  const [summaries, stints] = await Promise.all([
+    getPeopleSummaries(picked.map((p) => p.personId)),
+    getYearStints(
+      [...new Set(picked.flatMap((p) => [p.personId, p.viaId]))],
+      [...new Set(picked.map((p) => p.edge.orgId))],
+    ),
+  ]);
   return picked.flatMap((c) => {
     const person = summaries.get(c.personId);
-    return person ? [{ via: c.via, relation: c.relation, orgShortName: c.orgShortName, startYear: c.startYear, endYear: c.endYear, person }] : [];
+    const years = edgeYears(c.edge, stints);
+    return person ? [{ via: c.via, relation: c.relation, orgShortName: c.orgShortName, years, person }] : [];
   });
 }
 

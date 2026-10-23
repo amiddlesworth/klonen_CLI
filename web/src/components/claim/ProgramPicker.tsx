@@ -1,5 +1,5 @@
 "use client";
-import { useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { CircleAlert, Search, X } from "lucide-react";
 import { ConferenceBadge } from "@/components/data/Badges";
 import { CONTROL_CLASSES } from "@/components/ui/Field";
@@ -59,12 +59,17 @@ function rank(p: PickerProgram, query: string): number | null {
  * Program multi-select combobox (§8.12 "Specific programs"): chosen programs as removable tokens,
  * then a search field with a listbox of matches (tile 24, name, conference · state). Keyboard:
  * ↑ ↓ to move, Enter to add, Esc to close; each token has its own remove button.
+ * The open list stays on screen: on phone, focusing the field scrolls the picker (label, chosen
+ * programs, field) to the top, under the 48px top bar, where the list has room above the keyboard; on every width the open list is scrolled
+ * into view (clear of the phone tab bar) so its last row and the "Showing 8 of n" line are visible.
  */
 export function ProgramPicker({ id, programs, selected, onChange, excluded, error }: ProgramPickerProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const listId = useId();
   const byId = useMemo(() => new Map(programs.map((p) => [p.id, p])), [programs]);
   const chosen = selected.map((sid) => byId.get(sid)).filter((p): p is PickerProgram => !!p);
@@ -77,15 +82,28 @@ export function ProgramPicker({ id, programs, selected, onChange, excluded, erro
       .map((p) => ({ p, t: rank(p, query) }))
       .filter((r): r is { p: PickerProgram; t: number } => r.t !== null)
       .sort((a, b) => a.t - b.t || a.p.name.localeCompare(b.p.name));
+    // Mention the current program only when it would have been among the shown results.
+    const t = excluded ? rank(excluded, query) : null;
+    const ahead = t === null ? 0 : ranked.filter((r) => r.t < t || (r.t === t && r.p.name.localeCompare(excluded!.name) < 0)).length;
     return {
       results: ranked.slice(0, MAX_RESULTS).map((r) => r.p),
       total: ranked.length,
-      excludedMatches: !!excluded && rank(excluded, query) !== null,
+      excludedMatches: t !== null && ahead < MAX_RESULTS,
     };
   }, [programs, query, selected, excluded]);
 
   const expanded = open && query.trim().length > 0;
   const helpId = `${id}-help`;
+
+  // Bring the whole open list into view when it opens or grows (a no-op when it already fits).
+  useEffect(() => {
+    if (expanded) listRef.current?.scrollIntoView({ block: "nearest" });
+  }, [expanded, results.length, total, excludedMatches]);
+
+  function onFocus() {
+    setOpen(true);
+    if (window.matchMedia("(max-width: 720px)").matches) rootRef.current?.scrollIntoView({ block: "start" });
+  }
   const errorId = `${id}-error`;
 
   function add(p: PickerProgram) {
@@ -122,7 +140,7 @@ export function ProgramPicker({ id, programs, selected, onChange, excluded, erro
   }
 
   return (
-    <div className="flex min-w-0 flex-col gap-1.5">
+    <div ref={rootRef} className="flex min-w-0 flex-col gap-1.5 max-md:scroll-mt-[calc(var(--mtop-h)+12px)]">
       <label htmlFor={id} className="text-small font-medium text-fg-1">
         Programs that can see it
       </label>
@@ -170,17 +188,18 @@ export function ProgramPicker({ id, programs, selected, onChange, excluded, erro
             setActive(0);
             setOpen(true);
           }}
-          onFocus={() => setOpen(true)}
+          onFocus={onFocus}
           onBlur={() => setOpen(false)}
           onKeyDown={onKeyDown}
           className={cn(CONTROL_CLASSES, "h-9 pl-9 max-md:h-11")}
         />
         <ul
+          ref={listRef}
           id={listId}
           role="listbox"
           aria-label="Matching programs"
           hidden={!expanded}
-          className="absolute inset-x-0 top-full z-40 mt-1 max-h-80 overflow-y-auto rounded-md bg-surface p-1 shadow-pop"
+          className="absolute inset-x-0 top-full z-40 mt-1 max-h-80 scroll-mb-4 overflow-y-auto rounded-md bg-surface p-1 shadow-pop max-md:scroll-mb-[calc(var(--tabbar-h)+env(safe-area-inset-bottom)+8px)]"
         >
           {results.length === 0 && !excludedMatches ? (
             <li role="presentation" className="px-2 py-2.5 text-small text-fg-2">
@@ -215,7 +234,12 @@ export function ProgramPicker({ id, programs, selected, onChange, excluded, erro
             </li>
           )}
           {total > results.length && (
-            <li role="presentation" onMouseDown={(e) => e.preventDefault()} className="num border-t border-divider px-2 pb-1.5 pt-2 text-caption text-fg-3">
+            // Pinned to the bottom of the scrolling list so the count is visible without scrolling.
+            <li
+              role="presentation"
+              onMouseDown={(e) => e.preventDefault()}
+              className="num sticky -bottom-1 -mx-1 -mb-1 border-t border-divider bg-surface px-3 pb-2.5 pt-2 text-caption text-fg-3"
+            >
               Showing {results.length} of {total}. Keep typing to narrow.
             </li>
           )}

@@ -1,8 +1,8 @@
 import "server-only";
 import { cache } from "react";
-import { and, asc, count, eq, inArray, ne, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, eq, gte, inArray, ne, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db";
-import { jobs, organizations, people, tenures, treeEdges } from "@/db/schema";
+import { jobs, organizations, people, shortlists, tenures, treeEdges } from "@/db/schema";
 import { JOB_ROLE_GROUPS, type JobRoleGroup } from "@/components/jobs/labels";
 import { escapeLike } from "./orgs";
 import { personSummaryCols, toSummary, type PersonSummary } from "./people";
@@ -48,13 +48,14 @@ export type JobListItem = {
   isDemo: boolean;
   /** "City, ST" as posted (native listings), or the state alone (samples); null when unknown. */
   location: string | null;
+  /** The demo account that posted it (null for seeded listings): decides the owner view. */
+  createdByUserId: string | null;
   org: JobOrg;
 };
 
 export type JobDetail = JobListItem & {
   description: string;
   sourceUrl: string | null;
-  createdByUserId: string | null;
   status: string;
 };
 
@@ -66,6 +67,18 @@ export type JobsFilter = {
   q: string;
 };
 
+/**
+ * The conference's full name, from one source: the abbreviation. Registry rows carry the football
+ * conference as the abbreviation but sometimes the school's all-sports conference as the name
+ * (Rochester: "Liberty" next to "University Athletic Association"), so the name is the one most
+ * registry programs with that abbreviation use, as search does (lib/queries/searchx.ts).
+ */
+const conferenceName = sql<string | null>`case
+  when ${organizations.conferenceAbbr} is null then ${organizations.conference}
+  when ${organizations.conferenceAbbr} = 'Independent' then 'Independent'
+  else coalesce((select mode() within group (order by c.conference) from organizations c where c.in_registry and c.conference_abbr = ${organizations.conferenceAbbr}), ${organizations.conference})
+end`;
+
 const orgCols = {
   id: organizations.id,
   slug: organizations.slug,
@@ -73,7 +86,7 @@ const orgCols = {
   shortName: organizations.shortName,
   nickname: organizations.nickname,
   level: organizations.level,
-  conference: organizations.conference,
+  conference: conferenceName,
   conferenceAbbr: organizations.conferenceAbbr,
   city: organizations.city,
   state: organizations.state,
@@ -93,6 +106,7 @@ const listCols = {
   source: jobs.source,
   isDemo: jobs.isDemo,
   location: jobs.location,
+  createdByUserId: jobs.createdByUserId,
   org: orgCols,
 };
 
@@ -207,7 +221,6 @@ export const getJobDetail = cache(async (id: number): Promise<JobDetail | null> 
       ...listCols,
       description: jobs.description,
       sourceUrl: jobs.sourceUrl,
-      createdByUserId: jobs.createdByUserId,
       status: jobs.status,
     })
     .from(jobs)
@@ -346,11 +359,15 @@ const RELATION_RANK = { mentor: 0, mentee: 1, peer: 2 } as const;
 
 /**
  * People in the viewer's coaching tree (worked under, alongside, or under them) who coached or
- * played at this organization: the "your network here" line on a job. Ordered by how close the
- * tie is (people the viewer worked under first, then people who coached under the viewer, then
- * peers), then by the most recent season they overlapped, then by name. The viewer is never listed.
+ * played at each of these organizations: the "your network here" line on a job, for one job or a
+ * whole page of the list in one query. Ordered by how close the tie is (people the viewer worked
+ * under first, then people who coached under the viewer, then peers), then by the most recent
+ * season they overlapped, then by name. The viewer is never listed. Organizations with nobody are
+ * left out of the map.
  */
-export async function getNetworkProof(viewerPersonId: string, orgId: string, limit = 3): Promise<NetworkProof> {
+export async function getNetworkProofs(viewerPersonId: string, orgIds: string[], limit = 3): Promise<Map<string, NetworkProof>> {
+  const ids = [...new Set(orgIds)];
+  if (!ids.length) return new Map();
   const related = db
     .select({
       rid: sql<string>`case when ${treeEdges.mentorId} = ${viewerPersonId} then ${treeEdges.menteeId} else ${treeEdges.mentorId} end`.as("rid"),
@@ -361,20 +378,22 @@ export async function getNetworkProof(viewerPersonId: string, orgId: string, lim
     .where(or(eq(treeEdges.mentorId, viewerPersonId), eq(treeEdges.menteeId, viewerPersonId)))
     .as("related");
   const rows = await db
-    .select({ ...personSummaryCols, currentOrgId: people.currentOrgId, asPlayer: tenures.asPlayer, relation: related.relation, lastYear: related.lastYear })
+    .select({ ...personSummaryCols, orgId: tenures.orgId, currentOrgId: people.currentOrgId, asPlayer: tenures.asPlayer, relation: related.relation, lastYear: related.lastYear })
     .from(tenures)
     .innerJoin(related, eq(related.rid, tenures.personId))
     .innerJoin(people, eq(people.id, tenures.personId))
     .leftJoin(organizations, eq(organizations.id, people.currentOrgId))
-    .where(and(eq(tenures.orgId, orgId), ne(tenures.personId, viewerPersonId), eq(people.isDemo, false)));
+    .where(and(inArray(tenures.orgId, ids), ne(tenures.personId, viewerPersonId), eq(people.isDemo, false)));
 
-  const byPerson = new Map<string, { person: NetworkProofPerson; rank: number; last: number }>();
+  const byOrg = new Map<string, Map<string, { person: NetworkProofPerson; rank: number; last: number }>>();
   for (const r of rows) {
+    const byPerson = byOrg.get(r.orgId) ?? new Map<string, { person: NetworkProofPerson; rank: number; last: number }>();
+    byOrg.set(r.orgId, byPerson);
     const rank = RELATION_RANK[r.relation];
     const last = r.lastYear ?? -1;
     const cur = byPerson.get(r.id);
     if (!cur) {
-      const person = { ...toSummary(r), asPlayer: r.asPlayer, relation: r.relation, headCoachHere: r.roleGroup === "head_coach" && r.currentOrgId === orgId };
+      const person = { ...toSummary(r), asPlayer: r.asPlayer, relation: r.relation, headCoachHere: r.roleGroup === "head_coach" && r.currentOrgId === r.orgId };
       byPerson.set(r.id, { person, rank, last });
       continue;
     }
@@ -385,8 +404,38 @@ export async function getNetworkProof(viewerPersonId: string, orgId: string, lim
     }
     cur.last = Math.max(cur.last, last);
   }
-  const ordered = [...byPerson.values()].sort((a, b) => a.rank - b.rank || b.last - a.last || a.person.fullName.localeCompare(b.person.fullName));
-  return { people: ordered.slice(0, limit).map((o) => o.person), total: ordered.length, playersOnly: ordered.filter((o) => o.person.asPlayer).length };
+  const out = new Map<string, NetworkProof>();
+  for (const [orgId, byPerson] of byOrg) {
+    const ordered = [...byPerson.values()].sort((a, b) => a.rank - b.rank || b.last - a.last || a.person.fullName.localeCompare(b.person.fullName));
+    out.set(orgId, { people: ordered.slice(0, limit).map((o) => o.person), total: ordered.length, playersOnly: ordered.filter((o) => o.person.asPlayer).length });
+  }
+  return out;
+}
+
+/** The network proof for one organization (the job page and the /jobs pane). */
+export async function getNetworkProof(viewerPersonId: string, orgId: string, limit = 3): Promise<NetworkProof> {
+  return (await getNetworkProofs(viewerPersonId, [orgId], limit)).get(orgId) ?? { people: [], total: 0, playersOnly: 0 };
+}
+
+/** The search a published listing opens in the hiring pipeline: "{title} search" (lib/actions/jobs.ts makes it). */
+export function listingSearchName(title: string): string {
+  return `${title} search`;
+}
+
+/**
+ * The owner's hiring pipeline for one listing: the search createJob made with it, named after the
+ * listing and created when it was posted (the first such search at or after that moment, so two
+ * listings with the same title each find their own). Null for listings posted without one.
+ */
+export async function getListingPipelineId(userId: string, job: Pick<JobDetail, "title" | "postedAt" | "createdByUserId">): Promise<number | null> {
+  if (job.createdByUserId !== userId) return null;
+  const [row] = await db
+    .select({ id: shortlists.id })
+    .from(shortlists)
+    .where(and(eq(shortlists.ownerUserId, userId), eq(shortlists.name, listingSearchName(job.title)), gte(shortlists.createdAt, job.postedAt)))
+    .orderBy(asc(shortlists.createdAt), asc(shortlists.id))
+    .limit(1);
+  return row?.id ?? null;
 }
 
 /** The organization a demo employer posts for (the program card in the post-job form). */

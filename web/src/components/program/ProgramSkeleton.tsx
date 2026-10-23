@@ -1,5 +1,5 @@
-import { Card } from "@/components/ui/Card";
-import { Skeleton, SkeletonLine, SkeletonRegion, SkeletonRows, SkeletonText, SkeletonTile } from "@/components/ui/Skeleton";
+import { Card, CardHeader } from "@/components/ui/Card";
+import { Skeleton, SkeletonLine, SkeletonRegion, SkeletonRows, SkeletonTile } from "@/components/ui/Skeleton";
 
 /**
  * Header card skeleton (§8.0) on the real card's rhythm, so nothing moves when content arrives:
@@ -53,24 +53,31 @@ export function ProgramHeaderSkeleton() {
   );
 }
 
-/** One list card: real chrome (border), a title block and up to 3 person rows. */
-export function ProgramListSkeleton({ shape = "circle" }: { shape?: "circle" | "tile" }) {
+/**
+ * One list card: real chrome (border, and the card's title when the caller knows it, §8.0) and up to 3
+ * person rows. Without a title (the route's loading.tsx can't see the tab) a title block stands in.
+ */
+export function ProgramListSkeleton({ shape = "circle", title }: { shape?: "circle" | "tile"; title?: string }) {
   return (
     <Card padding="main">
+      {title && <CardHeader title={title} />}
       <SkeletonRegion>
-        <SkeletonLine width={120} lineHeight={22} className="mb-3" />
+        {!title && <SkeletonLine width={120} lineHeight={22} className="mb-3" />}
         <SkeletonRows rows={3} avatar={40} shape={shape} />
       </SkeletonRegion>
     </Card>
   );
 }
 
-/** Rail card skeleton: title and 3 program rows with 32px tiles. */
+/**
+ * Rail card skeleton: the first rail card's real chrome (§8.0: border and its static title "Conference
+ * peers"), a block for the conference subtitle and 3 program rows with 32px tiles.
+ */
 export function ProgramRailSkeleton() {
   return (
-    <Card padding="rail">
-      <SkeletonRegion>
-        <SkeletonText lines={2} widths={["52%", "38%"]} lineHeight={16} className="mb-3" />
+    <Card padding="rail" aria-labelledby="peers-skeleton-title">
+      <CardHeader id="peers-skeleton-title" size="rail" title="Conference peers" subtitle={<SkeletonLine width="38%" lineHeight={16} />} />
+      <SkeletonRegion className="mt-3">
         <SkeletonRows rows={3} avatar={32} shape="tile" />
       </SkeletonRegion>
     </Card>

@@ -6,7 +6,8 @@ import { Icon } from "@/components/ui/Icon";
 import { TextLink } from "@/components/ui/TextLink";
 import { switchDemoAccount } from "@/lib/actions/session";
 import type { TreeSearchExample } from "@/lib/queries/landing";
-import { DemoSubmitButton } from "./DemoSubmitButton";
+import { fmtCount } from "./copy";
+import { DemoStartButton } from "./DemoStartButton";
 
 // Bound with both arguments: the form's FormData arrives third and is ignored.
 const startEmployerDemo = switchDemoAccount.bind(null, "employer", "/employers/pipeline");
@@ -25,31 +26,62 @@ function Feature({ icon, title, children }: { icon: LucideIcon; title: string; c
   );
 }
 
+type ForEmployersProps = {
+  example: TreeSearchExample | null;
+  /** The live "Coaches and staff" count from the proof band (null when it failed to load). */
+  coaches: number | null;
+  /** The athletic director demo account ("Morgan Ellis", "Pacific (OR)"), named under the buttons. */
+  demoAccount: { name: string; org: string | null } | null;
+};
+
 /**
- * Employer section: a card with the pitch and two secondary actions (Post a job, the athletic
- * director demo) beside three features. The tree search example is a real query from the dataset.
+ * Employer section: a main card (standard 20/24 padding) with the pitch, two secondary actions
+ * (Post a job, the athletic director demo, named in a caption like the hero's) beside three
+ * features. The pitch makes no adoption claim: profiles are sourced, not yet claimed. The tree
+ * search example is a real query from the dataset.
  */
-export function ForEmployers({ example }: { example: TreeSearchExample | null }) {
+export function ForEmployers({ example, coaches, demoAccount }: ForEmployersProps) {
   return (
     <section aria-labelledby="employers-title">
-      <Card padding="main" className="md:py-6 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-10 lg:px-8">
+      <Card padding="main" className="lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-10">
         <div className="flex flex-col">
           <h2 id="employers-title" className="text-display-sm">
             Hiring a coach?
           </h2>
           <p className="mt-2 max-w-prose text-prose text-fg-2">
-            Post an opening where Division III coaches already keep their records, then search staffs by role, conference and coaching tree.
+            Post an opening and search sourced career records{" "}
+            {coaches ? (
+              <>
+                for <span className="num">{fmtCount(coaches)}</span> Division III coaches and staff
+              </>
+            ) : (
+              "for Division III coaches and staff"
+            )}{" "}
+            by role, conference and coaching tree.
           </p>
           <div className="mt-4 flex flex-wrap gap-2 max-md:grid max-md:grid-cols-1">
-            <ButtonLink href="/employers/jobs/new" icon={Briefcase} phone="large">
+            <ButtonLink href="/employers/jobs/new" phone="large">
               Post a job
             </ButtonLink>
-            <form action={startEmployerDemo} className="contents">
-              <DemoSubmitButton phone="large">
-                Try the athletic director demo
-              </DemoSubmitButton>
-            </form>
+            <DemoStartButton
+              action={startEmployerDemo}
+              viewAs={demoAccount?.name ?? "the athletic director demo account"}
+              phone="large"
+              formClassName="contents"
+            >
+              Try the athletic director demo
+            </DemoStartButton>
           </div>
+          {demoAccount && (
+            <p className="balance mt-3 text-caption text-fg-3">
+              The demo shows the employer view as{" "}
+              <span className="whitespace-nowrap">
+                {demoAccount.name}
+                {demoAccount.org ? ` · ${demoAccount.org}` : ""}
+              </span>
+              .
+            </p>
+          )}
         </div>
         <ul className="divide-y divide-divider max-lg:mt-5 max-lg:border-t max-lg:border-divider max-lg:pt-4">
           <Feature icon={Briefcase} title="Post jobs">

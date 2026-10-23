@@ -1,27 +1,36 @@
 import Link from "next/link";
-import { Building2, ChevronRight, Network } from "lucide-react";
+import { Building2, ChevronRight, Flag, Network } from "lucide-react";
 import { ContextLine } from "@/components/data/ContextLine";
-import { SeasonRange } from "@/components/data/SeasonRange";
+import { InferredYear } from "@/components/data/InferredYear";
 import { SectionCard } from "@/components/data/SectionCard";
 import { Avatar } from "@/components/ui/Avatar";
 import { Icon } from "@/components/ui/Icon";
 import { TextLink } from "@/components/ui/TextLink";
-import { CURRENT_SEASON } from "@/lib/brand";
 import { cn } from "@/lib/cn";
 import { titleShort } from "@/lib/format";
-import type { TreeModel, TreeRowModel } from "./model";
+import type { TreeContext, TreeModel, TreeRowModel } from "./model";
+import { InlineYears, TreeRange } from "./TreeYears";
 
-type TreeCardProps = { model: TreeModel; slug: string; firstName: string; personName: string };
+type TreeCardProps = {
+  model: TreeModel;
+  slug: string;
+  firstName: string;
+  personName: string;
+  /** Explain the dotted year here (when no Experience legend on the page does). */
+  explainInferred?: boolean;
+};
 
 const PHONE_ROWS = 3;
 
 /**
  * Coaching tree card (§8.4, id="tree"): Worked under and Worked alongside on the left, Coached under
  * {first} on the right in a two-column grid (lg); stacked below lg with 3 rows per long group and
- * "Show all {n}". Counts are unique people; the footnote names anyone listed twice. Empty groups
- * are hidden; a tree with no one in it shows a quiet empty state.
+ * "Show all {n}". When the left groups outnumber the mentees (or there are only one or two mentees),
+ * the narrow left column would crowd, so every group stacks full width in the two-column grid.
+ * Counts are unique people; the footnote names anyone listed twice. Empty groups are hidden; a tree
+ * with no one in it shows a quiet empty state.
  */
-export function TreeCard({ model, slug, firstName, personName }: TreeCardProps) {
+export function TreeCard({ model, slug, firstName, personName, explainInferred }: TreeCardProps) {
   if (!model.groups.length) {
     return (
       <SectionCard
@@ -33,7 +42,8 @@ export function TreeCard({ model, slug, firstName, personName }: TreeCardProps) 
   }
   const left = model.groups.filter((g) => g.key !== "mentees");
   const right = model.groups.find((g) => g.key === "mentees");
-  const split = left.length > 0 && !!right;
+  const leftRows = left.reduce((n, g) => n + g.rows.length, 0);
+  const split = left.length > 0 && !!right && right.rows.length > 2 && right.rows.length >= leftRows;
 
   return (
     <SectionCard
@@ -41,7 +51,7 @@ export function TreeCard({ model, slug, firstName, personName }: TreeCardProps) 
       title="Coaching tree"
       meta={`${model.unique} ${model.unique === 1 ? "person" : "people"}`}
       action={
-        <TextLink href={`/in/${slug}/tree`} arrow className="text-small" aria-label={`Explore ${personName}'s coaching tree`}>
+        <TextLink href={`/in/${slug}/tree`} arrow target24 className="text-small" aria-label={`Explore ${personName}'s coaching tree`}>
           Explore tree
         </TextLink>
       }
@@ -55,12 +65,15 @@ export function TreeCard({ model, slug, firstName, personName }: TreeCardProps) 
           </div>
         )}
         {right && (
-          <div className={cn("min-w-0 pt-3", split && "mt-3 border-t border-divider lg:mt-0 lg:border-l lg:border-t-0 lg:pl-6")}>
+          <div className={cn("min-w-0 pt-3", left.length > 0 && "mt-3 border-t border-divider", split && "lg:mt-0 lg:border-l lg:border-t-0 lg:pl-6")}>
             <TreeGroup id={right.key} label={right.label} rows={right.rows} columns={2} capLg={8} slug={slug} />
           </div>
         )}
       </div>
-      <p className="mt-2 border-t border-divider pt-3 text-caption text-fg-3">{model.footnote}</p>
+      <p className="mt-2 border-t border-divider pt-3 text-caption text-fg-3">
+        {model.footnote}
+        {explainInferred && model.inferred && " Dotted years are inferred from a bio, not stated in it."}
+      </p>
     </SectionCard>
   );
 }
@@ -102,7 +115,6 @@ function TreeGroup({ id, label, rows, columns, capLg, slug }: { id: string; labe
 
 function TreeRow({ row, className }: { row: TreeRowModel; className?: string }) {
   const p = row.person;
-  const ongoing = !!row.endYear && row.endYear >= CURRENT_SEASON;
   const sub = [p.currentTitle && titleShort(p.currentTitle), p.org?.shortName].filter(Boolean).join(" · ");
   return (
     <Link href={`/in/${p.slug}`} className={cn("group/row flex min-h-11 items-start gap-2.5 border-b border-divider py-2.5", className)}>
@@ -110,15 +122,42 @@ function TreeRow({ row, className }: { row: TreeRowModel; className?: string }) 
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-baseline justify-between gap-2">
           <span className="truncate text-small font-semibold text-fg-1 underline-offset-2 group-hover/row:underline">{p.fullName}</span>
-          {row.startYear && <SeasonRange variant="compact" startYear={row.startYear} endYear={ongoing ? null : row.endYear} isCurrent={ongoing} className="shrink-0 leading-[18px]" />}
+          <TreeRange view={row.range} className="shrink-0 leading-[18px]" />
         </div>
         {sub && <p className="truncate text-caption text-fg-2">{sub}</p>}
-        {row.context && (
-          <ContextLine icon={row.context.startsWith("At ") ? Building2 : Network} className="mt-0.5">
-            {row.context}
-          </ContextLine>
-        )}
+        {row.context && <TreeContextLine context={row.context} />}
       </div>
     </Link>
+  );
+}
+
+/** "Played for Ian 2024–25" (flag), "Joined Ian's staff in 2020" (tree), "At Oberlin" (program). */
+function TreeContextLine({ context }: { context: TreeContext }) {
+  if (context.kind === "player") {
+    return (
+      <ContextLine icon={Flag} className="mt-0.5">
+        {context.text}
+        {context.years.kind === "range" && (
+          <>
+            {" "}
+            <InlineYears view={context.years} />
+          </>
+        )}
+      </ContextLine>
+    );
+  }
+  if (context.kind === "joined") {
+    const { year } = context;
+    return (
+      <ContextLine icon={Network} className="mt-0.5">
+        {context.text}{" "}
+        <span className="num">{year.inferred ? <InferredYear reason={year.reason}>{year.value}</InferredYear> : year.value}</span>
+      </ContextLine>
+    );
+  }
+  return (
+    <ContextLine icon={Building2} className="mt-0.5">
+      {context.text}
+    </ContextLine>
   );
 }

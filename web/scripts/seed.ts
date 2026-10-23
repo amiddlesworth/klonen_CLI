@@ -276,9 +276,10 @@ async function main() {
       msg("u-demo-dana", COACH, 125,
         `Hi Justin, I'm the athletic director at ${dcOrg.name}. We've opened a search for a defensive coordinator, and your special teams and secondary background stood out. Would you be open to a short call in the next week or two? Happy to work around your schedule.`,
         null),
-      // A fictional fellow DB coach proposing a film swap. Unread.
+      // A fictional fellow DB coach proposing a film swap. Unread. It claims no role on a real staff:
+      // program pages list real coaches only, so that claim would be contradicted one click away.
       msg("u-demo-riley", COACH, 60 * 26,
-        `Hey Justin, ${riley.firstName} here. I coach the defensive backs at ${orgName(riley.currentOrgId)}. I'm putting together an offseason film swap with a few other DB coaches. Interested? I can send our press coverage teaching tape first.`,
+        `Hey Justin, ${riley.firstName} here. I'm putting together an offseason film swap with a few DB coaches. Interested? I can send some press coverage teaching tape first.`,
         null),
       // The demo AD at Pacific (OR), grouped messages and a reply. The reply is still unread for Morgan.
       msg("u-demo-ad", COACH, 60 * 74, "Hi Justin, quick reminder that updated staff bios for the athletics site are due Friday.", 30),

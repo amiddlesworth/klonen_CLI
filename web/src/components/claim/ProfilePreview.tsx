@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { ChevronRight, MapPin } from "lucide-react";
-import { ConferenceBadge, LevelBadge } from "@/components/data/Badges";
+import { ConferenceBadge, DemoLabel, LevelBadge } from "@/components/data/Badges";
 import { InferredYear } from "@/components/data/InferredYear";
 import { stateName } from "@/components/profile/model";
 import { Avatar } from "@/components/ui/Avatar";
@@ -22,16 +22,33 @@ type PreviewStat = { label: string; value: ReactNode; linked?: boolean; hideOnPh
 
 /**
  * The profile header as it will look once claimed (§8.11 step 3). Same grid, words and numbers as
- * ProfileHeader (avatar 80, 56 on phone; state spelled out with stateName(); the stat band with the
- * tree stat in --link and a chevron), without the Unclaimed chip, the actions or the source banner.
- * Not interactive: it is a picture of the header, so the linked stat is a span, not a link.
+ * ProfileHeader (avatar 80, 56 on phone; the headline from currentHeadline(); state spelled out with
+ * stateName(); "N+" seasons when some roles have no years; the stat band with the tree stat in --link
+ * and a chevron), without the Unclaimed chip, the actions or the source banner. A demo person keeps
+ * the Demo chip, as on the profile. Not interactive: it is a picture of the header, so the linked
+ * stat is a span, not a link.
  */
 export function ProfilePreview({ subject }: { subject: ClaimSubject }) {
   const { person, currentOrg: org, stats } = subject;
   const place = stateName(org?.state);
   const first = stats.firstSeason;
   const statList: PreviewStat[] = [
-    { label: "Seasons coached", value: stats.seasonsCoached ?? <Missing /> },
+    {
+      label: "Seasons coached",
+      value: stats.seasonsCoached ? (
+        stats.seasonsPlus ? (
+          <>
+            {stats.seasonsCoached}
+            <span aria-hidden="true">+</span>
+            <span className="sr-only"> or more (some roles have no years in the source)</span>
+          </>
+        ) : (
+          stats.seasonsCoached
+        )
+      ) : (
+        <Missing />
+      ),
+    },
     { label: stats.stops === 1 ? "Coaching stop" : "Coaching stops", value: stats.stops },
     { label: "In coaching tree", value: stats.treeSize, linked: stats.treeSize > 0 },
     {
@@ -47,11 +64,14 @@ export function ProfilePreview({ subject }: { subject: ClaimSubject }) {
       <div className="grid grid-cols-[56px_minmax(0,1fr)] gap-x-3 md:grid-cols-[80px_minmax(0,1fr)] md:gap-x-5">
         <Avatar name={person.fullName} tintKey={person.slug} size={80} className="max-md:size-14 max-md:text-[20px]" />
         <div className="min-w-0 md:pt-0.5">
-          <p className="text-display max-md:text-display-sm">{person.fullName}</p>
-          {(person.currentTitle || org) && (
+          <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-display max-md:gap-x-2 max-md:text-display-sm">
+            <span className="min-w-0">{person.fullName}</span>
+            {person.isDemo && <DemoLabel />}
+          </p>
+          {(person.headline || org) && (
             <p className="mt-0.5 text-body md:text-subtitle">
-              {person.currentTitle}
-              {person.currentTitle && org && " at "}
+              {person.headline}
+              {person.headline && org && " at "}
               {org && <span className="font-medium">{org.name}</span>}
             </p>
           )}

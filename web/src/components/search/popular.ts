@@ -24,8 +24,11 @@ type Spec = {
 
 const BASE = parseSearchParams({});
 
+/** A name that never breaks across lines ("Ian / Falconer"): non-breaking spaces. */
+const keep = (name: string) => name.replace(/ /g, "\u00A0");
+
 /**
- * Popular searches for the no-query and empty states, each with a real count. Signed-in viewers
+ * Suggested searches for the no-query and empty states, each with a real count. Signed-in viewers
  * get searches around their own program first (conference, head coach, program), from the session.
  */
 export async function getPopularSearches(session: Session, limit = 6): Promise<PopularSearch[]> {
@@ -48,14 +51,14 @@ export async function getPopularSearches(session: Session, limit = 6): Promise<P
     if (mine.headCoach && session?.user.kind === "coach")
       specs.push({
         key: "my-hc",
-        label: `Coaches who worked under ${mine.headCoach.fullName}`,
+        label: `Coaches who worked under ${keep(mine.headCoach.fullName)}`,
         note: "your head coach",
         state: { workedUnder: mine.headCoach.slug },
         people: { workedUnderId: mine.headCoach.id },
       });
     specs.push({
       key: "my-program",
-      label: `Coaches who have worked at ${mine.org.shortName}`,
+      label: `Coaches who worked at ${keep(mine.org.shortName)}`,
       note: "your program",
       state: { workedAt: mine.org.slug },
       people: { workedAtOrgId: mine.org.id },
@@ -67,7 +70,7 @@ export async function getPopularSearches(session: Session, limit = 6): Promise<P
     { key: "wiac-coord", label: "Coordinators in the WIAC", state: { role: ["coordinator"], conference: ["WIAC"] }, people: { role: ["coordinator"], conference: ["WIAC"] } },
   );
   if (tree && tree.slug !== specs.find((s) => s.key === "my-hc")?.state.workedUnder)
-    specs.push({ key: "biggest-tree", label: `Coaches who worked under ${tree.fullName}`, state: { workedUnder: tree.slug }, people: { workedUnderId: tree.id } });
+    specs.push({ key: "biggest-tree", label: `Coaches who worked under ${keep(tree.fullName)}`, state: { workedUnder: tree.slug }, people: { workedUnderId: tree.id } });
   specs.push(
     { key: "tx-pos", label: "Position coaches in Texas", state: { role: ["position_coach"], state: ["TX"] }, people: { role: ["position_coach"], state: ["TX"] } },
     { key: "pa-ga", label: "GAs and analysts in Pennsylvania", state: { role: ["ga_analyst"], state: ["PA"] }, people: { role: ["ga_analyst"], state: ["PA"] } },

@@ -30,28 +30,44 @@ type StintReviewRowProps = {
   noteError?: string | null;
 };
 
-const CUE = /\b(?:seasons?|years?|since|from \d{4}|in \d{4})\b/i;
+/** A year in the evidence, bare or in parentheses ("(1987)"): the words a year is most often inferred from. */
+const YEAR = /\(?\b(?:19|20)\d{2}\b\)?/;
+/** Otherwise, words that explain a span ("two seasons", "since"). */
+const CUE = /\b(?:seasons?|years?|since)\b/i;
+
+const clean = (evidence: string) => evidence.trim().replace(/^["“]|["”]$/g, "").replace(/[\s.]+$/, "");
+
+/** Where in the evidence the years come from: a year first, then a span word. Null when it has neither. */
+function cueIn(text: string): { start: number; end: number } | null {
+  const m = YEAR.exec(text) ?? CUE.exec(text);
+  return m ? { start: m.index, end: m.index + m[0].length } : null;
+}
 
 /**
- * A short verbatim excerpt of the evidence around the words the years were inferred from ("enters
- * his third season at Pacific University as…"), so the visible hint can quote the phrase (§6.2)
- * without repeating the whole sentence the Source disclosure already shows.
+ * A short verbatim excerpt of the evidence centred on the words the years were inferred from ("…on
+ * state championship teams at Ann Arbor Pioneer in Michigan (1987)"), so the visible hint can quote
+ * the phrase (§6.2) without repeating the whole sentence the Source disclosure already shows.
  */
-function excerpt(evidence: string, max = 72): string {
-  const text = evidence.trim().replace(/^["“]|["”]$/g, "").replace(/[\s.]+$/, "");
+function excerpt(text: string, cue: { start: number; end: number }, max = 72): string {
   if (text.length <= max) return text;
-  const cue = CUE.exec(text)?.index ?? 0;
-  // The clause holding the cue, then a word-aligned window inside it.
-  const from = Math.max(text.lastIndexOf(",", cue), text.lastIndexOf(";", cue)) + 1;
-  const stops = [text.indexOf(",", cue), text.indexOf(";", cue)].filter((i) => i >= 0);
+  // The clause holding the cue, then a word-aligned window inside it, centred on the cue.
+  const from = Math.max(text.lastIndexOf(",", cue.start), text.lastIndexOf(";", cue.start)) + 1;
+  const stops = [text.indexOf(",", cue.end), text.indexOf(";", cue.end)].filter((i) => i >= 0);
   const to = stops.length ? Math.min(...stops) : text.length;
   let start = from;
   let end = to;
   if (end - start > max) {
-    start = Math.max(from, cue - 28);
-    end = Math.min(to, start + max);
-    if (start > from) start = text.indexOf(" ", start) + 1 || start;
-    if (end < to) end = text.lastIndexOf(" ", end) > start ? text.lastIndexOf(" ", end) : end;
+    const mid = Math.round((cue.start + cue.end) / 2);
+    end = Math.min(to, Math.max(from, mid - max / 2) + max);
+    start = Math.max(from, end - max);
+    if (start > from) {
+      const space = text.indexOf(" ", start);
+      if (space >= 0 && space < cue.start) start = space + 1;
+    }
+    if (end < to) {
+      const space = text.lastIndexOf(" ", end);
+      if (space >= cue.end) end = space;
+    }
   }
   const body = text.slice(start, end).trim().replace(/[,;:]$/, "");
   return `${start > 0 ? "…" : ""}${body}${end < text.length ? "…" : ""}`;
@@ -60,7 +76,11 @@ function excerpt(evidence: string, max = 72): string {
 /** The hint under the program line: why to look twice at this stint's years. */
 function yearsHint(s: ClaimStint): string | null {
   if (s.inferred) {
-    return s.evidence?.trim() ? `Confirm these years: inferred from “${excerpt(s.evidence)}”` : "Confirm these years: inferred from the bio, not stated in it.";
+    const text = s.evidence ? clean(s.evidence) : "";
+    if (!text) return "Confirm these years: inferred from the bio, not stated in it.";
+    const cue = cueIn(text);
+    // Quote only a phrase that holds a year or a span; never imply a sentence states a year it doesn't.
+    return cue ? `Confirm these years: inferred from “${excerpt(text, cue)}”` : "Confirm these years: inferred from the bio; the sentence under Source gives no year.";
   }
   if (s.startYear && (s.isCurrent || s.endYear)) return null;
   // The range already says what's missing ("End year not in source"); the hint says what to do.

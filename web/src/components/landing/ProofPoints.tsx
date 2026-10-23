@@ -3,28 +3,21 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState, ErrorState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
 import { TextLink } from "@/components/ui/TextLink";
-import { cn } from "@/lib/cn";
 import type { LandingStats } from "@/lib/queries/landing";
-
-const fmt = (n: number) => n.toLocaleString("en-US");
-
-/** Cell borders for a 2×2 grid on phone and one row of four from md: dividers between cells only. */
-function cellBorders(i: number) {
-  return cn("border-divider", i % 2 === 1 && "border-l", i >= 2 && "border-t md:border-t-0", i >= 1 && "md:border-l");
-}
+import { fmtCount } from "./copy";
 
 /**
- * Proof points (§8.10): a stat band of real dataset numbers (values text-display tabular over
- * 13px --fg-2 labels), then a --surface-2 band saying where the data comes from. Null stats render
+ * Proof points (§8.10): three StatBand columns of real dataset numbers at every width (values
+ * text-stat tabular, phone stat-sm, over 13px --fg-2 labels), then a --surface-2 band saying where
+ * the numbers come from: tree connections are derived, and counted once per pair. Null stats render
  * the inline error state in the same card.
  */
 export function ProofPoints({ stats }: { stats: LandingStats | null }) {
   const items = stats
     ? [
         { value: stats.programs, label: "Division III programs" },
-        { value: stats.coaches, label: "Coaches" },
-        { value: stats.stints, label: "Coaching stints" },
-        { value: stats.edges, label: "Coaching-tree connections" },
+        { value: stats.coaches, label: "Coaches and staff" },
+        { value: stats.connections, label: "Coaching-tree connections" },
       ]
     : [];
   return (
@@ -36,11 +29,16 @@ export function ProofPoints({ stats }: { stats: LandingStats | null }) {
         {stats && stats.coaches === 0 ? (
           <EmptyState icon={Database} title="No coaches in the dataset yet." description="Counts appear here as staff pages are added." />
         ) : stats ? (
-          <dl className="grid grid-cols-2 md:grid-cols-4">
-            {items.map((item, i) => (
-              <div key={item.label} className={cn("flex flex-col-reverse justify-end px-4 py-4 md:px-6 md:py-5", cellBorders(i))}>
+          <dl className="grid grid-cols-3">
+            {items.map((item) => (
+              // Phone: the first value keeps the card's 16px gutter; columns are 12px apart, so every
+              // label fits in two lines down to 360px ("Coaching-tree / connections").
+              <div
+                key={item.label}
+                className="flex min-w-0 flex-col-reverse justify-end py-4 pl-4 pr-2 md:px-6 md:py-5 [&+&]:border-l [&+&]:border-divider [&+&]:pl-3 md:[&+&]:pl-6"
+              >
                 <dt className="mt-0.5 text-small text-fg-2">{item.label}</dt>
-                <dd className="num text-display-sm md:text-display">{fmt(item.value)}</dd>
+                <dd className="num text-stat-sm md:text-stat">{fmtCount(item.value)}</dd>
               </div>
             ))}
           </dl>
@@ -49,13 +47,13 @@ export function ProofPoints({ stats }: { stats: LandingStats | null }) {
             <ErrorState message="We couldn't load the dataset numbers." retryHref="/" />
           </div>
         )}
-        <p className="flex items-start gap-2 border-t border-divider bg-surface-2 px-4 py-3 text-small text-fg-2 md:px-6">
+        <p role="note" className="flex items-start gap-2 border-t border-divider bg-surface-2 px-4 py-3 text-small text-fg-2 md:px-6">
           <Icon icon={Info} size={16} className="mt-px" />
-          <span className="min-w-0">
+          <span className="min-w-0 max-w-prose">
             {stats && stats.registryPrograms > 0
-              ? `Read from public athletics staff pages and coach bios at ${fmt(stats.programs)} of the ${fmt(stats.registryPrograms)} NCAA Division III football programs. `
-              : "Read from public athletics staff pages and coach bios. "}
-            Every stint links to the sentence it came from, and counts update as staff pages are added.{" "}
+              ? `From public staff pages and coach bios at ${fmtCount(stats.programs)} of the ${fmtCount(stats.registryPrograms)} Division III football programs; counts update as pages are added. `
+              : "From public staff pages and coach bios; counts update as pages are added. "}
+            Tree connections are derived from overlapping seasons on the same staff, each pair counted once.{" "}
             <TextLink href="/about#data-sources" variant="inline">
               Data sources
             </TextLink>

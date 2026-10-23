@@ -5,7 +5,7 @@ import { db } from "@/db";
 import { claims, people } from "@/db/schema";
 import { getSession } from "@/lib/session";
 
-/** `recorded` is false for signed-out visitors: their walk-through ends without writing anything. */
+/** `recorded` is false for a walk-through (signed out, or someone else's profile): nothing is written. */
 export type ClaimResult = { ok: true; recorded: boolean } | { ok: false; error: string };
 
 const ClaimInput = z.object({
@@ -18,9 +18,11 @@ const ClaimInput = z.object({
 
 /**
  * Records a demo claim. Demo boundary:
- * - Only the coach demo session writes, and only one row per (person, user): a repeat publish
- *   updates that row's email instead of adding another. Signed-out visitors can walk through the
- *   flow, but nothing is stored for them; athletic director accounts are refused.
+ * - Only the coach demo session claiming its own profile writes, and only one row per (person,
+ *   user): a repeat publish updates that row's email instead of adding another. Signed-out visitors,
+ *   and the coach demo on someone else's profile, can walk through the flow, but nothing is stored
+ *   for them (in the live product you can claim only your own profile); athletic director accounts
+ *   are refused.
  * - The row keeps status "started" (the schema default). The email code step is a stub that accepts
  *   any six digits, so nothing here was verified, and the row never says it was.
  * - It never touches `people` or `tenures`, so the public profile stays exactly as the public
@@ -38,7 +40,7 @@ export async function submitClaim(input: z.input<typeof ClaimInput>): Promise<Cl
   const [person] = await db.select({ id: people.id, claimed: people.claimed }).from(people).where(eq(people.slug, parsed.data.slug)).limit(1);
   if (!person) return { ok: false, error: "We couldn't find this profile any more." };
   if (person.claimed) return { ok: false, error: "This profile has already been claimed." };
-  if (!session) return { ok: true, recorded: false };
+  if (!session || session.person?.slug !== parsed.data.slug) return { ok: true, recorded: false };
 
   try {
     const userId = session.user.id;

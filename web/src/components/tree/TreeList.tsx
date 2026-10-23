@@ -2,24 +2,21 @@ import Link from "next/link";
 import { Building2, Network } from "lucide-react";
 import { DemoLabel } from "@/components/data/Badges";
 import { ContextLine } from "@/components/data/ContextLine";
-import { SeasonRange } from "@/components/data/SeasonRange";
 import { Avatar } from "@/components/ui/Avatar";
+import { ButtonLink } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
-import { IconLink } from "@/components/ui/IconButton";
 import { cn } from "@/lib/cn";
 import { titleShort } from "@/lib/format";
-import type { SecondLevelMember, TreeEdge, TreeExplorer, TreeMember, TreePerson } from "@/lib/queries/tree";
-import { GROUP_LABEL, possessive, rowContext, secondContext, type GroupKey } from "./copy";
+import type { SecondLevelMember, TreeExplorer, TreeMember, TreePerson } from "@/lib/queries/tree";
+import { GROUP_LABEL, possessive, rangeView, rowContext, secondContext, type ContextView, type GroupKey, type RangeView } from "./copy";
+import { ContextText, RangeText } from "./TreeRange";
 
-const INFERRED_REASON = "a year of one of the overlapping stints comes from the bio's wording, not a stated season";
+type Row = { key: string; person: TreePerson; range: RangeView; context: ContextView | null; contextIcon: "tree" | "program" };
 
-type Row = { key: string; person: TreePerson; edge: TreeEdge; context: string | null; contextIcon: "tree" | "program" };
-
-type Columns = "one" | "split-left" | "split-right" | "full";
+type Columns = "split-left" | "split-right" | "full";
 
 /** Grid columns per placement: stacked groups use 2 columns from md; at lg the split mirrors the profile card. */
 const GRID: Record<Columns, string> = {
-  one: "",
   "split-left": "md:grid md:grid-cols-2 md:gap-x-6 lg:block",
   "split-right": "md:grid md:grid-cols-2 md:gap-x-6",
   full: "md:grid md:grid-cols-2 md:gap-x-6 lg:grid-cols-3",
@@ -34,13 +31,10 @@ const GRID: Record<Columns, string> = {
 export function TreeList({ data, viewerId }: { data: TreeExplorer; viewerId: string | null }) {
   const first = data.focal.firstName;
   const toRows = (group: GroupKey, members: TreeMember[]): Row[] =>
-    members.map((m) => ({
-      key: `${group}:${m.person.id}`,
-      person: m.person,
-      edge: m.edges[0],
-      context: rowContext(group, m.edges, data, m.person.id),
-      contextIcon: group === "peers" && data.mentees.some((x) => x.person.id === m.person.id) ? "tree" : "program",
-    }));
+    members.map((m) => {
+      const context = rowContext(group, m.edges, data, m.person.id);
+      return { key: `${group}:${m.person.id}`, person: m.person, range: rangeView(m.edges), context, contextIcon: context?.year ? "tree" : "program" };
+    });
   const left = [
     { key: "mentors" as const, label: GROUP_LABEL.mentors(), rows: toRows("mentors", data.mentors) },
     { key: "peers" as const, label: GROUP_LABEL.peers(), rows: toRows("peers", data.peers) },
@@ -75,8 +69,8 @@ function SecondLevel({ data, viewerId }: { data: TreeExplorer; viewerId: string 
     members.map((m) => ({
       key: `${dir}:${m.person.id}`,
       person: m.person,
-      edge: m.links[0].edges[0],
-      context: secondContext(dir, m.links[0].via, m.links[0].edges) + (m.links.length > 1 ? ` and ${m.links.length - 1} more` : ""),
+      range: rangeView(m.links[0].edges),
+      context: { text: secondContext(dir, m.links[0].via, m.links[0].edges) + (m.links.length > 1 ? ` and ${m.links.length - 1} more` : "") },
       contextIcon: "tree",
     }));
   const second = data.second!;
@@ -85,12 +79,19 @@ function SecondLevel({ data, viewerId }: { data: TreeExplorer; viewerId: string 
       <TreeGroup
         id="tree-up"
         label={GROUP_LABEL.up()}
-        caption={`Head coaches that ${possessive(first)} head coaches worked under`}
+        caption={`Who ${possessive(first)} head coaches had worked under by the time they coached ${first}`}
         rows={toRows("up", second.up)}
         columns="full"
         viewerId={viewerId}
       />
-      <TreeGroup id="tree-down" label={GROUP_LABEL.down()} caption={`Coached under someone who coached under ${first}`} rows={toRows("down", second.down)} columns="full" viewerId={viewerId} />
+      <TreeGroup
+        id="tree-down"
+        label={GROUP_LABEL.down()}
+        caption={`On the staff of a head coach who coached under ${first}`}
+        rows={toRows("down", second.down)}
+        columns="full"
+        viewerId={viewerId}
+      />
     </div>
   );
 }
@@ -122,8 +123,8 @@ function TreeGroup({ id, label, caption, rows, columns, viewerId }: { id: string
 
 function TreeRow({ row, you }: { row: Row; you: boolean }) {
   const p = row.person;
-  const e = row.edge;
-  const sub = [p.currentTitle && titleShort(p.currentTitle), p.org?.shortName].filter(Boolean).join(" · ");
+  const title = p.currentTitle ? titleShort(p.currentTitle) : null;
+  const program = p.org?.shortName ?? null;
   return (
     <li className="flex min-w-0 items-start gap-1 border-t border-divider">
       <Link href={`/in/${p.slug}`} className="group/row flex min-h-11 min-w-0 flex-1 items-start gap-2.5 py-2.5">
@@ -135,21 +136,30 @@ function TreeRow({ row, you }: { row: Row; you: boolean }) {
               {you && <Chip title="This is your profile">You</Chip>}
               {p.isDemo && <DemoLabel />}
             </span>
-            <SeasonRange
-              variant="compact"
-              startYear={e.startYear}
-              endYear={e.isCurrent ? null : e.endYear}
-              isCurrent={e.isCurrent}
-              inferred={e.inferred}
-              inferredReason={INFERRED_REASON}
-              className="shrink-0 leading-[18px]"
-            />
+            <RangeText view={row.range} className="shrink-0 leading-[18px]" />
           </div>
-          {sub && <p className="truncate text-caption text-fg-2">{sub}</p>}
-          {row.context && <ContextLine icon={row.contextIcon === "tree" ? Network : Building2}>{row.context}</ContextLine>}
+          {/* The title truncates; the program after it never does (DESIGN.md §6.3). */}
+          {(title || program) && (
+            <p className="flex min-w-0 text-caption text-fg-2">
+              {title && <span className="min-w-0 truncate">{title}</span>}
+              {program && (
+                <span className="shrink-0 whitespace-nowrap">
+                  {title ? " · " : ""}
+                  {program}
+                </span>
+              )}
+            </p>
+          )}
+          {row.context && (
+            <ContextLine icon={row.contextIcon === "tree" ? Network : Building2}>
+              <ContextText view={row.context} />
+            </ContextLine>
+          )}
         </div>
       </Link>
-      <IconLink href={`/in/${p.slug}/tree`} icon={Network} label={`${possessive(p.fullName)} coaching tree`} size="sm" className="mt-2" />
+      <ButtonLink href={`/in/${p.slug}/tree`} variant="ghost" size="sm" icon={Network} aria-label={`${possessive(p.fullName)} coaching tree`} className="mt-2 max-md:mt-0.5">
+        Tree
+      </ButtonLink>
     </li>
   );
 }

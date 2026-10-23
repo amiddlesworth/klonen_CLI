@@ -1,5 +1,6 @@
-import { InboxPane, MessagingCard, ThreadPane } from "@/components/messaging/MessagingFrame";
+import { InboxPane, MessagingCard, PANE_HEADER_CLASS, ThreadPane } from "@/components/messaging/MessagingFrame";
 import { SkeletonAvatar, SkeletonRegion, SkeletonText } from "@/components/ui/Skeleton";
+import { cn } from "@/lib/cn";
 
 /** Inbox and thread skeleton (§8.0): real card chrome and h1, three inbox rows, a thread header and three messages. */
 export function MessagingSkeleton() {
@@ -16,8 +17,8 @@ export function MessagingSkeleton() {
             ))}
           </ul>
         </InboxPane>
-        <ThreadPane hiddenOnPhone label="Loading conversation">
-          <div aria-hidden="true" className="flex min-h-16 items-center gap-3 border-b border-divider px-4 py-3">
+        <ThreadPane threadId={null} hiddenOnPhone label="Loading conversation">
+          <div aria-hidden="true" className={cn(PANE_HEADER_CLASS, "gap-3 px-6")}>
             <SkeletonAvatar size={40} />
             <SkeletonText className="flex-1" lines={2} widths={["28%", "44%"]} lineHeight={18} />
           </div>

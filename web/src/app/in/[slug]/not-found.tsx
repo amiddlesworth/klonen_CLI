@@ -4,7 +4,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 
-/** Unknown profile slug (notFound() in the page). */
+/** Unknown profile slug: notFound() from the (profile) layout, above the loading boundary, so the status is a real 404. */
 export default function ProfileNotFound() {
   return (
     <SingleColumnLayout>

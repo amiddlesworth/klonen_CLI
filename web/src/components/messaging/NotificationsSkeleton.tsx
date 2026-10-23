@@ -19,7 +19,7 @@ export function NotificationsSkeleton() {
           <ul aria-hidden="true" className="divide-y divide-divider border-t border-divider">
             {[0, 1, 2].map((i) => (
               <li key={i} className="flex items-start gap-3 px-4 py-4 md:px-6">
-                <SkeletonAvatar size={40} className="rounded-md" />
+                <SkeletonAvatar size={40} />
                 <SkeletonText className="flex-1" lines={2} widths={[i === 1 ? "72%" : "86%", "14%"]} />
               </li>
             ))}

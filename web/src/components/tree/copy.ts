@@ -1,9 +1,10 @@
-import { seasonRange, seasonRangeCompact, seasonRangeLabel } from "@/lib/format";
+import { BRAND } from "@/lib/brand";
 import type { TreeEdge, TreeExplorer, TreePerson } from "@/lib/queries/tree";
+import { compactParts, yearsDisplay, yearsInWords, type RangePart } from "./years";
 
 /*
  * Words for the tree explorer. One vocabulary at every width (DESIGN.md §3.6, §11 rule 11):
- * Worked under · Worked alongside · Coached under {first} · Two steps away. Never a gendered
+ * Worked under · Worked alongside · Coached under {first} · Two steps up / down. Never a gendered
  * pronoun: gender is not in the data, so labels use the first name or neutral phrasing.
  */
 
@@ -16,6 +17,9 @@ export const GROUP_LABEL = {
   up: () => "Two steps up",
   down: () => "Two steps down",
 };
+
+/** The tooltip on "Current", the same words as the profile's tree card. */
+export const CURRENT_TITLE = "On the same staff now. The start year is not in the source.";
 
 /** "Ian Falconer" → "Ian Falconer's"; drops a trailing class year ("Matt Brown '12" → "Matt Brown's"). */
 export function possessive(name: string): string {
@@ -32,19 +36,57 @@ export function listNames(names: string[]): string {
   return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }
 
-/** The overlap's years as the tree shows them: compact ("2020–", "2010–12") and in words for labels. */
-export function edgeYears(e: TreeEdge): { compact: string; full: string; label: string } {
-  const end = e.isCurrent ? null : e.endYear;
-  return {
-    compact: seasonRangeCompact(e.startYear, end, e.isCurrent),
-    full: seasonRange(e.startYear, end, e.isCurrent).range,
-    label: seasonRangeLabel(e.startYear, end, e.isCurrent) + (e.inferred ? " (inferred)" : ""),
-  };
+/** What a member's years read as: every run with years (oldest first), "Current", or nothing. */
+export type RangeView = {
+  kind: "range" | "current" | "none";
+  /** Compact pieces of every run, joined with ", " ("2022" ", " "2024"); "Current" as one piece. */
+  parts: RangePart[];
+  /** The most recent run only, with " · N stints" when there are several (for tight spots). */
+  short: RangePart[] | null;
+  /** For screen readers: every run in words, with which years are inferred. */
+  label: string;
+  /** Why the dotted years are dotted, quoting the evidence (DESIGN.md §6.2). */
+  reasons: string[];
+  /** Tooltip on the range: the reasons, or what "Current" means. */
+  title: string | null;
+};
+
+export function rangeView(edges: TreeEdge[]): RangeView {
+  const dated = edges.filter((e) => yearsDisplay(e.years) === "range").sort((a, b) => (a.years.startYear ?? 0) - (b.years.startYear ?? 0));
+  const current = edges.some((e) => yearsDisplay(e.years) === "current");
+  const reasons = [...new Set(dated.flatMap((e) => e.reasons))];
+  const inferredTitle = reasons.length ? `Inferred: ${reasons.join(" · ")}` : null;
+  if (!dated.length) {
+    if (current) return { kind: "current", parts: [{ text: "Current", inferred: false }], short: null, label: "current, start year not in source", reasons: [], title: CURRENT_TITLE };
+    return { kind: "none", parts: [], short: null, label: "years not in source", reasons: [], title: null };
+  }
+  const parts: RangePart[] = [];
+  dated.forEach((e, i) => {
+    if (i) parts.push({ text: ", ", inferred: false });
+    parts.push(...compactParts(e.years));
+  });
+  if (current) parts.push({ text: ", ", inferred: false }, { text: "Current", inferred: false });
+  const runs = dated.length + (current ? 1 : 0);
+  const latest = dated[dated.length - 1];
+  const short = runs > 1 ? [...compactParts(latest.years), { text: ` · ${runs} stints`, inferred: false }] : null;
+  const words = [...dated.map((e) => yearsInWords(e.years)), ...(current ? ["current, start year not in source"] : [])];
+  const title = current && inferredTitle ? `${inferredTitle} · Current: ${CURRENT_TITLE}` : inferredTitle;
+  return { kind: "range", parts, short, label: words.join("; "), reasons, title };
+}
+
+/** "Pacific (OR), 2020–Present" for labels; "on the staff now" when the start year isn't in the source. */
+function edgeInWords(e: TreeEdge): string {
+  const d = yearsDisplay(e.years);
+  if (d === "current") return `${e.org.shortName}, on the staff now (start year not in source)`;
+  if (d === "none") return `${e.org.shortName} (years not in source)`;
+  const s = e.years.startYear!;
+  const range = e.years.ongoing ? `${s}–Present` : s === e.years.endYear ? String(s) : `${s}–${e.years.endYear}`;
+  return `${e.org.shortName}, ${range}${e.inferred ? " (inferred)" : ""}`;
 }
 
 /** "Pacific (OR), 2020–Present" and, for several overlaps, "Pacific (OR), 2016–2019 and Oberlin, 2004–2005". */
 export function edgesInWords(edges: TreeEdge[]): string {
-  return listNames(edges.map((e) => `${e.org.shortName}, ${edgeYears(e).full}`));
+  return listNames(edges.map(edgeInWords));
 }
 
 /** Relationship sentence for a first-level member, used in labels and tooltips. */
@@ -52,32 +94,41 @@ export function relationSentence(group: GroupKey, focalFirst: string, edges: Tre
   const where = edgesInWords(edges);
   if (group === "mentors") return `${focalFirst}'s head coach at ${where}`;
   if (group === "peers") return `Worked alongside ${focalFirst} at ${where}`;
+  // Support staff (operations, admin) were on the staff, not coaching under the coach.
+  if (edges.every((e) => e.supportOnly)) return `On ${focalFirst}'s staff at ${where}`;
   return `Coached under ${focalFirst} at ${where}`;
 }
 
+/** A context line with an optional year that may carry the dotted mark. */
+export type ContextView = { text: string; year?: { value: number; inferred: boolean; reason: string | null } };
+
 /**
- * The context line under a first-level row, the same rule as the profile tree card: the program
- * when it is not the coach's current one, and "Joined {first}'s staff in {year}" for someone who
- * worked alongside the coach before joining the coach's staff.
+ * The context line under a first-level row, the same rule as the profile tree card: "Joined {first}'s
+ * staff in {year}" for someone who worked alongside the coach before joining the coach's staff, else the
+ * program when it is not the coach's current one.
  */
-export function rowContext(group: GroupKey, edges: TreeEdge[], data: Pick<TreeExplorer, "focal" | "mentees">, personId: string): string | null {
+export function rowContext(group: GroupKey, edges: TreeEdge[], data: Pick<TreeExplorer, "focal" | "mentees">, personId: string): ContextView | null {
   const first = data.focal.firstName;
   if (group === "peers") {
     const joined = data.mentees.find((m) => m.person.id === personId)?.edges.at(-1);
-    if (joined?.startYear) return `Joined ${first}'s staff in ${joined.startYear}`;
+    const start = joined?.years.startYear;
+    if (joined && start) {
+      return { text: `Joined ${first}'s staff in`, year: { value: start, inferred: joined.years.startInferred, reason: joined.reasons[0] ?? null } };
+    }
   }
-  const programs = [...new Set(edges.map((e) => e.org.shortName))];
-  const current = data.focal.currentOrg?.slug;
-  if (programs.length === 1 && current && edges[0].org.slug === current) return null;
-  return `At ${listNames(programs)}`;
+  const programs = otherPrograms(edges, data.focal.currentOrg?.slug ?? null);
+  return programs.length ? { text: `At ${listNames(programs)}` } : null;
 }
 
-/** Context line for a second-level row: "Via Jim Craft · on Jim's staff at Kenyon". */
+/** Programs of these overlaps other than the coach's current one (the current one goes without saying). */
+export function otherPrograms(edges: TreeEdge[], currentSlug: string | null): string[] {
+  return [...new Set(edges.filter((e) => e.org.slug !== currentSlug).map((e) => e.org.shortName))];
+}
+
+/** Context line for a second-level row: "Via Jim Craft · Jim's head coach at Kenyon" / "Via … · on Jim's staff at …". */
 export function secondContext(direction: "up" | "down", via: TreePerson, edges: TreeEdge[]): string {
   const programs = listNames([...new Set(edges.map((e) => e.org.shortName))]);
-  return direction === "up"
-    ? `Via ${via.fullName} · ${via.firstName}'s head coach at ${programs}`
-    : `Via ${via.fullName} · on ${via.firstName}'s staff at ${programs}`;
+  return direction === "up" ? `Via ${via.fullName} · ${via.firstName}'s head coach at ${programs}` : `Via ${via.fullName} · on ${via.firstName}'s staff at ${programs}`;
 }
 
 /** The footnote under the tree: unique count, who is listed twice and why, how the tree is derived. */
@@ -107,9 +158,8 @@ export function treeFootnote(data: TreeExplorer): string {
   return `${people}. ${why} ${derived}`;
 }
 
-/** How a tree is derived, in plain words (empty state and the legend's explainer). */
-export const DERIVATION =
-  "When two coaches' stints on the same program's staff share a season, they are connected: an assistant who overlaps a head coach worked under that coach, and two assistants on one staff worked alongside each other.";
+/** Coverage is partial: the data holds the coaches on staffs we have read, so a tree is never complete. */
+export const COVERAGE_NOTE = `Only coaches with a profile on ${BRAND.name} appear; coaches no longer on a covered staff may be missing.`;
 
 /** Whether any year shown on the page is inferred (so the page must explain the dotted mark). */
 export function anyInferred(data: TreeExplorer): boolean {
@@ -118,10 +168,13 @@ export function anyInferred(data: TreeExplorer): boolean {
   return first || second;
 }
 
-/** Tree explorer URL with its view and depth parameters. */
-export function treeHref(slug: string, opts: { view?: "diagram" | "list"; depth?: 1 | 2; hash?: string } = {}): string {
+/**
+ * Tree explorer URL with its view and depth parameters. The diagram is the default view, except for
+ * phones (list), so `explicit` spells out view=diagram where the default would be the list.
+ */
+export function treeHref(slug: string, opts: { view?: "diagram" | "list"; depth?: 1 | 2; hash?: string; explicit?: boolean } = {}): string {
   const q = new URLSearchParams();
-  if (opts.view === "list") q.set("view", "list");
+  if (opts.view === "list" || (opts.view === "diagram" && opts.explicit)) q.set("view", opts.view);
   if (opts.depth === 2) q.set("depth", "2");
   const qs = q.toString();
   return `/in/${slug}/tree${qs ? `?${qs}` : ""}${opts.hash ? `#${opts.hash}` : ""}`;

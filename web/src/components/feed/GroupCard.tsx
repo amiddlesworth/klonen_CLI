@@ -33,6 +33,8 @@ type GroupCardProps = {
   sourceUrl: string | null;
   viewer: FeedViewerLite;
   showInferredNote?: boolean;
+  /** The first hire item on the page (holds the placeholder when the viewer hides new hires). */
+  firstOfKind?: boolean;
 };
 
 /**
@@ -40,13 +42,13 @@ type GroupCardProps = {
  * assistant coaches", then people rows split by dividers (avatar 32, name 13/600, short title 12
  * --fg-1, "Previously …" context line, Connect each), then the program action set.
  */
-export function GroupCard({ org, moves, reason, sourceUrl, viewer, showInferredNote }: GroupCardProps) {
+export function GroupCard({ org, moves, reason, sourceUrl, viewer, showInferredNote, firstOfKind }: GroupCardProps) {
   const headingId = `fi-g-${org.id}`;
   const n = moves.length;
   const shown = n <= VISIBLE + 1 ? moves : moves.slice(0, VISIBLE);
   const programHref = `/programs/${org.slug}`;
   return (
-    <FeedArticle labelledBy={headingId} noun="update">
+    <FeedArticle labelledBy={headingId} hideKind="hire" firstOfKind={firstOfKind} note={showInferredNote ? <InferredFootnote /> : undefined}>
       {reason && <ContextStrip reason={reason} />}
       <div className="px-4 pt-4">
         <ItemHeader
@@ -58,7 +60,7 @@ export function GroupCard({ org, moves, reason, sourceUrl, viewer, showInferredN
             </>
           }
           meta={<ItemMeta icon={LogIn} kind={`${n} new hires`} conferenceAbbr={org.conferenceAbbr} conference={org.conference} sourceUrl={sourceUrl} />}
-          menu={<ItemMenu subject={`${org.shortName} staff hires`} copyPath={programHref} sourceUrl={sourceUrl} noun="update" />}
+          menu={<ItemMenu subject={`${org.shortName} staff hires`} copyPath={programHref} sourceUrl={sourceUrl} itemKey={`g-${org.id}`} hideKind="hire" />}
         />
         <div className="mt-3 md:ml-[52px]">
           <ul aria-label={`New staff at ${org.shortName}`}>

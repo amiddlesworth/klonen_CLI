@@ -1,6 +1,6 @@
 "use client";
 import { useState, useTransition } from "react";
-import { Ellipsis, Flag, Forward, Lock, Mail, Send, ShieldCheck, UserPlus } from "lucide-react";
+import { Ellipsis, Flag, Forward, LayoutGrid, Lock, Mail, Send, ShieldCheck, UserPlus } from "lucide-react";
 import type { DemoAccountOption } from "@/components/shell/types";
 import { Button, ButtonLink, buttonClasses } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
@@ -21,6 +21,8 @@ type ProfileActionsProps = {
   accounts: DemoAccountOption[];
   /** The coach session's connection with this person (claimed profiles only). */
   connection: "none" | "pending" | "accepted";
+  /** A fictional demo candidate: nobody to connect with, message or invite to claim. */
+  demo?: boolean;
   className?: string;
 };
 
@@ -55,7 +57,7 @@ const FLEX = "max-md:flex-1";
  * session, Message goes to /messaging. Visitors get the demo sign-in prompt. The owner view (the
  * coach demo on their own profile) swaps in claim and share affordances.
  */
-export function ProfileActions({ person, viewer, accounts, connection: initialConnection, className }: ProfileActionsProps) {
+export function ProfileActions({ person, viewer, accounts, connection: initialConnection, demo, className }: ProfileActionsProps) {
   const toast = useToast();
   const share = useShareProfile(person.fullName);
   const [invite, setInvite] = useState<InviteReason | null>(null);
@@ -100,20 +102,31 @@ export function ProfileActions({ person, viewer, accounts, connection: initialCo
           Share profile
         </MenuItem>
       )}
-      {!person.claimed && viewer !== "owner" && (
+      {!person.claimed && !demo && viewer !== "owner" && (
         <MenuItem icon={Send} onClick={gate("invite", `Sign in to invite ${first}`)}>
           Invite {first} to claim
         </MenuItem>
       )}
-      <MenuDivider />
-      <MenuItem icon={Flag} onClick={() => setReport(true)}>
-        Report an error
-      </MenuItem>
+      {!demo && <MenuDivider />}
+      {!demo && (
+        <MenuItem icon={Flag} onClick={() => setReport(true)}>
+          Report an error
+        </MenuItem>
+      )}
     </Menu>
   );
 
   let buttons;
-  if (viewer === "owner") {
+  if (demo) {
+    // A fictional demo candidate: no one can receive a connection, a message or a claim invite.
+    // The athletic director demo arrives here from the hiring pipeline; give them the way back.
+    buttons =
+      viewer === "employer" ? (
+        <ButtonLink href="/employers/pipeline" icon={LayoutGrid} phone="large" className={FLEX}>
+          Hiring pipeline
+        </ButtonLink>
+      ) : null;
+  } else if (viewer === "owner") {
     buttons = (
       <>
         <ButtonLink href={`/claim/${person.slug}`} variant="primary" icon={ShieldCheck} phone="large" className={FLEX}>
@@ -166,11 +179,11 @@ export function ProfileActions({ person, viewer, accounts, connection: initialCo
     <div className={cn("flex items-start gap-2", className)}>
       {buttons}
       {more}
-      {!person.claimed && viewer !== "owner" && viewer !== "visitor" && (
+      {!person.claimed && !demo && viewer !== "owner" && viewer !== "visitor" && (
         <InviteSheet person={person} reason={invite ?? "invite"} open={invite !== null} onOpenChange={(v) => !v && setInvite(null)} />
       )}
       {viewer === "visitor" && <SignInSheet accounts={accounts} title={signIn ?? "Sign in"} open={signIn !== null} onOpenChange={(v) => !v && setSignIn(null)} />}
-      <ReportSheet person={person} open={report} onOpenChange={setReport} />
+      {!demo && <ReportSheet person={person} open={report} onOpenChange={setReport} />}
     </div>
   );
 }

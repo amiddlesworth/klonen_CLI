@@ -3,7 +3,6 @@ import { ProgramBadges, DemoLabel } from "@/components/data/Badges";
 import { PersonRow } from "@/components/data/PersonRow";
 import { UnclaimedChip } from "@/components/ui/Chip";
 import { OrgMark } from "@/components/ui/OrgMark";
-import { titleShort } from "@/lib/format";
 import type { PersonResult, ProgramResult, TreeContext } from "@/lib/queries/searchx";
 import { ConnectButton } from "./ConnectButton";
 import { FollowButton } from "./FollowButton";
@@ -12,7 +11,9 @@ import { TreeContextLine } from "./TreeContextLine";
 
 /**
  * Person result (§8.7): avatar 48, name 15/600 + Unclaimed chip, "{Title} at {Program}" 13 --fg-2,
- * division and conference chips, one ContextLine of tree context, Connect icon button.
+ * division and conference chips, one ContextLine of tree context, Connect icon button. The title is
+ * printed as published at every width (§6.3, rule 11) and wraps; the program never breaks. Fictional
+ * demo profiles show Demo, never Unclaimed: there is no real person behind them to claim it.
  */
 export function PersonResultRow({
   person: p,
@@ -33,31 +34,21 @@ export function PersonResultRow({
 }) {
   const program = p.org ? (
     p.org.inRegistry ? (
-      <Link href={`/programs/${p.org.slug}`} className="font-medium text-fg-1 underline-offset-2 hover:underline">
+      // 24px target outside a sentence (§8.1 Link, rule 7): padding-block 4px over the 16px line box.
+      <Link href={`/programs/${p.org.slug}`} className="-my-1 whitespace-nowrap py-1 font-medium text-fg-1 underline-offset-2 hover:underline">
         {p.org.shortName}
       </Link>
     ) : (
-      <span className="font-medium text-fg-1">{p.org.shortName}</span>
+      <span className="whitespace-nowrap font-medium text-fg-1">{p.org.shortName}</span>
     )
   ) : null;
-  // Phone rows abbreviate long titles (§6.3 titleShort) so the program stays visible.
-  const short = p.currentTitle ? titleShort(p.currentTitle) : null;
-  const titleText =
-    p.currentTitle && short !== p.currentTitle ? (
-      <>
-        <span className="md:hidden">{short}</span>
-        <span className="max-md:hidden">{p.currentTitle}</span>
-      </>
-    ) : (
-      p.currentTitle
-    );
   const title =
     p.currentTitle && program ? (
       <>
-        {titleText} at {program}
+        {p.currentTitle} at {program}
       </>
     ) : (
-      (titleText ?? program)
+      (p.currentTitle ?? program)
     );
   return (
     <li className="p-4 [&_a.target-24]:text-subtitle">
@@ -70,7 +61,7 @@ export function PersonResultRow({
         truncate={false}
         chips={
           <>
-            {!p.claimed && <UnclaimedChip />}
+            {!p.claimed && !p.isDemo && <UnclaimedChip />}
             {p.isDemo && <DemoLabel />}
             {isViewer && <span className="text-caption text-fg-3">You</span>}
           </>
@@ -83,7 +74,7 @@ export function PersonResultRow({
             <TreeContextLine ctx={context} firstName={p.firstName} mentorNamed={mentorNamed} orgNamed={orgNamed} />
           </>
         }
-        action={isViewer ? undefined : <ConnectButton personId={p.id} slug={p.slug} name={p.fullName} firstName={p.firstName} claimed={p.claimed} />}
+        action={isViewer ? undefined : <ConnectButton personId={p.id} slug={p.slug} name={p.fullName} firstName={p.firstName} claimed={p.claimed} isDemo={p.isDemo} />}
       />
     </li>
   );
@@ -105,9 +96,10 @@ export function ProgramResultRow({ program: o, conferenceNames }: { program: Pro
         </Link>
         {sub && <p className="truncate text-small text-fg-2">{sub}</p>}
         <ProgramBadges level={o.level} conferenceAbbr={o.conference} conference={o.conference ? conferenceNames[o.conference] : null} className="mt-1.5" />
+        {/* The same words as the program page: "Staff not read yet" when its staff page hasn't been read. */}
         <p className="mt-1 text-caption text-fg-3">
-          {o.staff > 0 ? <span className="num">{o.staff.toLocaleString("en-US")} staff</span> : "No staff listed"} ·{" "}
-          {o.alumni > 0 ? <span className="num">{plural(o.alumni, "alumni coach", "alumni coaches")}</span> : "no alumni coaches yet"}
+          {o.staff > 0 ? <span className="num">{o.staff.toLocaleString("en-US")} staff</span> : "Staff not read yet"} ·{" "}
+          {o.alumni > 0 ? <span className="num">{plural(o.alumni, "coach alum", "alumni coaches")}</span> : "no alumni coaches yet"}
         </p>
       </div>
       <FollowButton name={o.shortName} />

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Bookmark, BookmarkCheck, Check, Send, UserPlus } from "lucide-react";
+import { Check, Send, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
 import { useCopyLink } from "./useCopyLink";
@@ -36,21 +36,5 @@ export function InviteButton({ slug, first }: { slug: string; first: string }) {
     >
       {copied ? "Invite link copied" : "Invite to claim"}
     </Button>
-  );
-}
-
-/** Save on a job card (icon, aria-pressed when saved). Demo: remembered for this page view only. */
-export function SaveJobButton({ title }: { title: string }) {
-  const [saved, setSaved] = useState(false);
-  return (
-    <IconButton
-      icon={Bookmark}
-      pressedIcon={BookmarkCheck}
-      pressed={saved}
-      label={saved ? `Saved: ${title}` : `Save job: ${title}`}
-      variant="secondary"
-      phone="large"
-      onClick={() => setSaved((s) => !s)}
-    />
   );
 }

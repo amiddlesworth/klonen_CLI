@@ -169,6 +169,68 @@ export function describeFilters(s: SearchState, names: { workedAt?: string | nul
   return phrase;
 }
 
+/** "Ian Falconer" → "Ian Falconer's", "Rob Hutchins" → "Rob Hutchins'" (one possessive style everywhere on the page). */
+export const possessive = (name: string) => (/s$/i.test(name) ? `${name}'` : `${name}'s`);
+
+/** The facets whose values come from the data (role values are a fixed list, filtered at parse time). */
+export type ValueFacet = "division" | "conference" | "state";
+
+export const VALUE_FACET_LABEL: Record<ValueFacet, string> = { division: "Division", conference: "Conference", state: "State" };
+
+/** Known values for the data facets: divisions as in the URL ("D-III"), conference abbreviations with their full names. */
+export type KnownFacetValues = { division: string[]; conference: Record<string, string> };
+
+const squash = (v: string) => v.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+/** "d3", "DIII", "Division III", "NCAA D-III", "3" → "d3": one key per division, however it is written. */
+function divisionKey(v: string): string {
+  const t = squash(v.replace(/ncaa/gi, "").replace(/division/gi, "d"));
+  return t.replace(/^d?(iii|3)$/, "d3").replace(/^d?(ii|2)$/, "d2").replace(/^d?(i|1)$/, "d1");
+}
+
+/**
+ * Checks hand-edited or stale facet values against the known ones. Obvious aliases resolve to the
+ * canonical value ("d3" → "D-III", "nwc" → "NWC", "Oregon" → "OR"); anything else is reported as
+ * unknown, so the page can drop it and say so instead of printing raw URL text as a filter.
+ */
+export function canonicalFacets(s: SearchState, known: KnownFacetValues): { state: SearchState; unknown: Record<ValueFacet, string[]>; aliased: boolean } {
+  const unknown: Record<ValueFacet, string[]> = { division: [], conference: [], state: [] };
+  let aliased = false;
+  const resolve = (key: ValueFacet, values: string[], find: (v: string) => string | undefined): string[] => {
+    const out: string[] = [];
+    for (const v of values) {
+      const c = find(v);
+      if (!c) unknown[key].push(v);
+      else {
+        if (c !== v) aliased = true;
+        if (!out.includes(c)) out.push(c);
+      }
+    }
+    return out;
+  };
+  const divisions = new Map(known.division.map((d) => [divisionKey(d), d]));
+  const conferences = new Map<string, string>();
+  for (const [abbr, name] of Object.entries(known.conference)) {
+    if (name && !conferences.has(squash(name))) conferences.set(squash(name), abbr);
+  }
+  for (const abbr of Object.keys(known.conference)) conferences.set(squash(abbr), abbr);
+  const states = new Map<string, string>();
+  for (const [code, name] of Object.entries(STATE_NAME)) {
+    states.set(squash(code), code);
+    states.set(squash(name), code);
+  }
+  return {
+    state: {
+      ...s,
+      division: resolve("division", s.division, (v) => (known.division.includes(v) ? v : divisions.get(divisionKey(v)))),
+      conference: resolve("conference", s.conference, (v) => (v in known.conference ? v : conferences.get(squash(v)))),
+      state: resolve("state", s.state, (v) => (v in STATE_NAME ? v : states.get(squash(v)))),
+    },
+    unknown,
+    aliased,
+  };
+}
+
 export function capitalize(s: string): string {
   return s ? s[0].toUpperCase() + s.slice(1) : s;
 }

@@ -4,6 +4,7 @@ import { SampleChip } from "@/components/ui/Chip";
 import { Icon } from "@/components/ui/Icon";
 import { TextLink } from "@/components/ui/TextLink";
 import { cn } from "@/lib/cn";
+import { isOpenJob } from "./labels";
 
 type JobNotesProps = {
   job: { source: string; isDemo: boolean; status: string; org: { shortName: string } };
@@ -32,19 +33,21 @@ function Band({ icon, children, action, inset }: { icon?: ReactNode; children: R
 }
 
 /**
- * Full-width --surface-2 bands at the bottom of the job header card (§5.3 "1-band"), in this order:
- * closed; then whose listing it is. A seeded sample says so here, next to the header's dashed chip,
- * rather than as a stray line inside the description. The owner sees "Your listing" with the Demo
- * chip (the owner view is labeled Demo) and a link to post another.
+ * Full-width --surface-2 bands at the bottom of the job header card (§5.3 "1-band"): whether the
+ * listing still takes applications, then whose listing it is. A seeded sample says so here, next to
+ * the header's dashed chip, rather than as a stray line inside the description. The owner sees one
+ * band, "Your listing" with the Demo chip (the owner view is labeled Demo), which also says when it
+ * is closed, and a link to post another.
  */
 export function JobNotes({ job, owner, inset = "page" }: JobNotesProps) {
-  const closed = job.status !== "open";
+  const closed = !isOpenJob(job);
   const info = <Icon icon={Info} size={16} className="mt-0.5 text-fg-2" />;
   return (
     <>
-      {closed && (
-        <Band inset={inset} icon={info}>
-          This listing is closed. It stays here so links to it keep working.
+      {closed && !owner && (
+        <Band inset={inset} icon={<Icon icon={Lock} size={16} className="mt-0.5 text-fg-2" />}>
+          <span className="font-medium text-fg-1">This listing is closed.</span> {job.org.shortName} is no longer taking applications. The page stays up so links to it keep
+          working.
         </Band>
       )}
       {owner ? (
@@ -58,7 +61,15 @@ export function JobNotes({ job, owner, inset = "page" }: JobNotesProps) {
           }
         >
           <SampleChip label="Demo" className="mr-2" />
-          <span className="font-medium text-fg-1">Your listing.</span> Coaches see Apply and Save here; you see your hiring tools.
+          {closed ? (
+            <>
+              <span className="font-medium text-fg-1">Your listing is closed.</span> Coaches can&apos;t apply. The page stays up so links to it keep working.
+            </>
+          ) : (
+            <>
+              <span className="font-medium text-fg-1">Your listing.</span> Coaches see Apply and Save here; you see your hiring tools.
+            </>
+          )}
         </Band>
       ) : job.source === "sample" ? (
         <Band inset={inset} icon={info}>

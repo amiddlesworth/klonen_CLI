@@ -15,14 +15,15 @@ const STEPS = [
   },
   {
     title: "Programs hire",
-    body: "Athletic directors post openings and search for candidates by role, conference and coaching tree during the hiring carousel.",
+    body: "Athletic directors can post openings and search for candidates by role, conference and coaching tree during the hiring carousel.",
     link: { href: "/jobs", label: "Browse jobs" },
   },
 ];
 
 /**
  * How it works: three numbered steps in one card, split by dividers (columns from lg, stacked
- * below). The list is an <ol>; the ink number discs are decorative.
+ * below). The list is an <ol>; the ink number discs are decorative. Each step's link sits at the
+ * bottom of its column, so a step whose text wraps longer doesn't push its link off the row's line.
  */
 export function HowItWorks() {
   return (
@@ -39,12 +40,15 @@ export function HowItWorks() {
               <span aria-hidden="true" className="num mt-[-2px] grid size-6 place-items-center rounded-full bg-fg-1 text-caption font-semibold text-surface lg:mt-0">
                 {i + 1}
               </span>
-              <div className="flex min-w-0 flex-col lg:mt-3">
+              {/* From lg the text column fills the step, so the links share a baseline across the row. */}
+              <div className="flex min-w-0 flex-col lg:mt-3 lg:flex-1">
                 <h3 className="text-body font-semibold">{s.title}</h3>
                 <p className="mt-1 max-w-prose text-small text-fg-2">{s.body}</p>
-                <TextLink href={s.link.href} arrow target24 className="mt-3 self-start text-small">
-                  {s.link.label}
-                </TextLink>
+                <div className="mt-auto pt-3">
+                  <TextLink href={s.link.href} arrow target24 className="text-small">
+                    {s.link.label}
+                  </TextLink>
+                </div>
               </div>
             </li>
           ))}

@@ -1,19 +1,28 @@
+import { parseSearchParams, ROLE_PLURAL, searchHref, type SearchState } from "@/components/search/params";
 import { conferenceShort, levelShort, type RoleGroup } from "@/lib/format";
 import type { EmployerProgram } from "@/lib/queries/employer";
 
 export type SearchPreset = { label: string; href: string };
 
-const ROLE_PLURAL: Partial<Record<RoleGroup, string>> = {
-  head_coach: "Head coaches",
-  coordinator: "Coordinators",
-  position_coach: "Position coaches",
-  ga_analyst: "GAs and analysts",
-};
+/** What a preset searches for, in the shape the search feature counts (lib/queries/searchx PeopleCriteria). */
+export type PresetCriteria = { q?: string; role?: string[]; division?: string[]; conference?: string[]; workedUnderId?: string | null };
 
-function searchHref(params: Record<string, string | null | undefined>): string {
-  const q = new URLSearchParams({ type: "people" });
-  for (const [k, v] of Object.entries(params)) if (v) q.set(k, v);
-  return `/search?${q.toString()}`;
+/** A preset plus its criteria, so the page can count it and drop it when it would come back empty. */
+export type PresetSpec = SearchPreset & { criteria: PresetCriteria };
+
+const BLANK: SearchState = parseSearchParams({});
+
+/**
+ * One people search, built with the search feature's own URL helper so the link and the count use
+ * the same values (division as the URL and chips show it: "D-III", never "NCAA D-III").
+ */
+function spec(label: string, s: Partial<Pick<SearchState, "q" | "role" | "division" | "conference">>, workedUnder?: { slug: string; id: string }): PresetSpec {
+  const state: SearchState = { ...BLANK, ...s, workedUnder: workedUnder?.slug ?? null };
+  return {
+    label,
+    href: searchHref(state),
+    criteria: { q: state.q || undefined, role: state.role, division: state.division, conference: state.conference, workedUnderId: workedUnder?.id ?? null },
+  };
 }
 
 function pluralize(phrase: string): string {
@@ -22,12 +31,23 @@ function pluralize(phrase: string): string {
   return `${phrase}s`;
 }
 
+const DEMO_SUFFIX = /\s*\(demo\)\s*$/i;
+
 /**
- * The search's name as shown next to its Demo chip: a trailing "(demo)" is dropped because the
+ * Whether a search is a seeded demo record. Until shortlists carry their own is_demo flag, the seed
+ * marks its searches with a trailing "(demo)" in the name; searches the account creates itself
+ * (Add candidate, Post a job) are its own records and carry no chip.
+ */
+export function isDemoSearch(name: string): boolean {
+  return DEMO_SUFFIX.test(name);
+}
+
+/**
+ * The search's name as shown next to its Demo chip: the trailing "(demo)" is dropped because the
  * chip already says it ("Defensive analyst search (demo)" → "Defensive analyst search").
  */
-export function searchDisplayName(name: string, isDemo: boolean): string {
-  return isDemo ? name.replace(/\s*\(demo\)\s*$/i, "") || name : name;
+export function searchDisplayName(name: string): string {
+  return name.replace(DEMO_SUFFIX, "") || name;
 }
 
 /** The role a search is for, from its name: "Defensive analyst search (demo)" → "Defensive analyst". */
@@ -50,34 +70,40 @@ function searchRoleGroup(name: string | null): RoleGroup {
   return "coordinator";
 }
 
-/** Primary "Find candidates" target: the search's role group in the employer's division (`/search?role=coordinator&division=…`). */
-export function findCandidatesHref(searchName: string | null, program: EmployerProgram | null): string {
-  return searchHref({ role: searchRoleGroup(searchName), division: program?.level });
+/**
+ * "Find candidates" targets, best first: the search's role group in the employer's division, then
+ * the whole division. The page links to the first one that returns anyone (else plain /search).
+ */
+export function findCandidatesSpecs(searchName: string | null, program: EmployerProgram | null): PresetSpec[] {
+  const division = levelShort(program?.level);
+  const group = searchRoleGroup(searchName);
+  const specs = [spec("Find candidates", { role: [group], division: division ? [division] : [] })];
+  if (division) specs.push(spec("Find candidates", { division: [division] }));
+  return specs;
 }
 
 /**
  * Quick searches under the pipeline header, from what the employer is hiring for and who they are:
- * the role in the search name ("Defensive analyst search" → defensive analysts), coaches one step
- * below that role in the employer's own conference, and coaches who worked under its head coach.
+ * the role in the search name ("Defensive analyst search" → defensive analysts in the division),
+ * the same rung (one rung down for coordinator and head coach searches) in the employer's own
+ * conference, and its head coach's tree. The page drops any that would come back empty.
  */
-export function pipelinePresets(searchName: string | null, program: EmployerProgram | null): SearchPreset[] {
-  const presets: SearchPreset[] = [];
+export function pipelinePresetSpecs(searchName: string | null, program: EmployerProgram | null): PresetSpec[] {
+  const presets: PresetSpec[] = [];
+  const division = levelShort(program?.level);
   const role = searchRole(searchName);
   if (role) {
     const sentence = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
-    presets.push({ label: pluralize(sentence), href: searchHref({ q: role.toLowerCase(), division: program?.level }) });
+    presets.push(spec(pluralize(sentence), { q: role.toLowerCase(), division: division ? [division] : [] }));
   }
   const group = searchRoleGroup(searchName);
-  // A coordinator search looks one rung down (position coaches ready to step up); others look at the same rung.
   const pool: RoleGroup = group === "coordinator" ? "position_coach" : group === "head_coach" ? "coordinator" : group;
   const conf = conferenceShort(program?.conferenceAbbr);
-  if (conf) {
-    presets.push({ label: `${ROLE_PLURAL[pool]} in the ${conf}`, href: searchHref({ role: pool, conference: conf }) });
-  } else if (program?.level) {
-    presets.push({ label: `${ROLE_PLURAL[pool]} in ${levelShort(program.level)}`, href: searchHref({ role: pool, division: program.level }) });
-  }
+  if (conf) presets.push(spec(`${ROLE_PLURAL[pool]} in the ${conf}`, { role: [pool], conference: [conf] }));
+  else if (division) presets.push(spec(`${ROLE_PLURAL[pool]} in ${division}`, { role: [pool], division: [division] }));
   if (program?.headCoach) {
-    presets.push({ label: `Worked under ${program.headCoach.fullName}`, href: searchHref({ workedUnder: program.headCoach.slug }) });
+    // Labeled as the tree, not "Worked under…": most of it is usually the employer's own staff.
+    presets.push(spec(`${program.headCoach.fullName}'s tree`, {}, program.headCoach));
   }
   return presets;
 }

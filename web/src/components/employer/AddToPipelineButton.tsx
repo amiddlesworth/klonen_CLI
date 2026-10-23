@@ -33,11 +33,13 @@ export async function AddToPipelineButton({ personId, name, size, phone, fullWid
   if (session?.user.kind !== "employer") return null;
   const [statuses, fullName] = await Promise.all([getPipelineStatusMap(session.user.id), name ? Promise.resolve(name) : getPersonName(personId)]);
   if (!fullName) return null;
+  const status = statuses.get(personId);
   return (
     <AddToPipelineControl
       personId={personId}
       name={fullName}
-      initialStage={statuses.get(personId)?.stage ?? null}
+      initialStage={status?.stage ?? null}
+      shortlistId={status?.shortlistId ?? null}
       size={size}
       phone={phone}
       fullWidth={fullWidth}

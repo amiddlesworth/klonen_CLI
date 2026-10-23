@@ -8,6 +8,7 @@ import { OrgMark } from "@/components/ui/OrgMark";
 import { TextLink } from "@/components/ui/TextLink";
 import { cn } from "@/lib/cn";
 import type { OrgSummary } from "@/lib/queries/people";
+import { ExperienceList } from "./ExperienceList";
 import { LedgerRange } from "./LedgerRange";
 import { levelLine, stateName, type LedgerGroup, type LedgerItem } from "./model";
 
@@ -15,6 +16,8 @@ type ExperienceCardProps = {
   groups: LedgerGroup[];
   strip: StripStint[];
   seasons: number;
+  /** Coaching roles with no start year, whose seasons the count leaves out ("34+ seasons"). */
+  undatedRoles: number;
   personName: string;
   firstName: string;
   slug: string;
@@ -22,6 +25,18 @@ type ExperienceCardProps = {
   /** Whether an inferred year appears anywhere on the page (the legend explains the mark once). */
   showInferredKey: boolean;
 };
+
+/** Long careers start with the newest programs and a "Show all {n} programs" button (§8.1 ShowMore). */
+const SHOW_FIRST = 6;
+const TRUNCATE_OVER = 8;
+
+/**
+ * "34 seasons", or "34+ seasons" when some roles have no start year, so the count never reads as the
+ * whole career (the header stat uses the same words).
+ */
+export function seasonsText(seasons: number, undatedRoles: number): string {
+  return `${seasons}${undatedRoles > 0 ? "+" : ""} ${seasons === 1 && !undatedRoles ? "season" : "seasons"}`;
+}
 
 /** Program name, linked when the program has a page. */
 export function OrgName({ org }: { org: Pick<OrgSummary, "slug" | "name" | "inRegistry"> }) {
@@ -39,9 +54,9 @@ export function OrgName({ org }: { org: Pick<OrgSummary, "slug" | "name" | "inRe
  * leads (tile, name, chips, total range); role rows sit on a dot rail and carry their own range
  * only when the program has two or more roles. Every role has a Source disclosure.
  */
-export function ExperienceCard({ groups, strip, seasons, personName, firstName, slug, owner, showInferredKey }: ExperienceCardProps) {
-  const action = owner ? (
-    <TextLink href={`/claim/${slug}`} arrow className="text-small">
+export function ExperienceCard({ groups, strip, seasons, undatedRoles, personName, firstName, slug, owner, showInferredKey }: ExperienceCardProps) {
+  const claimLink = owner ? (
+    <TextLink href={`/claim/${slug}`} arrow target24 className="text-small">
       Claim to edit
     </TextLink>
   ) : undefined;
@@ -51,7 +66,7 @@ export function ExperienceCard({ groups, strip, seasons, personName, firstName, 
       <SectionCard
         id="experience"
         title="Experience"
-        action={action}
+        action={claimLink}
         empty={{
           icon: BriefcaseBusiness,
           title: "No coaching history in the source.",
@@ -66,16 +81,25 @@ export function ExperienceCard({ groups, strip, seasons, personName, firstName, 
   const hasCurrent = roles.some((r) => r.role.isCurrent);
   const hasPast = roles.some((r) => !r.role.isCurrent);
   const hasAway = items.some((i) => i.kind === "away");
-  const meta = [`${groups.length} ${groups.length === 1 ? "program" : "programs"}`, seasons > 0 && `${seasons} ${seasons === 1 ? "season" : "seasons"}`].filter(Boolean).join(" · ");
+  const meta = [`${groups.length} ${groups.length === 1 ? "program" : "programs"}`, seasons > 0 && seasonsText(seasons, undatedRoles)].filter(Boolean).join(" · ");
+  const item = (g: LedgerGroup) => ({ key: g.org.id, node: <ExperienceGroup group={g} personName={personName} /> });
 
   return (
-    <SectionCard id="experience" title="Experience" meta={meta} action={action}>
+    // The owner's "Claim to edit" sits in the legend row, so the title row keeps one right-aligned item at every width.
+    <SectionCard id="experience" title="Experience" meta={meta}>
       <SeasonStrip stints={strip} widthHint={760} />
-      <ol aria-label={`${personName}'s coaching career, newest first`}>
-        {groups.map((g) => (
-          <ExperienceGroup key={g.org.id} group={g} personName={personName} />
-        ))}
-      </ol>
+      <ExperienceList
+        dated={groups.filter((g) => g.dated).map(item)}
+        undated={groups.filter((g) => !g.dated).map(item)}
+        personName={personName}
+        limit={groups.length > TRUNCATE_OVER ? SHOW_FIRST : groups.length}
+      />
+      {seasons > 0 && undatedRoles > 0 && (
+        <p className="border-t border-divider py-3 text-caption text-fg-3">
+          {seasonsText(seasons, undatedRoles)}: {undatedRoles} {undatedRoles === 1 ? "role has" : "roles have"} no start year in the source, so{" "}
+          {undatedRoles === 1 ? "its seasons aren't" : "their seasons aren't"} counted.
+        </p>
+      )}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-divider pt-3 text-caption text-fg-3">
         {hasCurrent && (
           <span className="inline-flex items-center gap-1.5">
@@ -103,17 +127,19 @@ export function ExperienceCard({ groups, strip, seasons, personName, firstName, 
             Year inferred from the bio, not stated in it
           </span>
         )}
+        {claimLink && <span className="ml-auto">{claimLink}</span>}
       </div>
     </SectionCard>
   );
 }
 
+/** One program group's content; ExperienceList wraps it in its list item. */
 function ExperienceGroup({ group, personName }: { group: LedgerGroup; personName: string }) {
   const { org } = group;
   const multi = group.roleCount > 1;
   const place = stateName(org.state);
   return (
-    <li className="grid grid-cols-[40px_minmax(0,1fr)] gap-x-3 border-t border-divider py-4 first:border-t-0">
+    <>
       <OrgMark shortName={org.shortName} name={org.name} size={40} />
       <div className="flex min-w-0 flex-col gap-0.5 md:flex-row md:items-start md:justify-between md:gap-4">
         <div className="min-w-0">
@@ -174,6 +200,6 @@ function ExperienceGroup({ group, personName }: { group: LedgerGroup; personName
           );
         })}
       </ol>
-    </li>
+    </>
   );
 }

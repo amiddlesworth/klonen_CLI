@@ -22,7 +22,7 @@ type AboutCardProps = {
 export function AboutCard({ about, excerpt, sourceUrl, firstName, slug, owner }: AboutCardProps) {
   const who = owner ? "You" : firstName;
   const action = owner ? (
-    <TextLink href={`/claim/${slug}`} arrow className="text-small">
+    <TextLink href={`/claim/${slug}`} arrow target24 className="text-small">
       Claim to edit
     </TextLink>
   ) : undefined;

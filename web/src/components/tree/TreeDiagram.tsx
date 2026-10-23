@@ -1,9 +1,6 @@
-import { Network } from "lucide-react";
 import type { Tint } from "@/lib/format";
-import { cn } from "@/lib/cn";
-import { possessive } from "./copy";
 import { DiagramInteractions } from "./DiagramInteractions";
-import type { DiagramLayout, PlacedNode } from "./layout";
+import type { DiagramLayout, PlacedLabel, PlacedNode } from "./layout";
 
 const TINT_BG: Record<Tint, string> = {
   1: "fill-av1-bg",
@@ -22,6 +19,11 @@ const TINT_FG: Record<Tint, string> = {
   6: "fill-av6-fg",
 };
 const INITIALS_SIZE: Record<number, number> = { 32: 22, 20: 14, 16: 12 };
+const TONE: Record<PlacedLabel["parts"][number]["tone"], { className: string; weight: number }> = {
+  strong: { className: "fill-fg-2", weight: 500 },
+  count: { className: "num fill-fg-3", weight: 500 },
+  muted: { className: "fill-fg-3", weight: 400 },
+};
 
 type TreeDiagramProps = {
   layout: DiagramLayout;
@@ -29,18 +31,25 @@ type TreeDiagramProps = {
   label: string;
   /** Id of the visually hidden keyboard help. */
   helpId: string;
-  /** Escape moves focus here. */
+  /** Escape moves focus here (a visible element: the diagram card). */
   exitTargetId: string;
+  className?: string;
 };
 
 /**
  * The coaching tree as an inline SVG node-link diagram (DESIGN.md §8.8), rendered on the server.
- * Nodes are links to profiles (44px+ targets) with a small badge linking to that coach's own tree;
- * edges are 1.5px --border-strong connectors; pills on the trunks name each group and its count.
+ * Nodes are links to profiles (44px+ targets). Connectors are drawn as one 1.5px --border-strong path,
+ * so trunks shared by many people paint once; each node has a merged --fg-2 highlight path that shows
+ * on hover or focus while the rest fade to 40%. Pills on the trunks name each group and its count;
+ * "Via …" captions name the first-level coach each second-level block hangs from.
  */
-export function TreeDiagram({ layout, label, helpId, exitTargetId }: TreeDiagramProps) {
+export function TreeDiagram({ layout, label, helpId, exitTargetId, className }: TreeDiagramProps) {
+  const base = layout.edges.map((e) => e.d).join(" ");
+  const highlights = layout.nodes
+    .map((n) => ({ key: n.key, d: layout.edges.filter((e) => e.ends.includes(n.key)).map((e) => e.d).join(" ") }))
+    .filter((h) => h.d);
   return (
-    <DiagramInteractions exitTargetId={exitTargetId} className="-mx-4 px-4 md:-mx-6 md:px-6">
+    <DiagramInteractions exitTargetId={exitTargetId} className={className}>
       <svg
         width={layout.width}
         height={layout.height}
@@ -51,31 +60,22 @@ export function TreeDiagram({ layout, label, helpId, exitTargetId }: TreeDiagram
         className="mx-auto block max-w-none select-none"
       >
         <g transform={`translate(${layout.tx} ${layout.ty})`}>
-          <g data-edges="" aria-hidden="true">
-            {layout.edges.map((e) => (
-              <path
-                key={e.key}
-                data-edge=""
-                data-ends={`${e.from} ${e.to}`}
-                d={e.d}
-                strokeWidth={1.5}
-                strokeLinecap="round"
-                className={cn(
-                  "fill-none stroke-border-strong transition-[stroke,opacity]",
-                  "[[data-active]_&]:opacity-40 data-on:opacity-100! data-on:stroke-fg-2!",
-                )}
-              >
-                <title>{e.title}</title>
-              </path>
+          <g aria-hidden="true">
+            <path d={base} strokeWidth={1.5} strokeLinecap="round" className="fill-none stroke-border-strong transition-opacity [[data-active]_&]:opacity-40" />
+            {highlights.map((h) => (
+              <path key={h.key} data-hl={h.key} d={h.d} strokeWidth={1.5} strokeLinecap="round" className="invisible fill-none stroke-fg-2 data-on:visible" />
             ))}
           </g>
           <g aria-hidden="true">
-            {layout.pills.map((p) => (
-              <g key={p.text}>
-                <rect x={p.cx - p.w / 2} y={p.cy - 10} width={p.w} height={20} rx={10} className="fill-surface" />
-                <text x={p.cx} y={p.cy + 4} textAnchor="middle" fontSize={12} fontWeight={500} className="fill-fg-2">
-                  <tspan>{p.text}</tspan>
-                  <tspan className="num fill-fg-3">{p.count}</tspan>
+            {layout.labels.map((l) => (
+              <g key={l.key}>
+                <rect x={l.box.x} y={l.box.y} width={l.box.w} height={l.box.h} rx={l.box.h / 2} className="fill-surface" />
+                <text x={l.x} y={l.y + 4} textAnchor={l.anchor} fontSize={12}>
+                  {l.parts.map((p, i) => (
+                    <tspan key={i} fontWeight={TONE[p.tone].weight} className={TONE[p.tone].className}>
+                      {p.text}
+                    </tspan>
+                  ))}
                 </text>
               </g>
             ))}
@@ -94,7 +94,7 @@ export function TreeDiagram({ layout, label, helpId, exitTargetId }: TreeDiagram
 function DiagramNode({ node: n }: { node: PlacedNode }) {
   const focal = n.kind === "focal";
   return (
-    <g data-node={n.key} data-kind={n.kind} data-x={n.cx} data-y={n.cy}>
+    <g data-node={n.key} data-kind={n.kind} data-name={n.fullName} data-x={n.cx} data-y={n.cy}>
       {/* The <title> is both the link's accessible name and its hover tooltip (full name, role, relationship). */}
       <a href={`/in/${n.slug}`} data-node-link="" className="group/node outline-none focus-visible:outline-none">
         <title>{n.label}</title>
@@ -132,17 +132,44 @@ function DiagramNode({ node: n }: { node: PlacedNode }) {
         >
           {n.name}
         </text>
-        {n.sub && (
-          <text x={n.textX} y={n.subY} textAnchor={n.textAnchor} fontSize={12} className="fill-fg-3">
-            <tspan>{n.sub.program}</tspan>
-            <tspan> · </tspan>
-            <tspan
-              fontWeight={500}
-              className={cn("num fill-fg-2", n.sub.inferred && "underline decoration-fg-3 decoration-dotted decoration-[1.5px] underline-offset-[3px]")}
-            >
-              {n.sub.range}
-            </tspan>
+        {n.programLine && (
+          <text x={n.textX} y={n.programLine.y} textAnchor={n.textAnchor} fontSize={12} className="fill-fg-3" aria-hidden="true">
+            {n.programLine.text}
           </text>
+        )}
+        {n.sub && (
+          <>
+            <text x={n.textX} y={n.subY} textAnchor={n.textAnchor} fontSize={12} className="fill-fg-3" aria-hidden="true">
+              {n.sub.program && <tspan>{`${n.sub.program} · `}</tspan>}
+              <tspan data-range="" fontWeight={500} className="num fill-fg-2">
+                {n.sub.parts.map((p, i) => (
+                  <tspan key={i} data-part={i}>
+                    {p.text}
+                  </tspan>
+                ))}
+              </tspan>
+            </text>
+            {/* Inferred years: a dotted 1.5px --fg-3 mark 3px under the baseline (SVG text ignores text-decoration styles). */}
+            {n.sub.marks.map((m) => (
+              <line
+                key={m.part}
+                data-mark={m.part}
+                x1={m.x + 0.75}
+                x2={m.x + m.w - 0.75}
+                y1={n.subY + 4}
+                y2={n.subY + 4}
+                strokeWidth={1.5}
+                strokeDasharray="0 3"
+                strokeLinecap="round"
+                className="stroke-fg-3"
+              />
+            ))}
+            {n.sub.hit && n.sub.title && (
+              <rect data-hit="" x={n.sub.hit.x} y={n.sub.hit.y} width={n.sub.hit.w} height={n.sub.hit.h} className="cursor-help fill-transparent">
+                <title>{n.sub.title}</title>
+              </rect>
+            )}
+          </>
         )}
         {focal && n.titleLine && (
           <text x={n.textX} y={n.subY} textAnchor="middle" fontSize={12} className="fill-fg-2">
@@ -150,20 +177,6 @@ function DiagramNode({ node: n }: { node: PlacedNode }) {
           </text>
         )}
       </a>
-      {n.badge && (
-        <a href={`/in/${n.slug}/tree`} data-tree-link="" className="group/badge outline-none focus-visible:outline-none">
-          <title>{`${possessive(n.fullName)} coaching tree`}</title>
-          <rect x={n.badge.cx - 12} y={n.badge.cy - 12} width={24} height={24} className="fill-transparent" />
-          <circle
-            cx={n.badge.cx}
-            cy={n.badge.cy}
-            r={9.5}
-            strokeWidth={1}
-            className="fill-surface stroke-control transition-[fill] group-hover/badge:fill-hover group-focus-visible/badge:stroke-focus group-focus-visible/badge:stroke-2"
-          />
-          <Network x={n.badge.cx - 6} y={n.badge.cy - 6} size={12} strokeWidth={2} aria-hidden="true" focusable="false" className="text-fg-2 group-hover/badge:text-fg-1" />
-        </a>
-      )}
     </g>
   );
 }
