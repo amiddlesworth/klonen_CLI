@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { Card, CardHeader } from "@/components/ui/Card";
-import { SampleChip } from "@/components/ui/Chip";
 import { OrgMark } from "@/components/ui/OrgMark";
 import { TextLink } from "@/components/ui/TextLink";
 import type { JobListItem } from "@/lib/queries/jobsx";
-import { isSampleJob, jobSublineParts, jobsHref } from "./labels";
+import { jobSublineParts, jobsHref } from "./labels";
+import { ListingChip } from "./ListingChip";
 import { PlaceLine } from "./PlaceLine";
 
-/** Rail card "Similar jobs" (§8.9): tile 32, title (whole row links), "Program · ST · Conf", Sample chip. Hidden when empty. */
+/** Rail card "Similar jobs" (§8.9): tile 32, title (whole row links), "Program · ST · Conf", Sample or Demo listing chip. Hidden when empty. */
 export function SimilarJobs({ jobs, roleGroup }: { jobs: JobListItem[]; roleGroup: string }) {
   if (!jobs.length) return null;
   return (
@@ -30,7 +30,7 @@ export function SimilarJobs({ jobs, roleGroup }: { jobs: JobListItem[]; roleGrou
               <span className="min-w-0 flex-1">
                 <span className="block text-small font-semibold text-fg-1 underline-offset-2 group-hover/row:underline">{j.title}</span>
                 <PlaceLine parts={jobSublineParts(j, { type: false })} className="block text-caption text-fg-2" />
-                {isSampleJob(j) && <SampleChip label="Sample listing" className="mt-1" />}
+                <ListingChip job={j} className="mt-1" />
               </span>
             </Link>
           </li>

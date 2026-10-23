@@ -205,6 +205,8 @@ export const shortlists = pgTable("shortlists", {
   ownerUserId: text("owner_user_id").notNull().references(() => users.id),
   name: text("name").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  /** The search opened with a demo listing belongs to the same browser as the listing (jobs.demoScope). Null = seeded or real. */
+  demoScope: text("demo_scope"),
 });
 
 export const shortlistEntries = pgTable(

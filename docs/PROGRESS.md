@@ -33,3 +33,14 @@ Started 2026-10-23 05:07 UTC. Branch: `coach-network-mvp`.
   - Demo data: fictional candidates in the hiring pipeline; sample jobs only at programs with no staff on the network; demo search renamed.
   - New `pipeline/check_dataset.py` asserts the invariants on every run; 17 pipeline test groups, 63 web tests.
   - Fresh 25-stint spot-check after fixes: 21 correct, 3 unverifiable (empty bios), 1 partly correct, 0 wrong.
+
+## Audit #2 (11:17 UTC)
+- Build health green: tsc, eslint, 63 tests, dataset invariants, production build of all 20 routes.
+- Panels: cross-screen consistency (25 findings, 11 major), mobile/accessibility (15, 5 major), security (12, incl. critical GHSA-9qr9-h5gf-34mp in next 15.5.4 / react 19.1.0), fresh spot-check (22/25 correct, 3 minor). The link crawler stalled on the dev server and was stopped; findings were taken from the four finished panels.
+- All findings folded into the integration pass (security upgrade to next 15.5.28 / react 19.1.10 and hardening, consistency, demo honesty, cross-feature wiring).
+
+## Audit #3 / morning wrap-up (14:12 UTC)
+- All ten screens completed their build -> review -> fix rounds.
+- Private demo published: https://claude.ai/artifact/WHdcyt6LcaGe6z51aWZnGf (448 browser-rendered pages + hub).
+- Strategy doc Ingestion section updated with final numbers.
+- Integration pass with full verification running; see docs/MORNING_REPORT.md.

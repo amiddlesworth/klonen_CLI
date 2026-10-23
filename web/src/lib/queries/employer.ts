@@ -10,6 +10,7 @@ import { CURRENT_SEASON } from "@/lib/brand";
 import { seasonRangeCompact, seasonRangeLabel } from "@/lib/format";
 import { escapeLike } from "@/lib/queries/orgs";
 import { countPeople } from "@/lib/queries/searchx";
+import { visibleShortlists } from "@/lib/demo-scope";
 
 /* ------------------------------------------------------------------ types */
 
@@ -69,7 +70,7 @@ export const getEmployerShortlists = cache(async (userId: string): Promise<Short
     .select({ id: shortlists.id, name: shortlists.name, count: count(shortlistEntries.id) })
     .from(shortlists)
     .leftJoin(shortlistEntries, eq(shortlistEntries.shortlistId, shortlists.id))
-    .where(eq(shortlists.ownerUserId, userId))
+    .where(and(eq(shortlists.ownerUserId, userId), await visibleShortlists()))
     .groupBy(shortlists.id)
     .orderBy(asc(shortlists.createdAt), asc(shortlists.id));
 });
@@ -143,7 +144,7 @@ export const getPipelineStatusMap = cache(async (userId: string): Promise<Map<st
     })
     .from(shortlistEntries)
     .innerJoin(shortlists, eq(shortlists.id, shortlistEntries.shortlistId))
-    .where(eq(shortlists.ownerUserId, userId))
+    .where(and(eq(shortlists.ownerUserId, userId), await visibleShortlists()))
     .orderBy(asc(shortlists.createdAt), asc(shortlists.id));
   const map = new Map<string, PipelineStatus>();
   for (const r of rows) if (!map.has(r.personId)) map.set(r.personId, { entryId: r.entryId, stage: r.stage, shortlistId: r.shortlistId, shortlistName: r.shortlistName });

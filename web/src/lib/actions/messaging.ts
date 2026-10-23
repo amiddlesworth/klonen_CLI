@@ -1,37 +1,56 @@
 "use server";
-import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { and, desc, eq, gt, inArray, isNull, like, lt, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { messages, notifications, users } from "@/db/schema";
 import { MAX_MESSAGE_LENGTH } from "@/components/messaging/limits";
-import { DEMO_SCOPE_COOKIE, notificationKinds, otherUserIn, readDemoScope, scopedThreadId, type NotificationFilter } from "@/lib/queries/messaging";
+import { ensureDemoScope, readDemoScope, scopedThreadId, SCOPE_SEP } from "@/lib/demo-scope";
+import { notificationKinds, otherUserIn, type NotificationFilter } from "@/lib/queries/messaging";
 import { getSession } from "@/lib/session";
 
 const SIGNED_OUT = "Pick a demo account in the Me menu to use messaging.";
 
 export type SendMessageResult = { ok: true; id: number } | { ok: false; error: string };
 
+/**
+ * A conversation id as the client names it: the base "{a}:{b}" pair, never a stored per-browser id
+ * ("{a}:{b}#{scope}"). The server adds this browser's own scope itself.
+ */
+const ThreadId = z
+  .string()
+  .min(3)
+  .max(200)
+  .refine((v) => !v.includes(SCOPE_SEP), "This conversation isn't available.");
+
 const SendInput = z.object({
-  threadId: z.string().min(3).max(200),
+  threadId: ThreadId,
   body: z.string().transform((s) => s.trim()).pipe(z.string().min(1, "Write a message first.").max(MAX_MESSAGE_LENGTH, `Keep messages under ${MAX_MESSAGE_LENGTH} characters.`)),
 });
 
-/** Demo accounts: at most this many messages per browser in RATE_WINDOW_MS. */
+/** Demo accounts: at most this many messages per browser (demo scope) in RATE_WINDOW_MS. */
 const RATE_LIMIT = 20;
+/**
+ * And at most this many from all browsers together in RATE_WINDOW_MS. The per-browser limit is keyed
+ * on a cookie the client can drop (and get a fresh allowance), so this server-side cap bounds writes.
+ */
+const GLOBAL_RATE_LIMIT = 300;
 const RATE_WINDOW_MS = 10 * 60_000;
 /** Messages a browser wrote from a demo account are deleted after this long. */
 const DEMO_MESSAGE_TTL_MS = 7 * 24 * 60 * 60_000;
 
-/** This browser's demo message scope, created (httpOnly cookie) on its first message. */
-async function ensureDemoScope(): Promise<string> {
-  const existing = await readDemoScope();
-  if (existing) return existing;
-  const scope = randomBytes(12).toString("hex");
-  (await cookies()).set(DEMO_SCOPE_COOKIE, scope, { httpOnly: true, sameSite: "lax", path: "/", maxAge: DEMO_MESSAGE_TTL_MS / 1000 });
-  return scope;
+/** The other participant of a base thread id, when it is the viewer's and that account exists. */
+async function threadPartner(threadId: string, viewerUserId: string): Promise<string | null> {
+  const otherId = otherUserIn(threadId, viewerUserId);
+  if (!otherId) return null;
+  const [other] = await db.select({ id: users.id }).from(users).where(eq(users.id, otherId)).limit(1);
+  return other ? other.id : null;
+}
+
+/** The stored thread ids this browser may touch for a base thread: the shared one and its own scoped copy. */
+async function ownThreadIds(threadId: string): Promise<string[]> {
+  const scope = await readDemoScope();
+  return scope ? [threadId, scopedThreadId(threadId, scope)] : [threadId];
 }
 
 /**
@@ -48,23 +67,34 @@ export async function sendMessage(input: z.input<typeof SendInput>): Promise<Sen
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "This message couldn't be sent." };
   const { threadId, body } = parsed.data;
   const me = session.user.id;
-  const otherId = otherUserIn(threadId, me);
-  if (!otherId) return { ok: false, error: "This conversation isn't available." };
 
   try {
-    const [other] = await db.select({ id: users.id }).from(users).where(eq(users.id, otherId)).limit(1);
-    if (!other) return { ok: false, error: "This conversation isn't available." };
+    const otherId = await threadPartner(threadId, me);
+    if (!otherId) return { ok: false, error: "This conversation isn't available." };
     const demo = session.user.isDemo;
     let storedThreadId = threadId;
     if (demo) {
+      // The demo answers its sample conversations; it never opens new ones (messaging page: "Starting
+      // new conversations isn't part of the demo"). A conversation exists when it has a seeded row.
+      const [seeded] = await db.select({ id: messages.id }).from(messages).where(eq(messages.threadId, threadId)).limit(1);
+      if (!seeded) return { ok: false, error: "This conversation isn't available." };
       const scope = await ensureDemoScope();
       storedThreadId = scopedThreadId(threadId, scope);
-      const [recent] = await db
-        .select({ n: sql<number>`count(*)::int` })
-        .from(messages)
-        .where(and(like(messages.threadId, `%#${scope}`), gt(messages.sentAt, new Date(Date.now() - RATE_WINDOW_MS))));
-      if ((recent?.n ?? 0) >= RATE_LIMIT) return { ok: false, error: "That's a lot of messages for a demo. Wait a few minutes and try again." };
-      await db.delete(messages).where(and(like(messages.threadId, "%#%"), lt(messages.sentAt, new Date(Date.now() - DEMO_MESSAGE_TTL_MS))));
+      const since = new Date(Date.now() - RATE_WINDOW_MS);
+      const [[recent], [everyone]] = await Promise.all([
+        db
+          .select({ n: sql<number>`count(*)::int` })
+          .from(messages)
+          .where(and(like(messages.threadId, `%${SCOPE_SEP}${scope}`), gt(messages.sentAt, since))),
+        db
+          .select({ n: sql<number>`count(*)::int` })
+          .from(messages)
+          .where(and(like(messages.threadId, `%${SCOPE_SEP}%`), gt(messages.sentAt, since))),
+      ]);
+      if ((recent?.n ?? 0) >= RATE_LIMIT || (everyone?.n ?? 0) >= GLOBAL_RATE_LIMIT) {
+        return { ok: false, error: "That's a lot of messages for a demo. Wait a few minutes and try again." };
+      }
+      await db.delete(messages).where(and(like(messages.threadId, `%${SCOPE_SEP}%`), lt(messages.sentAt, new Date(Date.now() - DEMO_MESSAGE_TTL_MS))));
     }
     const [row] = await db
       .insert(messages)
@@ -77,15 +107,21 @@ export async function sendMessage(input: z.input<typeof SendInput>): Promise<Sen
   }
 }
 
-/** Marks every message the session user received in a thread as read (and refreshes the nav badges). */
-export async function markThreadRead(threadId: string): Promise<{ ok: boolean }> {
+/**
+ * Marks every message the session user received in a thread as read (and refreshes the nav badges).
+ * Only the shared thread and this browser's own scoped copy are touched.
+ */
+export async function markThreadRead(rawThreadId: string): Promise<{ ok: boolean }> {
   const session = await getSession();
-  if (!session || !otherUserIn(threadId, session.user.id)) return { ok: false };
+  const parsed = ThreadId.safeParse(rawThreadId);
+  if (!session || !parsed.success) return { ok: false };
+  const threadId = parsed.data;
   try {
+    if (!(await threadPartner(threadId, session.user.id))) return { ok: false };
     await db
       .update(messages)
       .set({ readAt: new Date() })
-      .where(and(eq(messages.threadId, threadId), eq(messages.toUserId, session.user.id), isNull(messages.readAt)));
+      .where(and(inArray(messages.threadId, await ownThreadIds(threadId)), eq(messages.toUserId, session.user.id), isNull(messages.readAt)));
   } catch {
     return { ok: false };
   }
@@ -93,15 +129,21 @@ export async function markThreadRead(threadId: string): Promise<{ ok: boolean }>
   return { ok: true };
 }
 
-/** Marks the latest message the session user received in a thread as unread again. */
-export async function markThreadUnread(threadId: string): Promise<{ ok: boolean }> {
+/**
+ * Marks the latest message the session user received in a thread as unread again. Only the shared
+ * thread and this browser's own scoped copy are considered, so no other browser's badge moves.
+ */
+export async function markThreadUnread(rawThreadId: string): Promise<{ ok: boolean }> {
   const session = await getSession();
-  if (!session || !otherUserIn(threadId, session.user.id)) return { ok: false };
+  const parsed = ThreadId.safeParse(rawThreadId);
+  if (!session || !parsed.success) return { ok: false };
+  const threadId = parsed.data;
   try {
+    if (!(await threadPartner(threadId, session.user.id))) return { ok: false };
     const [latest] = await db
       .select({ id: messages.id })
       .from(messages)
-      .where(and(eq(messages.threadId, threadId), eq(messages.toUserId, session.user.id)))
+      .where(and(inArray(messages.threadId, await ownThreadIds(threadId)), eq(messages.toUserId, session.user.id)))
       .orderBy(desc(messages.sentAt), desc(messages.id))
       .limit(1);
     if (!latest) return { ok: false };
@@ -113,18 +155,18 @@ export async function markThreadUnread(threadId: string): Promise<{ ok: boolean 
   return { ok: true };
 }
 
-const NotificationId = z.number().int().positive();
+const NotificationRead = z.object({ id: z.number().int().positive().max(2_147_483_647), read: z.boolean() });
 
 /** Marks one of the session user's notifications read or unread. */
 export async function setNotificationRead(id: number, read: boolean): Promise<{ ok: boolean }> {
   const session = await getSession();
-  const parsed = NotificationId.safeParse(id);
+  const parsed = NotificationRead.safeParse({ id, read });
   if (!session || !parsed.success) return { ok: false };
   try {
     await db
       .update(notifications)
-      .set({ readAt: read ? new Date() : null })
-      .where(and(eq(notifications.id, parsed.data), eq(notifications.userId, session.user.id)));
+      .set({ readAt: parsed.data.read ? new Date() : null })
+      .where(and(eq(notifications.id, parsed.data.id), eq(notifications.userId, session.user.id)));
   } catch {
     return { ok: false };
   }

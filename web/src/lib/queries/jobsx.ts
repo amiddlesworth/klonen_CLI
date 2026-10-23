@@ -7,6 +7,7 @@ import { JOB_ROLE_GROUPS, type JobRoleGroup } from "@/components/jobs/labels";
 import { escapeLike } from "./orgs";
 import { personSummaryCols, toSummary, type PersonSummary } from "./people";
 import { getProgramAlumni, getProgramPlayers, type AlumniEntry } from "./program";
+import { visibleJobs, visibleShortlists } from "@/lib/demo-scope";
 
 /** Header and tab counts of the program page, reused for the job rail so both show the same numbers. */
 export { getProgramCounts, type ProgramCounts } from "./program";
@@ -151,7 +152,7 @@ const listOrder = [
 
 /** One page of open jobs matching the filters (posted listings newest first, then samples), with the total and the sample count. */
 export async function searchJobs(f: JobsFilter, page = 1): Promise<{ jobs: JobListItem[]; total: number; samples: number; page: number; totalPages: number }> {
-  const where = whereFor(f);
+  const where = and(whereFor(f), await visibleJobs());
   const [totals] = await db
     .select({ total: count(), samples: sql<number>`count(*) filter (where ${jobs.isDemo} or ${jobs.source} = 'sample')::int` })
     .from(jobs)
@@ -179,7 +180,8 @@ export type JobFacets = { roles: FacetOption[]; states: FacetOption[]; conferenc
  * narrows itself), so every option shows how many jobs choosing it would add.
  */
 export async function getJobFacets(f: JobsFilter, roleLabel: (v: string) => string): Promise<JobFacets> {
-  const base = (skip: "roles" | "states" | "conferences") => whereFor(f, skip);
+  const jobScope = await visibleJobs();
+  const base = (skip: "roles" | "states" | "conferences") => and(whereFor(f, skip), jobScope);
   const [roles, states, confs] = await Promise.all([
     db
       .select({ value: jobs.roleGroup, n: count() })
@@ -225,7 +227,7 @@ export const getJobDetail = cache(async (id: number): Promise<JobDetail | null> 
     })
     .from(jobs)
     .innerJoin(organizations, eq(organizations.id, jobs.orgId))
-    .where(eq(jobs.id, id))
+    .where(and(eq(jobs.id, id), await visibleJobs()))
     .limit(1);
   return row ?? null;
 });
@@ -321,7 +323,7 @@ export async function getSimilarJobs(job: Pick<JobDetail, "id" | "roleGroup" | "
     .select(listCols)
     .from(jobs)
     .innerJoin(organizations, eq(organizations.id, jobs.orgId))
-    .where(and(eq(jobs.status, "open"), ne(jobs.id, job.id), or(sql`${jobs.roleGroup} = ${job.roleGroup}`, job.unit ? sql`${jobs.unit} = ${job.unit}` : sql`false`)))
+    .where(and(eq(jobs.status, "open"), ne(jobs.id, job.id), or(sql`${jobs.roleGroup} = ${job.roleGroup}`, job.unit ? sql`${jobs.unit} = ${job.unit}` : sql`false`), await visibleJobs()))
     .limit(200);
   const mine = titleTokens(job.title);
   const scored = rows.map((j) => {
@@ -432,7 +434,7 @@ export async function getListingPipelineId(userId: string, job: Pick<JobDetail, 
   const [row] = await db
     .select({ id: shortlists.id })
     .from(shortlists)
-    .where(and(eq(shortlists.ownerUserId, userId), eq(shortlists.name, listingSearchName(job.title)), gte(shortlists.createdAt, job.postedAt)))
+    .where(and(eq(shortlists.ownerUserId, userId), eq(shortlists.name, listingSearchName(job.title)), gte(shortlists.createdAt, job.postedAt), await visibleShortlists()))
     .orderBy(asc(shortlists.createdAt), asc(shortlists.id))
     .limit(1);
   return row?.id ?? null;

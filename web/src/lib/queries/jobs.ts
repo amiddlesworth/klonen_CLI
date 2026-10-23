@@ -5,11 +5,12 @@ import { jobs, organizations } from "@/db/schema";
 import { conferenceShort } from "@/lib/format";
 import { toJobCard, type JobCardData } from "./feed";
 import { conferenceKey } from "./orgs";
+import { visibleJobs } from "@/lib/demo-scope";
 
 export type JobFilters = { roleGroup?: string; state?: string; conference?: string; q?: string };
 
 export async function listJobs(f: JobFilters = {}): Promise<JobCardData[]> {
-  const where: SQL[] = [eq(jobs.status, "open")];
+  const where: SQL[] = [eq(jobs.status, "open"), await visibleJobs()];
   if (f.roleGroup) where.push(sql`${jobs.roleGroup} = ${f.roleGroup}`);
   if (f.state) where.push(eq(organizations.state, f.state));
   // Footnote markers never split a conference: "NACC" (or "NACC[g]") matches every NACC program.
@@ -44,7 +45,7 @@ export async function getJob(id: number) {
     .select({ job: jobs, org: organizations })
     .from(jobs)
     .innerJoin(organizations, eq(organizations.id, jobs.orgId))
-    .where(eq(jobs.id, id))
+    .where(and(eq(jobs.id, id), await visibleJobs()))
     .limit(1);
   return row ?? null;
 }

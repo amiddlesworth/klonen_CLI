@@ -249,6 +249,57 @@ export function conferenceShort(abbr: string | null | undefined): string | null 
   return abbr.replace(/\[[^\]]*\]/g, "").trim() || null;
 }
 
+/* ---------- Places (one formatter for every screen, audit X10) ---------- */
+
+const STATE_NAME: Record<string, string> = {
+  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California", CO: "Colorado", CT: "Connecticut",
+  DE: "Delaware", DC: "District of Columbia", FL: "Florida", GA: "Georgia", HI: "Hawaii", ID: "Idaho", IL: "Illinois",
+  IN: "Indiana", IA: "Iowa", KS: "Kansas", KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland",
+  MA: "Massachusetts", MI: "Michigan", MN: "Minnesota", MS: "Mississippi", MO: "Missouri", MT: "Montana",
+  NE: "Nebraska", NV: "Nevada", NH: "New Hampshire", NJ: "New Jersey", NM: "New Mexico", NY: "New York",
+  NC: "North Carolina", ND: "North Dakota", OH: "Ohio", OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania",
+  RI: "Rhode Island", SC: "South Carolina", SD: "South Dakota", TN: "Tennessee", TX: "Texas", UT: "Utah",
+  VT: "Vermont", VA: "Virginia", WA: "Washington", WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming",
+  PR: "Puerto Rico",
+};
+
+/** "OR" -> "Oregon", for a title or aria-label next to the abbreviation; unknown codes pass through. */
+export function stateName(code: string | null | undefined): string | null {
+  const c = code?.trim();
+  if (!c) return null;
+  return STATE_NAME[c.toUpperCase()] ?? c;
+}
+
+/**
+ * Where a program or job is, for headers, meta lines and rails: "Forest Grove, OR" when the city is
+ * known, else the two-letter state alone ("OR"); null when neither is. States are always abbreviated
+ * (spell them out only in a title, with stateName()); a city is never invented.
+ */
+export function placeLong(city: string | null | undefined, state: string | null | undefined): string | null {
+  const c = city?.trim() || null;
+  const s = state?.trim().toUpperCase() || null;
+  if (c && s) return `${c}, ${s}`;
+  return c ?? s;
+}
+
+/** The state alone ("OR"), for compact rows that never show a city (conference peers). */
+export function placeShort(state: string | null | undefined): string | null {
+  return state?.trim().toUpperCase() || null;
+}
+
+/**
+ * A posted location as a city and state: "Forest Grove, OR" -> { city: "Forest Grove", state: "OR" },
+ * "OR" -> { state: "OR" }, "Forest Grove" -> { city: "Forest Grove" }.
+ */
+export function parsePlace(text: string | null | undefined): { city: string | null; state: string | null } {
+  const t = text?.trim();
+  if (!t) return { city: null, state: null };
+  const m = /^(.*?),\s*([A-Za-z]{2})$/.exec(t);
+  if (m) return { city: m[1].trim() || null, state: m[2].toUpperCase() };
+  if (/^[A-Za-z]{2}$/.test(t)) return { city: null, state: t.toUpperCase() };
+  return { city: t, state: null };
+}
+
 export type AvailabilityAudience = "search_firms" | "selected_programs" | "all_except_current";
 
 /**

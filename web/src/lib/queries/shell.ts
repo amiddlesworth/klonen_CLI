@@ -3,15 +3,20 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import type { AvailabilityAudience } from "@/lib/format";
 import { db } from "@/db";
 import { availability, messages, notifications, organizations, people, users } from "@/db/schema";
+import { currentDemoScope, messageVisibleTo } from "@/lib/demo-scope";
 import { DEMO_USER_ID, type DemoRole } from "@/lib/session";
 
-/** Unread counts for the nav badges. */
+/**
+ * Unread counts for the nav badges. Messages count only when this browser may see them (seeded, or
+ * written in this browser's demo scope), so another visitor's private demo messages never move it.
+ */
 export async function getShellCounts(userId: string): Promise<{ unreadMessages: number; newNotifications: number }> {
+  const scope = await currentDemoScope();
   const [[m], [n]] = await Promise.all([
     db
       .select({ n: sql<number>`count(*)::int` })
       .from(messages)
-      .where(and(eq(messages.toUserId, userId), isNull(messages.readAt))),
+      .where(and(eq(messages.toUserId, userId), isNull(messages.readAt), messageVisibleTo(scope))),
     db
       .select({ n: sql<number>`count(*)::int` })
       .from(notifications)

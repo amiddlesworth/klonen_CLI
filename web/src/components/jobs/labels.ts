@@ -1,5 +1,5 @@
 import { CURRENT_SEASON } from "@/lib/brand";
-import { ROLE_GROUP_LABEL, conferenceShort, timeAgo, type RoleGroup } from "@/lib/format";
+import { ROLE_GROUP_LABEL, conferenceShort, parsePlace, placeLong, timeAgo, type RoleGroup } from "@/lib/format";
 
 /* Plain helpers shared by the jobs pages and components (safe on server and client). */
 
@@ -30,10 +30,24 @@ export function isOpenJob(j: { status?: string | null }): boolean {
   return (j.status ?? "open") === "open";
 }
 
-/** A job is a sample when it is demo data or seeded as a sample listing (§6.4: "Sample listing"). */
+/**
+ * A job that is not a real opening: seeded sample listings and listings posted from the demo
+ * accounts. Counts and aggregates use this ("3 sample jobs"); each record names its kind with
+ * listingKind() (§6.4: "Sample listing" for seeded samples, "Demo listing" for demo posts).
+ */
 export function isSampleJob(j: { isDemo: boolean; source: string }): boolean {
   return j.isDemo || j.source === "sample";
 }
+
+export type ListingKind = "sample" | "demo";
+
+/** "sample": seeded sample listing; "demo": posted from the athletic director demo account; null: a real listing. */
+export function listingKind(j: { isDemo: boolean; source: string }): ListingKind | null {
+  if (j.source === "sample") return "sample";
+  return j.isDemo ? "demo" : null;
+}
+
+export const LISTING_LABEL: Record<ListingKind, string> = { sample: "Sample listing", demo: "Demo listing" };
 
 type SublineJob = {
   employmentType: string;
@@ -42,33 +56,29 @@ type SublineJob = {
 };
 
 /**
- * Where the job is: the posted "City, ST" when there is one, else the program's city and state.
- * Registry short names already carry the state ("Pacific (OR)"), so the state is dropped when it
- * would only repeat it ("Pacific (OR) · Forest Grove", not "Pacific (OR) · Forest Grove, OR · OR").
+ * Where the job is (lib/format placeLong): the posted "City, ST" when there is one, else the
+ * program's city and state; the state alone when no city is known ("TX"). Never a city we don't have.
  */
 export function jobPlace(j: Pick<SublineJob, "location" | "org">): string | null {
-  const state = j.org.state;
-  const posted = j.location?.trim() || null;
-  const city = posted ? (posted.includes(",") ? posted.split(",")[0].trim() : posted === state ? null : posted) : j.org.city;
-  const stateInName = !!state && j.org.shortName.trim().endsWith(`(${state})`);
-  return [city, stateInName ? null : state].filter(Boolean).join(", ") || null;
+  const posted = parsePlace(j.location);
+  return placeLong(posted.city ?? j.org.city, posted.state ?? j.org.state);
 }
 
 /**
- * The program as lines name it: its full name, as in the job header ("Austin College", never the
- * short "Austin", which reads as the city). Short names are for tiles only.
+ * The program's full name, for page headers only ("Austin College"). Meta lines use the short name
+ * next to an explicit place ("Austin · TX · SCAC · Full-time"), so it never reads as the city.
  */
 export function programName(org: { name?: string | null; shortName: string }): string {
   return org.name?.trim() || org.shortName;
 }
 
 /**
- * The segments of a job's place line, in order: program, place, conference, employment type.
- * "Allegheny College · Meadville · PAC · Full-time", "Austin College · TX · SCAC · Full-time".
+ * The segments of a job's meta line, in order: short name, place, conference, employment type.
+ * "Pacific (OR) · Forest Grove, OR · NWC · Full-time", "Austin · TX · SCAC · Full-time" (audit X10).
  */
 export function jobSublineParts(j: SublineJob, opts: { org?: boolean; type?: boolean } = {}): string[] {
   const { org = true, type = true } = opts;
-  return [org ? programName(j.org) : null, jobPlace(j), conferenceShort(j.org.conferenceAbbr), type ? j.employmentType : null].filter((s): s is string => !!s);
+  return [org ? j.org.shortName : null, jobPlace(j), conferenceShort(j.org.conferenceAbbr), type ? j.employmentType : null].filter((s): s is string => !!s);
 }
 
 /** The place line as one string (titles, metadata). Rendered lines use PlaceLine, which keeps each segment whole. */

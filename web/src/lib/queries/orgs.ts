@@ -3,6 +3,7 @@ import { and, asc, desc, eq, ilike, ne, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { jobs, organizations, people, tenures } from "@/db/schema";
 import { personSummaryCols, toSummary, type PersonSummary } from "./people";
+import { visibleJobs } from "@/lib/demo-scope";
 
 export type StaffUnit = "head" | "offense" | "defense" | "special_teams" | "support";
 
@@ -81,7 +82,7 @@ export async function getAlumni(orgId: string, limit = 60) {
 }
 
 export async function getOrgJobs(orgId: string) {
-  return db.select().from(jobs).where(and(eq(jobs.orgId, orgId), eq(jobs.status, "open"))).orderBy(desc(jobs.postedAt));
+  return db.select().from(jobs).where(and(eq(jobs.orgId, orgId), eq(jobs.status, "open"), await visibleJobs())).orderBy(desc(jobs.postedAt));
 }
 
 /** Escapes LIKE wildcards in user input (backslash is Postgres' default LIKE escape). */

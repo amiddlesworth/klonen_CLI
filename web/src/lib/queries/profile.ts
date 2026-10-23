@@ -18,6 +18,7 @@ import {
   type TenureRow,
   type TreeLink,
 } from "./people";
+import { visibleJobs } from "@/lib/demo-scope";
 
 export type { ExperienceGroup, PersonSummary, Profile, TenureRow, Tree, TreeLink } from "./people";
 export type { LinkYears } from "@/components/profile/linkYears";
@@ -187,7 +188,7 @@ export async function getProgramCard(orgId: string): Promise<ProgramCard | null>
         sample: sql<number>`count(*) filter (where ${jobs.isDemo} or ${jobs.source} = 'sample')::int`,
       })
       .from(jobs)
-      .where(and(eq(jobs.orgId, orgId), eq(jobs.status, "open"))),
+      .where(and(eq(jobs.orgId, orgId), eq(jobs.status, "open"), await visibleJobs())),
   ]);
   return {
     id: org.id,

@@ -5,6 +5,7 @@ import { jobs, organizations, people, tenures, treeEdges } from "@/db/schema";
 import { CURRENT_SEASON } from "@/lib/brand";
 import { conferenceKey } from "./orgs";
 import { personSummaryCols, toSummary, type PersonSummary } from "./people";
+import { visibleJobs } from "@/lib/demo-scope";
 
 export type Move = {
   kind: "joined" | "promoted";
@@ -121,7 +122,7 @@ export function toJobCard(x: JobRow): JobCardData {
 }
 
 export async function getRecentJobs(limit = 5): Promise<JobCardData[]> {
-  const rows = await db.select(jobCols).from(jobs).innerJoin(organizations, eq(organizations.id, jobs.orgId)).where(eq(jobs.status, "open")).orderBy(desc(jobs.postedAt)).limit(limit);
+  const rows = await db.select(jobCols).from(jobs).innerJoin(organizations, eq(organizations.id, jobs.orgId)).where(and(eq(jobs.status, "open"), await visibleJobs())).orderBy(desc(jobs.postedAt)).limit(limit);
   return rows.map(toJobCard);
 }
 
@@ -143,8 +144,9 @@ export async function getFeed(limit = 24): Promise<FeedItem[]> {
 /** Numbers for the right-rail carousel tracker. Conferences are grouped on the cleaned abbreviation ("NACC[g]" counts as NACC). */
 export async function getCarouselStats() {
   const newHire = and(eq(tenures.isCurrent, true), eq(tenures.startYear, CURRENT_SEASON), eq(tenures.asPlayer, false), eq(people.isDemo, false));
+  const jobScope = await visibleJobs();
   const [[{ openJobs }], [{ hires }], byConf] = await Promise.all([
-    db.select({ openJobs: count() }).from(jobs).where(eq(jobs.status, "open")),
+    db.select({ openJobs: count() }).from(jobs).where(and(eq(jobs.status, "open"), jobScope)),
     db.select({ hires: count() }).from(tenures).innerJoin(people, eq(people.id, tenures.personId)).where(newHire),
     db
       .select({ conference: conferenceKey, n: count() })

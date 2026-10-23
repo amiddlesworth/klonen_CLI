@@ -8,6 +8,7 @@ import { CURRENT_SEASON } from "@/lib/brand";
 import { conferenceShort, seasonSpans, type StintSpan } from "@/lib/format";
 import { getOrg, getOrgJobs } from "./orgs";
 import { personSummaryCols, toSummary, type PersonSummary } from "./people";
+import { visibleJobsRaw } from "@/lib/demo-scope";
 
 /*
  * Queries for the program page (/programs/[slug], DESIGN.md §8.6). Builds on lib/queries/orgs.ts
@@ -51,6 +52,7 @@ export type ProgramCounts = {
 
 /** Header and tab counts. Each uses the same filters as the list it counts, so the numbers always match. */
 export const getProgramCounts = cache(async (orgId: string): Promise<ProgramCounts> => {
+  const jobScope = await visibleJobsRaw();
   const res = await db.execute<{ staff: number; coached: number; played: number; jobs: number; sample_jobs: number }>(sql`
     select
       (select count(*)::int from people where current_org_id = ${orgId} and not is_demo) as staff,
@@ -59,8 +61,8 @@ export const getProgramCounts = cache(async (orgId: string): Promise<ProgramCoun
           and p.current_org_id is distinct from ${orgId}) as coached,
       (select count(distinct t.person_id)::int from tenures t join people p on p.id = t.person_id
         where t.org_id = ${orgId} and t.as_player and t.sport = 'football' and not p.is_demo) as played,
-      (select count(*)::int from jobs where org_id = ${orgId} and status = 'open') as jobs,
-      (select count(*)::int from jobs where org_id = ${orgId} and status = 'open' and (source = 'sample' or is_demo)) as sample_jobs`);
+      (select count(*)::int from jobs where org_id = ${orgId} and status = 'open' and ${jobScope}) as jobs,
+      (select count(*)::int from jobs where org_id = ${orgId} and status = 'open' and ${jobScope} and (source = 'sample' or is_demo)) as sample_jobs`);
   const r = res.rows[0];
   return { staff: r?.staff ?? 0, coached: r?.coached ?? 0, played: r?.played ?? 0, jobs: r?.jobs ?? 0, sampleJobs: r?.sample_jobs ?? 0 };
 });

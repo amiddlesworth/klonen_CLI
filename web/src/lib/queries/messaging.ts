@@ -1,9 +1,9 @@
 import "server-only";
-import { cookies } from "next/headers";
 import { and, asc, desc, eq, inArray, ne, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { jobs, messages, notifications, organizations, people, tenures, treeEdges, users } from "@/db/schema";
 import { CURRENT_SEASON } from "@/lib/brand";
+import { DEMO_SCOPE_COOKIE, SCOPE_SEP, currentDemoScope, isDemoScope, jobVisibleTo, messageVisibleTo, readDemoScope, scopedThreadId } from "@/lib/demo-scope";
 
 /* ------------------------------------------------------- demo message scope */
 
@@ -12,33 +12,14 @@ import { CURRENT_SEASON } from "@/lib/brand";
  * under "{threadId}#{scope}", where the scope is a random id in an httpOnly cookie, and only that
  * browser lists them. Nothing a visitor types is ever shown to another visitor under a demo name
  * (the coach demo is a real coach). Seeded demo messages have no scope and everyone sees them.
+ * The scope itself (cookie, format, visibility rules) lives in lib/demo-scope.ts.
  */
-export const DEMO_SCOPE_COOKIE = "cn_demo_scope";
-const SCOPE_SEP = "#";
+export { DEMO_SCOPE_COOKIE, isDemoScope, readDemoScope, scopedThreadId };
 /** The separator as a SQL literal, so the grouped expression is identical in SELECT and GROUP BY. */
 const SEP_SQL = sql.raw(`'${SCOPE_SEP}'`);
-const SCOPE_PATTERN = /^[a-f0-9]{24}$/;
-
-/** This browser's demo message scope, or null before it has sent anything. */
-export async function readDemoScope(): Promise<string | null> {
-  const v = (await cookies()).get(DEMO_SCOPE_COOKIE)?.value;
-  return v && SCOPE_PATTERN.test(v) ? v : null;
-}
-
-export function isDemoScope(v: string): boolean {
-  return SCOPE_PATTERN.test(v);
-}
-
-/** Where a message written in this browser is stored. */
-export function scopedThreadId(threadId: string, scope: string): string {
-  return `${threadId}${SCOPE_SEP}${scope}`;
-}
 
 /** Rows the viewer may see: unscoped (seeded) messages, plus this browser's own scoped ones. */
-function visibleTo(scope: string | null) {
-  const unscoped = sql`strpos(${messages.threadId}, ${SEP_SQL}) = 0`;
-  return scope ? or(unscoped, sql`split_part(${messages.threadId}, ${SEP_SQL}, 2) = ${scope}`)! : unscoped;
-}
+const visibleTo = messageVisibleTo;
 
 const baseThreadId = sql<string>`split_part(${messages.threadId}, ${SEP_SQL}, 1)`;
 
@@ -430,7 +411,7 @@ export async function listNotifications(userId: string, personId: string | null 
           .select({ id: jobs.id, title: jobs.title, source: jobs.source, isDemo: jobs.isDemo, orgName: organizations.name, orgShortName: organizations.shortName })
           .from(jobs)
           .innerJoin(organizations, eq(organizations.id, jobs.orgId))
-          .where(or(jobIds.length ? inArray(jobs.id, jobIds) : sql`false`, jobTitles.length ? inArray(jobs.title, jobTitles) : sql`false`))
+          .where(and(or(jobIds.length ? inArray(jobs.id, jobIds) : sql`false`, jobTitles.length ? inArray(jobs.title, jobTitles) : sql`false`), jobVisibleTo(await currentDemoScope())))
           .orderBy(asc(jobs.id))
       : [];
   const toJob = (j: (typeof jobRows)[number]): NotificationJob => ({

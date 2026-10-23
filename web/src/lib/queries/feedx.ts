@@ -13,6 +13,7 @@ import type { Session } from "@/lib/session";
 import { getMoves, getRecentJobs } from "./feed";
 import { getPeopleSummaries, getRelated } from "./people";
 import { getFollowedOrgIds } from "./program";
+import { visibleJobs } from "@/lib/demo-scope";
 
 /*
  * Home feed queries (DESIGN.md §8.5). Moves come from getMoves() (lib/queries/feed.ts) and are
@@ -157,6 +158,9 @@ export type FeedJob = {
   roleGroup: string;
   employmentType: string;
   isSample: boolean;
+  /** For the record's own chip: "sample" seeded listings read "Sample listing", demo posts "Demo listing". */
+  source: string;
+  isDemo: boolean;
   org: FeedOrg;
   matchesPosition: boolean;
   atViewerProgram: boolean;
@@ -806,6 +810,8 @@ export const getFeedJobs = cache(async (viewer: FeedViewer): Promise<FeedJob[]> 
       roleGroup: j.roleGroup,
       employmentType: j.employmentType,
       isSample: j.source === "sample" || !!d?.isDemo,
+      source: j.source,
+      isDemo: !!d?.isDemo,
       org,
       matchesPosition: positionKeys(j.title).some((k) => viewerKeys.has(k)),
       atViewerProgram: !!viewer.org && org.id === viewer.org.id,
@@ -962,6 +968,7 @@ const isHire = (m: FeedMove) => m.kind === "joined" || m.kind === "returned";
  * the program, returns included) and promotions (a more senior role at the same program).
  */
 export async function getCarouselTracker(viewer: FeedViewer): Promise<CarouselTracker> {
+  const jobScope = await visibleJobs();
   const [moves, [{ programs }], [{ open, sample }]] = await Promise.all([
     getAllFeedMoves(),
     db
@@ -976,7 +983,7 @@ export async function getCarouselTracker(viewer: FeedViewer): Promise<CarouselTr
       })
       .from(jobs)
       .innerJoin(organizations, eq(organizations.id, jobs.orgId))
-      .where(and(eq(jobs.status, "open"), eq(organizations.level, FEED_LEVEL))),
+      .where(and(eq(jobs.status, "open"), eq(organizations.level, FEED_LEVEL), jobScope)),
   ]);
   const byConf = new Map<string, TrackerRow>();
   for (const m of moves) {

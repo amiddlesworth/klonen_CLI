@@ -1,5 +1,6 @@
 import { Briefcase } from "lucide-react";
 import { JobCard, type JobCardJob } from "@/components/jobs/JobCard";
+import { listingKind } from "@/components/jobs/labels";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { cn } from "@/lib/cn";
@@ -10,27 +11,30 @@ import { jobsCount } from "./text";
 type Job = Awaited<ReturnType<typeof getProgramJobs>>[number];
 
 /**
- * Jobs tab (§8.6): the jobs pages' JobCard rows (Save + View job, Sample listing chip first, salary
- * line) in one card, split by dividers, so a job looks the same here as on /jobs. Empty: "No open
+ * Jobs tab (§8.6): the shared JobCard rows (Save + View job, Sample or Demo listing chip first,
+ * salary line) in one card, split by dividers, so a job looks the same here as on /jobs and in the feed. Empty: "No open
  * jobs at {Program}." with a secondary "Set a job alert" (the program's own athletic director posts
  * from the header instead).
  */
 export async function JobsTab({ org, canPost, userId }: { org: ProgramOrg; canPost: boolean; userId?: string | null }) {
   const jobs = await getProgramJobs(org.id);
   const alertOn = !jobs.length && !canPost && (await getJobAlertOrgIds(userId)).includes(org.id);
-  const samples = jobs.filter(isSample).length;
+  const kinds = new Set(jobs.map((j) => listingKind(j)));
+  // "2 sample listings" / "1 demo listing" when every open job is one kind of non-real listing.
+  const onlyKind = kinds.size === 1 ? [...kinds][0] : null;
   return (
     <Card padding="main" aria-labelledby="jobs-title">
       <CardHeader
         id="jobs-title"
         title="Open jobs"
-        meta={jobs.length ? (samples === jobs.length ? `${jobs.length} sample ${jobs.length === 1 ? "listing" : "listings"}` : jobsCount(jobs.length)) : undefined}
+        meta={jobs.length ? (onlyKind ? `${jobs.length} ${onlyKind} ${jobs.length === 1 ? "listing" : "listings"}` : jobsCount(jobs.length)) : undefined}
       />
       {jobs.length ? (
         <ul className="divide-y divide-divider">
           {jobs.map((j, i) => (
             <li key={j.id}>
               <JobCard
+                layout="list"
                 job={toJobCard(j, org)}
                 href={`/jobs/${j.id}`}
                 headingLevel="h3"
@@ -54,16 +58,8 @@ export async function JobsTab({ org, canPost, userId }: { org: ProgramOrg; canPo
   );
 }
 
-function isSample(j: Job) {
-  return j.source === "sample" || j.isDemo;
-}
-
-/**
- * JobCard data for a job at this program. Registry programs carry their state in the short name
- * ("Pacific (OR)"), so the state is left out of the meta line when it would only repeat it.
- */
+/** JobCard data for a job at this program (the same meta line as /jobs and the feed: "Pacific (OR) · OR · NWC · Full-time"). */
 function toJobCard(j: Job, org: ProgramOrg): JobCardJob {
-  const stateInName = !!org.state && org.shortName.includes(`(${org.state})`);
   return {
     id: j.id,
     title: j.title,
@@ -74,12 +70,14 @@ function toJobCard(j: Job, org: ProgramOrg): JobCardJob {
     postedAt: j.postedAt,
     source: j.source,
     isDemo: j.isDemo,
+    location: j.location,
     org: {
       shortName: org.shortName,
       name: org.name,
       city: org.city,
-      state: stateInName && !org.city ? null : org.state,
+      state: org.state,
       conferenceAbbr: org.conferenceAbbr,
+      conference: org.conference,
       level: org.level,
     },
   };
