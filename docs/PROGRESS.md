@@ -19,3 +19,10 @@ Started 2026-10-23 05:07 UTC. Branch: `coach-network-mvp`.
 - Coverage: 1,255 coaches (58%) have at least one prior coaching stop; bios: 51% full, 17% thin, 32% empty.
 - Coaching tree: 1,393 "worked under" and 4,633 "worked alongside" edges from overlapping seasons.
 - Org matching fixes: NCAA names carry state suffixes ("Central College (Iowa)") and formal forms ("State University of New York at Cortland"); added alias rules, level-aware disambiguation (Trinity CT vs TX), and a small manual alias map.
+
+## Audit #1 (08:10 UTC)
+- Build health: `tsc` 0 errors, `eslint` 0 errors (1 unused import fixed), vitest 21/21, pipeline tests 13/13, `next build` passes (built in a copy so the shared dev server is untouched).
+- Data spot-check, 25 random stints from the full run, two independent verifiers: 18-20 correct, 3-5 partly correct, 2 unverifiable (empty bios), **0 wrong, 0 wrong-school matches**. Partly-correct cases: years derived from durations flagged as explicit; one basketball stint recorded as football.
+- Adversarial review + dataset sweep: 42 findings raised, **30 confirmed** by a skeptic pass, 12 rejected. Biggest: unguarded fuzzy org matches merging different schools; undated current stints producing no tree edges; bare position titles classed "other"; head-coach detection catching JV/interim roles; non-football stints in the football data; one duplicated person; titles read from the wrong table column at two programs; feed/alumni queries choosing the wrong stint; seeded hiring pipeline and sample jobs implying things about real coaches.
+- Decision: a real coach can be the demo "view as" persona, but we never mark a real person's profile as claimed; public profile stays Unclaimed.
+- Fixes: in progress (pipeline+dataset and web data layer in parallel, then fresh verification).

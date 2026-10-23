@@ -1,0 +1,307 @@
+{
+ "spotA": {
+  "verdicts": [
+   {
+    "n": 1,
+    "verdict": "correct"
+   },
+   {
+    "n": 2,
+    "verdict": "unverifiable",
+    "problem": "The bio file has only the header (name, title, URL) and no body text after '---'. Org and role match only the header TITLE and the athletics.augustana.edu URL; no bio text supports the stint."
+   },
+   {
+    "n": 3,
+    "verdict": "correct"
+   },
+   {
+    "n": 4,
+    "verdict": "correct"
+   },
+   {
+    "n": 5,
+    "verdict": "correct"
+   },
+   {
+    "n": 6,
+    "verdict": "correct"
+   },
+   {
+    "n": 7,
+    "verdict": "correct"
+   },
+   {
+    "n": 8,
+    "verdict": "correct"
+   },
+   {
+    "n": 9,
+    "verdict": "correct"
+   },
+   {
+    "n": 10,
+    "verdict": "correct",
+    "problem": "Cosmetic only: the role string 'Head Football Coach (16 years) / coach' has a duration in it and a stray '/ coach' that seems to come from merging in the 35-year coaching/teaching career line. The substance (16 years as head coach at Greenville HS, no years given, not current) is supported."
+   },
+   {
+    "n": 11,
+    "verdict": "correct"
+   },
+   {
+    "n": 12,
+    "verdict": "correct"
+   },
+   {
+    "n": 13,
+    "verdict": "partly_correct",
+    "problem": "startYear 2023 is computed: the bio only says 'in his third year as an assistant coach' plus 'for the 2025 season', and never states 2023, so yearsExplicit=true is wrong (should be false). The 'Defensive Line' role is only tied to 2025 ('will be helping with the defensive line for the 2025 season'); the bio does not say what he coached in 2023-24."
+   },
+   {
+    "n": 14,
+    "verdict": "correct"
+   },
+   {
+    "n": 15,
+    "verdict": "correct"
+   },
+   {
+    "n": 16,
+    "verdict": "partly_correct",
+    "problem": "The bio never gives 2007-2017 as the tenure. It says '11 years as the head coach' and 'Prior to joining the Ursinus staff in 2018', so 2007 is worked back from 11 years. The years are plausible, but yearsExplicit=true is wrong (should be false)."
+   },
+   {
+    "n": 17,
+    "verdict": "correct",
+    "problem": "Minor: the bio literally says 'three seasons (2022-2025)'. endYear 2024 is the right fall-season reading (three seasons, then joined Norwich ahead of the 2025 season), but it differs from the evidence text."
+   },
+   {
+    "n": 18,
+    "verdict": "correct"
+   },
+   {
+    "n": 19,
+    "verdict": "correct"
+   },
+   {
+    "n": 20,
+    "verdict": "correct"
+   },
+   {
+    "n": 21,
+    "verdict": "partly_correct",
+    "problem": "The bio never mentions 2024. It says only 'served as offensive coordinator and assistant head coach for one season' before joining George Fox in March 2025, so 2024-2024 is an inference and yearsExplicit=true is wrong (should be false)."
+   },
+   {
+    "n": 22,
+    "verdict": "correct"
+   },
+   {
+    "n": 23,
+    "verdict": "correct",
+    "problem": "Minor: yearsExplicit=false is conservative. The bio ties MSU to the 2010 Big Ten title season, has him at Culver-Stockton from 2011 and at NMU through 2009, so 2010 is well supported."
+   },
+   {
+    "n": 24,
+    "verdict": "unverifiable",
+    "problem": "The bio file has only the header (name, title, URL) and no body text. Role and org match only the header TITLE and the bridgewatereagles.com URL; no bio text supports the stint."
+   },
+   {
+    "n": 25,
+    "verdict": "correct"
+   }
+  ],
+  "summary": "I checked all 25 stints in /home/user/klonen_cli/pipeline/audits/audit1_sample.json against their bio files in /home/user/klonen_cli/pipeline/work/bios/. Results: 20 correct, 3 partly correct (#13, #16, #21), 2 unverifiable (#2, #24), 0 wrong.\n\nNone of the organization matches are wrong. That includes the ambiguous names: Augustana College (IL), Maryville College (TN), Pacific University (OR) and Bridgewater College (VA) all agree with the athletics-site domains.\n\nAll three partly-correct stints have the same flaw: the years were worked out from a duration but flagged as stated in the bio (yearsExplicit=true). The design spec (design/proposals/a-faithful/DESIGN.md) and web/src/components/data/InferredYear.tsx say a false flag means 'inferred from the source bio', so these should be false.\n- #13 Arshinkoff: 'third year' in 2025 became startYear 2023. The defensive-line role is also only stated for 2025.\n- #16 Devlin: '11 years' before joining Ursinus in 2018 became 2007-2017.\n- #21 Mondt: 'one season' before a March 2025 hire became 2024.\n\nThe two unverifiable stints (#2 Carter Bell, #24 Miles Ahles) have bio files with only the header and no body text, so each stint rests on the page title alone.\n\nMinor notes on stints marked correct: #10 has a malformed role string, 'Head Football Coach (16 years) / coach'. #17 turns the bio's '2022-2025' into fall seasons 2022-2024, which is the right reading. #23 is flagged yearsExplicit=false even though the bio ties the job to the 2010 season."
+ },
+ "spotB": {
+  "verdicts": [
+   {
+    "n": 1,
+    "verdict": "correct",
+    "problem": "None. The bio's career table says '2023-Present Johns Hopkins University Offensive Coordinator/QBs', and 'seventh year on staff, fourth as OC' in 2026 also works out to a 2023 start."
+   },
+   {
+    "n": 2,
+    "verdict": "unverifiable",
+    "problem": "The bio body is empty: there is nothing after the '---' header. Only the scraped TITLE header ('Assistant Coach - Wide Receivers / Strength & Performance') supports the role. Null years and yearsExplicit=false are honest, and the org match (athletics.augustana.edu = Augustana College IL, D-III, not Augustana SD) looks right."
+   },
+   {
+    "n": 3,
+    "verdict": "correct",
+    "problem": "None. 'promoted to defensive coordinator in the spring of 2026' supports startYear 2026, and the DB role comes from the title. TCNJ is the right org."
+   },
+   {
+    "n": 4,
+    "verdict": "correct",
+    "problem": "None. 'OC and pass game coordinator at Grand Rapids South Christian High School from 2016-25' is explicit, and 'state playoffs all 10 seasons' matches 2016-2025 (10 seasons)."
+   },
+   {
+    "n": 5,
+    "verdict": "correct",
+    "problem": "None. 'welcomed back ... as its defensive coordinator for the 2025 season', and the current page title is Defensive Coordinator, so isCurrent is justified."
+   },
+   {
+    "n": 6,
+    "verdict": "correct",
+    "problem": "None. 'defensive coordinator position at North Carolina, where he coached from 2004-06' is explicit, and UNC Chapel Hill is the right match."
+   },
+   {
+    "n": 7,
+    "verdict": "correct",
+    "problem": "Minor. The body only says 'Defensive Backs Coach'; 'Special Teams Coordinator' comes from the page title. 'joined ... ahead of the 2026 season' supports 2026, and the earlier 2021 RB stint is separate. Maryville College TN (mcscots.com) is the right match."
+   },
+   {
+    "n": 8,
+    "verdict": "correct",
+    "problem": "None. 'Tongue River High School's Special Teams Coordinator in Dayton, Wyoming for the 2025 season' is explicit, and the stint ended when he moved to UW-Eau Claire for 2026."
+   },
+   {
+    "n": 9,
+    "verdict": "correct",
+    "problem": "None. 'Assistant coach from 2022-25' plus 'Coordinated defense and special teams to a 36-11 record' checks out: 9-2 + 11-2 + 8-4 + 8-3 = 36-11 across four playoff years. He is now head coach, so isCurrent=false is right."
+   },
+   {
+    "n": 10,
+    "verdict": "correct",
+    "problem": "Minor formatting issue. The role string 'Head Football Coach (16 years) / coach' has the tenure length and a stray '/ coach' (from the '35-year coaching and teaching career') folded into it; it should just be 'Head Football Coach'. Null years and yearsExplicit=false are honest, since the bio gives only '16 years' with no dates. The school is Greenville (PA) High School ('nearby' Grove City), but the org entity is keyed only by name with no state, so it would merge with any other 'Greenville High School'."
+   },
+   {
+    "n": 11,
+    "verdict": "correct",
+    "problem": "None. 'addition of Drew Miller ... as the offensive line coach for the upcoming 2023 season'; Recruiting Coordinator comes from the current title. The bio text is stale (dated 12/1/23), but isCurrent rests on the current staff listing."
+   },
+   {
+    "n": 12,
+    "verdict": "correct",
+    "problem": "Org, role and year are all supported ('spent the 2024 season coaching the cornerbacks at MidAmerica Nazarene'). Side issue: roleGroup is 'other' when 'Cornerbacks' should be classed as position_coach."
+   },
+   {
+    "n": 13,
+    "verdict": "partly_correct",
+    "problem": "startYear 2023 is derived, not stated. The bio only says 'in his third year as an assistant coach ... helping with the defensive line for the 2025 season', so 2025 minus 2 = 2023. The arithmetic is right, but yearsExplicit=true is dishonest: the pipeline sets false for this 'Nth season' pattern elsewhere (McGlenn's UWL 2013 start, Herrick's GCC 2023 start). The 'Defensive Line' role is only documented for 2025, not 2023-24. roleGroup 'other' for Defensive Line should be position_coach."
+   },
+   {
+    "n": 14,
+    "verdict": "correct",
+    "problem": "None. 'seven-year stint as an assistant coach with Venne at UW-Oshkosh ... worked with the Titans' offensive line'. The bio is undated ('enters his fourth season at UWSP'), so null years and yearsExplicit=false are right."
+   },
+   {
+    "n": 15,
+    "verdict": "correct",
+    "problem": "None. 'offensive line assistant and recruiting intern at ... Wake Forest ... from January 2024 to February 2025' covers only the 2024 fall season, so 2024-2024 is right."
+   },
+   {
+    "n": 16,
+    "verdict": "partly_correct",
+    "problem": "Org and role are right, and 2007-2017 is a sound derivation: 'Prior to joining the Ursinus staff in 2018 ... 11 years as the head coach', and 2007 through 2017 inclusive is 11 seasons, consistent with the 2008 runner-up and 2017 title. But no year range appears in the bio, so yearsExplicit=true is dishonest and should be false."
+   },
+   {
+    "n": 17,
+    "verdict": "correct",
+    "problem": "None. The bio says 'three seasons (2022\u20132025)' and he joined Norwich 'ahead of the 2025 season'. The fall seasons are 2022, 2023 and 2024, which the bio confirms season by season, so endYear 2024 is the correct reading of the calendar-year range."
+   },
+   {
+    "n": 18,
+    "verdict": "partly_correct",
+    "problem": "Role, year and yearsExplicit are explicit: '2022: Portsmouth High School (Offensive Coordinator)'. The org is the problem. resolve.py keys unmatched orgs by bare normalized name with no state, so this Portsmouth HS (Rhode Island) shares one entity (org-portsmouth-high-school) with Jaylin Kennedy's 'Portsmouth (Ohio) High School' stint from 2018-2021. That is two different schools merged into one org, the same kind of mismatch as Trinity CT vs TX, and it would show the two coaches as colleagues. The bio also contradicts itself: the narrative says 'five years' at Portsmouth, while the list totals six seasons and lists 2021 at both Portsmouth and Assumption."
+   },
+   {
+    "n": 19,
+    "verdict": "partly_correct",
+    "problem": "This record is his assistant BASKETBALL job. The extraction emitted two stints from the same sentence: football ('Assistant Coach; strength and conditioning', roleGroup support) and basketball ('Assistant Coach', sport=basketball). resolve.py drops the sport field, so the basketball stint lands in the football dataset as a position_coach role and duplicates the real football stint at Northwestern HS in 2017. Org and year (2017, explicit) are correct, but this row should be removed."
+   },
+   {
+    "n": 20,
+    "verdict": "correct",
+    "problem": "None. 'Following graduation, Fordyce served as a strength and conditioning intern at Navy' gives no dates; years could only be roughly inferred (~1997), so null and yearsExplicit=false are honest. The U.S. Naval Academy match is right."
+   },
+   {
+    "n": 21,
+    "verdict": "partly_correct",
+    "problem": "Org and role are right ('Faulkner University ... offensive coordinator and assistant head coach for one season'). But 2024 never appears in the bio; it is inferred from 'one season' plus the March 2025 George Fox hire. The inference is plausible, but yearsExplicit=true is dishonest and should be false."
+   },
+   {
+    "n": 22,
+    "verdict": "correct",
+    "problem": "None. 'Taura coached tight ends in 2020 and was promoted to offensive line coach in 2021' is explicit, and goboxers.com is Pacific University (Oregon)."
+   },
+   {
+    "n": 23,
+    "verdict": "correct",
+    "problem": "None. He was an offensive GA at Michigan State before Culver-Stockton (2011-16) and after four years at NMU (2007/2009 mentioned), and helped the Spartans to the Big Ten title in 2010. 2010-2010 is right, and yearsExplicit=false is conservative and honest."
+   },
+   {
+    "n": 24,
+    "verdict": "unverifiable",
+    "problem": "The bio body is empty: there is nothing after the '---' header. Only the scraped TITLE header ('Linebackers Coach') supports the role and current status. Null years and yearsExplicit=false are honest."
+   },
+   {
+    "n": 25,
+    "verdict": "correct",
+    "problem": "Supported literally: 'Physical education teacher and assistant football coach at New Richmond (Wis.) High School from 2011-12.' Caveat: the same bio's Arrowhead '2006-07' and Chadron '2007-08' ranges overlap on 2007, which points to school-year notation. If '2011-12' is one school year, the only fall season is 2011 and endYear 2012 overstates by one."
+   }
+  ],
+  "summary": "I checked all 25 sampled stints against their bio files. 18 are correct, 5 partly correct (#13, #16, #18, #19, #21), 0 wrong and 2 unverifiable (#2, #24: the bio text after the header is empty; only the TITLE line exists).\n\nNone of the 25 has a fabricated stint or wrong-school match in the Trinity CT/TX sense. All year arithmetic I checked holds, for example Zweifel's 36-11 record and Devlin's 11 seasons from 2007 to 2017. The errors that do exist trace back to four pipeline-level problems:\n\n1. **yearsExplicit is set to true on derived years** (#13 Arshinkoff, #16 Devlin, #21 Mondt). The pilot outputs set it to false for duration-based years, and the current data does the same for McGlenn's UWL start and Herrick's Grove City start, so these three are inconsistent.\n2. **resolve.py drops the extraction's `sport` field.** Non-football stints enter the football dataset; #19 is Jake Schiff's assistant basketball job, recorded as a football position_coach role and duplicating his real football stint. Baseball and track player stints also come through (Hiscoe 'Pitcher', Herrick 'Middle distance runner', Mondt at Concordia).\n3. **Unmatched orgs are keyed by bare name with state=None.** Different schools with the same name merge into one org: #18 Brad Kelly's Portsmouth HS (R.I.) shares org-portsmouth-high-school with Jaylin Kennedy's Portsmouth (Ohio) HS. Generic entities like Greenville and Northwestern High School are exposed to the same collision.\n4. **The roleGroup classifier misses plain position names.** 'Cornerbacks' (#12) and 'Defensive Line' (#13) come out as 'other' instead of position_coach.\n\nMinor items:\n- #10's role string has the tenure length and a stray '/ coach' folded in.\n- #25's endYear may be one season too many if '2011-12' is a school year.\n\nFiles: the sample is /home/user/klonen_cli/pipeline/audits/audit1_sample.json, the resolver logic is in /home/user/klonen_cli/pipeline/resolve.py (resolve() and main()), and the resolved data is /home/user/klonen_cli/data/tenures.json."
+ },
+ "rejected": [
+  {
+   "id": "F5",
+   "title": "Carousel 'openJobs' counts the 28 seeded sample listings as real open jobs",
+   "reason": "The numbers check out, but this is intended behavior, not a bug. Querying the jobs table returns one group: source=sample, is_demo=t, status=open, count 28. getCarouselStats (web/src/lib/queries/feed.ts:142-156) does count status='open' with no source filter. Three things show that is on purpose. (1) The feature brief in design/feature-briefs.json says the right-rail Carousel tracker should show \"open jobs marked Sample\". (2) The component specimen in web/src/app/dev/components/Specimens.tsx:543 renders the \"Open jobs\" KPI with a SampleChip \"Sample\" next to it. (3) web/src/components/data/Badges.tsx documents a \"sample\" -> \"Sample\" (aggregates) label kind, and docs/ARCHITECTURE.md:49 says sample/demo data is labeled in the UI. So the count is meant to include sample listings, and the UI layer adds the label. The query also matches the rest of the app: listJobs (jobs.ts) and getRecentJobs list the same 28 open sample jobs on /jobs and in the feed, so a count of 28 agrees with what users see. The suggested fix (count only source <> 'sample') would show \"0 open jobs\" while /jobs lists 28, and would contradict the design. Finally, no UI uses getCarouselStats yet; the only caller is web/scripts/smoke-queries.ts, so nobody sees a misleading number today. The only real point is a hypothetical future case where real and sample jobs are mixed in one count. That is negligible now."
+  },
+  {
+   "id": "F6",
+   "title": "Feed presents inferred (years_explicit=false) start years as 2026 hires, including ones the evidence contradicts",
+   "reason": "The data claims check out, but the claimed impact does not. Ran the getMoves logic in SQL against the local Postgres (coachnet). There are 397 current non-player 2026 stints, and 42 of them have years_explicit=false. Index 15 in the head-coach-first ordering is Larry Wilson, Waynesburg, years_explicit=false, with evidence \"arrived at Waynesburg in January, 2025\". The Max Steele (\"enters his second season\") and Tyler Wills rows exist as described. Others are also contradicted: Jacob Craig (Feb 2024), Ryan Barrick (3rd season), Ty Shwallon (7th season).\n\nThere is no \"home feed\" exposure, though. getMoves, getFeed and getCarouselStats in web/src/lib/queries/feed.ts are not imported by any page or API route. The only consumer is web/scripts/smoke-queries.ts. jobs.ts imports only toJobCard. /feed (web/src/app/feed/page.tsx) is a PlaceholderPage that reads \"Your feed is on its way.\" / is a landing placeholder that redirects to it. No user sees these moves or the hires count today, so this is a latent concern about unused code.\n\nThe proposed fix also rests on a weak signal. Most of the 42 inferred rows really are 2026 starts: \"enters his first season\", \"named Dec 23, 2025\", \"Linebackers (First Season)\", and so on. Only about 6 are actually contradicted. Meanwhile some years_explicit=true rows are wrong too, for example Chris Villarrial: \"The 2026 season will mark the 18th year with Saint Francis\". Filtering on years_explicit would drop many valid hires and still miss some bad ones. The real defect is the pipeline's start_year, not the web data layer.\n\nVerdict: the code is not wired to any UI, the flag does not reliably separate good rows from bad, and the root cause is in pipeline data. The impact of this web finding is negligible."
+  },
+  {
+   "id": "F9",
+   "title": "Unvalidated URL-derived inputs reach Postgres and throw (enum roleGroup, integer job id, fractional page)",
+   "reason": "The behaviour reproduces, but nothing reaches it today, so the impact is nil. I ran the queries against the local coachnet DB using npx tsx --conditions=react-server and a script at /tmp/claude-0/-home-user/b13a1792-8696-5f9f-a6b8-5bf79408a2f7/scratchpad/f9.ts. Results: searchPeople({roleGroup:'headcoach'}) and listJobs({roleGroup:'x'}) throw \"invalid input value for enum role_group\". getJob(NaN), getJob(1.5) and getJob(2**31) each throw a Postgres integer error. searchPeople({page:1.5}) uses offset 10 and repeats 10 rows from page 1. (searchPeople is in /home/user/klonen_cli/web/src/lib/queries/search.ts, not jobs.ts.) None of this is reachable from user input. grep finds no app route or page that calls listJobs, getJob or searchPeople. The only caller is scripts/smoke-queries.ts, and it passes hard-coded valid values. /jobs and /search are placeholder pages, and /search only reads q to build its title. The one live API route, /api/typeahead, calls typeahead(), which takes only a free-text string, slices it, and catches errors. The finding itself says the 500s only appear \"once they pass searchParams through\". Even then the worst case is a 500 instead of a 404 or an empty list for a malformed URL, caught by Next's error boundary, with no data exposure. Also, getJob(id: number) throwing on a non-integer is reasonable: a future caller would parse the route param. This is advice for future pages, not a current defect."
+  },
+  {
+   "id": "F10",
+   "title": "listJobs ILIKE does not escape LIKE wildcards (escapeLike exists but isn't used)",
+   "reason": "The code behavior is accurate but users can't hit it, so the impact is negligible. In /home/user/klonen_cli/web/src/lib/queries/jobs.ts, listJobs builds the pattern as \"%\" + q.trim() + \"%\" and does not call escapeLike. searchPeople, typeahead and searchOrgs all escape the input. I reproduced the claimed counts by running the same SQL against the local Postgres. There are 28 open jobs. Filtering with ILIKE '%_%' returns 28 and ILIKE '%%%' returns 28. The escaped form '%\\_%' returns 0. However, listJobs has no callers in the app. Grepping the repo finds only its definition and web/scripts/smoke-queries.ts, which calls listJobs() with no q. /home/user/klonen_cli/web/src/app/jobs/page.tsx is a placeholder ('Jobs are on their way.'), and no API route or server action imports queries/jobs. User input cannot reach the unescaped ILIKE. Even if it were wired up, the only effect would be that searching for a literal '_' or '%' matches too broadly. That is not a security issue, since the query is parameterized. This is a code-consistency nit in dead code, not a bug with real impact."
+  },
+  {
+   "id": "F11",
+   "title": "Demo session: prototype keys pass the `in` check, the server action accepts any role and redirect target, and the cookie has no Secure flag",
+   "reason": "The mechanics reproduce, but none of it has real impact. I ran a tsx probe against drizzle's PgDialect with the repo's schema. '__proto__' passes the `in` check and eq(users.id, Object.prototype) throws 'Cannot read properties of null (reading 'constructor')'. 'toString', 'constructor', 'hasOwnProperty' and 'valueOf' also pass, bind a null param and give a null session. In web/src/app/feed/page.tsx and settings/page.tsx, getSession() is called without a catch, so a '__proto__' cookie would make those pages 500. network/page.tsx also calls getSession() without a catch, so it would 500 too.\n\nThe catch is how that value gets there. The cookie is httpOnly and is only written by switchDemoAccount, a Next server action. Next checks the Origin header against the Host for server actions, so another site cannot call it on a victim's behalf (the finding says the same). The only way to get '__proto__' or an arbitrary redirectTo into the cookie or the redirect is for users to edit their own cookie in devtools, or to send a same-origin action request to themselves. That makes it a self-inflicted 500 or a redirect of their own browser: no CSRF, no open redirect usable against anyone else, and no way to gain privileges. Arbitrary role strings map to a null session, and prototype keys map to null or an error. They never map to another user or to the 'admin' kind.\n\nOn \"trivially forgeable\" and the missing Secure flag: lib/session.ts says outright that this is demo auth. Viewers pick any demo account in the Me menu (DemoSwitcher) by design, and the module is meant to be replaced by real auth. Since anyone can already switch to any role through the UI, forging the cookie gets nothing extra. The cookie value is a public role name, not a secret, and the finding itself calls this 'acceptable for demo auth'. Using Object.hasOwn would be a small hardening, but this is negligible impact and not a real defect."
+  },
+  {
+   "id": "F12",
+   "title": "Missing indexes for per-request queries; the GIN name index is never used",
+   "reason": "The schema facts check out, but the performance impact is negligible on the real system, so I'm treating this as not a real bug.\n\nWhat I confirmed in /home/user/klonen_cli/web/src/db/schema.ts and the live coachnet DB:\n- There is no index on notifications.user_id, messages.to_user_id, shortlist_entries.shortlist_id, profile_views.person_id or tenures.start_year.\n- people_name_search_idx (a GIN index on to_tsvector) shows idx_scan = 0, and no query in src uses tsvector. All name search is ILIKE '%x%' (src/lib/queries/search.ts, orgs.ts).\n- getSession (src/lib/session.ts) is not wrapped in cache(). It is called from both AppShell (in the root layout) and some pages.\n- The synthetic test reproduces: in a rolled-back transaction with 300k rows across 2000 fake users, the badge count queries ran as Parallel Seq Scans at about 17ms each. Adding partial indexes brought that to about 0.05ms.\n\nWhy the impact is negligible:\n1. Real data is tiny. Row counts: notifications 3, messages 0, profile_views 0, shortlist_entries 9, users 2, people 2178, tenures 8397. On this data:\n   - notifications count: 0.028ms\n   - messages count: 0.011ms\n   - people ILIKE typeahead: 0.195ms\n   - getMoves tenures query: 3.9ms total (it removes 8000 rows, not the 80000 the finding cites)\n2. The tables the finding worries about have no write path. Nothing in src inserts into notifications, messages or profile_views. /messaging is a placeholder page (\"No messages yet.\"). The app is an explicit demo: two demo accounts and cookie-based demo auth (docs/ARCHITECTURE.md, about page). The \"linear growth of the fastest-growing tables\" only shows up after inserting 300k fake rows into tables the app never writes to.\n3. The unused GIN index costs about 1.1MB and a little write overhead on a pipeline-seeded table. That's a cleanup item, not a defect. ILIKE over 2k people already takes under 1ms.\n4. The duplicate getSession is 3 primary-key lookups, each under 1ms locally. In the App Router the layout and page render concurrently, so the duplication doesn't add much latency.\n\nAt realistic scale (even 10x people) every query stays in the low milliseconds. This is a hypothetical, future-scale tuning suggestion, not a reproducible problem."
+  },
+  {
+   "id": "F13",
+   "title": "timestamp without time zone + defaultNow() drifts when the DB session TimeZone isn't UTC",
+   "reason": "The mechanism is real, but nothing in the current code is affected by it, so I'd treat it as a latent hardening note rather than a bug.\n\nWhat reproduced: I ran a rolled-back transaction through drizzle-orm/node-postgres with a pool using options '-c TimeZone=America/New_York'. JS now was 08:59:57Z. notifications.created_at (defaultNow) read back as 04:59:57Z. jobs.posted_at set from a JS Date read back as 08:59:57Z. jobs.posted_at left to defaultNow read back as 04:59:57Z. Drizzle writes `timestamp` without time zone via toISOString, and Postgres drops the Z. It reads values back with '+0000' appended. now() is stored as session-local wall time. The described drift happens.\n\nWhy the claimed impact (\"breaks timeAgo and ordering\") does not happen:\n(1) timeAgo in web/src/lib/format.ts is never called; the only grep hit is its definition.\n(2) No file in web/src reads createdAt, sentAt, viewedAt or claimedAt from notifications, messages, claims or profile_views. The only use of those tables is in web/src/lib/queries/shell.ts, which counts unread rows with isNull(readAt) and never compares timestamp values.\n(3) The only timestamp the app reads is jobs.posted_at, used for ORDER BY in feed.ts, jobs.ts and orgs.ts. All jobs come from web/scripts/seed.ts, which always sets postedAt from a JS Date, so the ordering is internally consistent. posted_at is not rendered in any .tsx.\n(4) There are no runtime inserts in web/src; all writes are in seed.ts.\n(5) The local DB runs Etc/UTC, and common managed Postgres services (RDS, Neon, Supabase) default to UTC as well. Triggering the drift needs both a non-default server TimeZone and future code that mixes defaultNow-written values with JS-written ones.\n\nSeverity \"minor\" overstates it. withTimezone: true would be reasonable hardening, but there is no reachable incorrect behavior today."
+  },
+  {
+   "id": "F15",
+   "title": "seasonRange/seasonRangeCompact discard a known end year when the start is unknown ('Years not in source')",
+   "reason": "The mechanics check out, but the impact today is zero and the code does what the spec says. What reproduces: in web/src/lib/format.ts, seasonRange() line 27 and seasonRangeCompact() line 88 return early when start is missing and ignore end. seasonRange(null, 2023, false) gives 'Years not in source' and seasonRangeCompact gives '\u2013'. In psql, 64 non-player tenures have start_year NULL and end_year NOT NULL. 61 of them have years_explicit=false, so the end year was inferred, e.g. 'from Midland University in December 2020'. Only 3 are explicit. Why it is not a real bug: (1) The behaviour matches the documented spec. docs/DESIGN.md \u00a76.1 has a 'Start unknown' row whose output is 'Years not in source', with a count only if the source states one. The constant's comment says the same: 'Shown in place of a range when the source gives no start year'. The finding asks for a new design case, not a fix to a deviation. (2) No live page calls these functions with database data. They are called only from components/data/SeasonRange.tsx. That component is used only by app/dev/components/Specimens.tsx, the dev specimen gallery, with hardcoded props. The real routes (feed, search, network, jobs, messaging, settings and others) are placeholders. None of them import SeasonRange, seasonRange or the tenure queries (lib/queries/people.ts, orgs.ts, feed.ts), so the 64 end-only tenures never reach this code. At most it is a gap to think about when the profile and ledger pages are built."
+  },
+  {
+   "id": "F16",
+   "title": "pg Pool has no 'error' listener: a terminated idle connection emits an unhandled 'error' event",
+   "reason": "The mechanism reproduces, but the impact is negligible. In /home/user/klonen_cli/web/src/db/index.ts the Pool has no 'error' listener. I ran a tsx script that queried through the app pool and then called pg_terminate_backend on that backend from a second client. The process died with \"Unhandled 'error' event ... Emitted 'error' event on BoundPool instance at Client.idleListener\" (exit 1), so the narrow claim is accurate. It does not cause real harm, for three reasons. (1) The web app survives it. Next 15.5.4 always installs process.on('uncaughtException') loggers in both node_modules/next/dist/server/lib/router-server.js:566 and next-server.js:216, with no config flag; the finding admits this too. pg-pool's idleListener calls pool._remove(client) before it emits, so the dead client is already purged and the pool keeps working after Next logs the error. (2) The only processes left exposed are the short-lived scripts web/scripts/seed.ts and smoke-queries.ts, plus the vitest search test. They run their queries one after another, and a DB restart or failover in the middle fails them anyway: in-flight queries reject, main().catch exits 1. The only difference is an uncaught crash instead of a caught exit-1, and the result is the same. (3) The \"idle-session timeout\" case does not apply. pg-pool's default idleTimeoutMillis is 10s, so idle clients are closed long before any server-side idle timeout fires, and Postgres idle_session_timeout defaults to 0 anyway. Adding the listener is good hygiene, but no realistic scenario in this repo leads to a crash, data loss or a lasting fault."
+  },
+  {
+   "id": "F17",
+   "title": "Seed truncates before validating and isn't transactional; a failure leaves the DB empty or half-seeded",
+   "reason": "The behavior reproduces, but it doesn't amount to a bug worth fixing. I copied the DB to a scratch database (coachnet_f17_scratch, dropped afterwards) and ran seed.ts against copied data with p-justin-leatherman removed. It truncated, inserted 2097 orgs and 2177 people, then threw at line 94. That left users=0 and jobs=0. So it is true that TRUNCATE runs before validation and that there is no transaction. The impact is negligible: (1) This is local dev tooling only (npm run db:seed / db:reset). No deploy config runs it: no Dockerfile, CI or Vercel file in the repo. (2) Failure is loud and easy to recover from. The script exits non-zero with an error that names the missing id, and re-running after fixing the data restores everything. Seeding is idempotent, as the finding itself says. (3) What a transaction would protect is the previous DB contents. A seed/reset script is meant to wipe those, and db:reset runs drizzle-kit push --force first anyway. (4) The trigger is unlikely. Both demo ids exist in the committed data/ (verified), so it only fires if someone regenerates the data and drops them. (5) The other two claims are intended design, not defects. Clearing user-generated tables (claims, messages, connections) is what a seed reset does. postedAt is relative to seed time on purpose so the sample jobs look recent; re-seeding refreshes them. Wrapping it in a transaction would be a nice-to-have, not a real bug."
+  },
+  {
+   "id": "F18",
+   "title": "Schema allows duplicate shortlist entries and mirrored connection pairs",
+   "reason": "The constraint gap is real, but nothing in the app is affected by it today. Schema (/home/user/klonen_cli/web/src/db/schema.ts, lines 159-168 and 198-206) and the live DB (`\\d`) both confirm it: shortlist_entries has only its primary key, and connections_pair_idx is UNIQUE on the ordered (requester_id, addressee_id). I re-ran the auditor's test in a transaction I rolled back. A second (1, 'p-curran-white') insert succeeded, and accepted A->B alongside pending B->A both inserted. But the impact claim (\"pipeline and network features will double-list people\") does not hold for this codebase. No application code reads or writes either table. A grep of src/ for shortlistEntries, connections, shortlist_entries and schema.connections finds nothing. The only API route is api/typeahead. /employers/pipeline/page.tsx and /network/page.tsx are static PlaceholderPage components that run no queries. The only writer is scripts/seed.ts, which inserts distinct candidates into one shortlist and never touches connections. So duplicates can only appear through hand-written SQL, and no user-facing feature can show them. This is a reasonable hardening note for features not yet built (whoever writes those insert paths should add the unique indexes or use ON CONFLICT). It is not a bug with present impact, so it counts as negligible."
+  },
+  {
+   "id": "F7",
+   "title": "Year ranges converted inconsistently: 'YYYY-YY' gives end = YY in 690 cases and YY-1 in 255",
+   "reason": "The raw split reproduces, though not the exact counts: in /home/user/klonen_cli/data/tenures.json, stints with one year range and a matching start year get end=Y about 937 times and end=Y-1 about 273 times. The finding's own counts (443/175 and 247/80) did not come out the same. The finding is wrong to call this split a bug. When I checked it against each person's other stints, most of the Y-1 cases turned out to be correct readings of the context, not random errors.\n\n- Of the 273 Y-1 cases, 238 belong to someone whose next stint starts in year Y. In that case 'YYYY-YY' is an academic-year chain, so ending at Y-1 avoids a false overlap. Another 7 have a season count or say 'academic' in the evidence.\n- The 28 left over are mostly still right. Examples: 'four-year letter winner 2003-07' stored as 2003-2006; 'spent one season ... in 2022-23' stored as 2022; single academic-year lines like '2019-20: ...' stored as one season.\n- One-year ranges ('2019-20') show a consistent rule. With a following stint starting at Y: 88 are Y-1 and 14 are Y. Without one: 198 are Y and 18 are Y-1. So the default is the literal reading, and Y-1 is used when context calls for it.\n\nEvery example the finding cites is actually correct:\n- Hobbs: Dakota State 2019, then Husson 2020.\n- Theobald: Hanover 1996-99, Waynesburg 2000-02, then '13 seasons at Franklin' before 2016.\n- Vreeland: Hartwick 2020-23, then Husson 2024-present.\n- Branch: 'first six years' as offensive line coach gives 2007-2012, then running backs/tight ends 2013-15.\n- Schofield: 'three years at Princeton' gives 2013-2015.\n- Fehrle: graduate assistant until he was hired in 2022, so 2018-2021.\n- Dodson: '16 seasons (2007-2023)' gives 2007-2022.\n\nThe proposed fix (always read 'YYYY-YY' as Y) would make things worse. It would add overlaps and break stated season counts for about 245 stints. Some cases are still truly ambiguous, such as some Y readings that overlap the next stint by a year. That error is small and different from the systematic inconsistency described, and it doesn't justify 'major'."
+  }
+ ]
+}
