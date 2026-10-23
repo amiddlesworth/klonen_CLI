@@ -1,26 +1,179 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ==========================================================================
+   Design tokens: docs/DESIGN.md §2.4 (paste-ready block, kept verbatim except
+   that the light/dark blocks also match a nested [data-theme] wrapper, so the
+   /dev/components gallery can render a dark section inside a light page).
+   Components use these tokens only, never raw hex values or palette colors.
+   ========================================================================== */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ---------- 1. Runtime tokens ---------- */
+:root, [data-theme="light"] {
+  --canvas: #F7F7F5; --surface: #FFFFFF; --surface-2: #F9F9F8; --hover: #F3F3F1; --pressed: #ECECE9;
+  --border: #E6E6E3; --divider: #EFEFEC; --border-strong: #D3D3CF; --control: #8C8983;
+  --fg-1: #1A1A18; --fg-2: #5C5B57; --fg-3: #6F6E69; --fg-disabled: #A3A19B;
+  --accent: #4352D1; --accent-hover: #3A47B8; --accent-pressed: #323E9F; --accent-subtle: #EEF0FC; --on-accent: #FFFFFF;
+  --link: #4352D1; --focus: #4352D1; --danger: #B42318; --danger-subtle: #FDECEA;
+  --badge-bg: #1A1A18; --badge-fg: #FFFFFF; --org-bg: #F0F0EE; --org-fg: #45443F;
+  --lvl-head: #1A1A18; --lvl-coord: #62615C; --lvl-pos: #AEABA5; --bar: #5C5B57; --track: #EFEFEC;
+  --av1-bg: #E5E9F0; --av1-fg: #3B4A63; --av2-bg: #E3EDE6; --av2-fg: #2F5A3F; --av3-bg: #F1EADF; --av3-fg: #6A4C1F;
+  --av4-bg: #F3E5E3; --av4-fg: #7A3A33; --av5-bg: #EDE6F0; --av5-fg: #5A3D6B; --av6-bg: #DFEDEE; --av6-fg: #1F5A5F;
+  --overlay: rgba(14, 14, 13, .48);
+  --elev-pop: 0 0 0 1px rgba(26, 26, 24, .06), 0 8px 24px -6px rgba(26, 26, 24, .16);
+  --elev-btn: 0 1px 1px rgba(26, 26, 24, .04);
+  /* Shell sizes */
+  --nav-h: 52px; --mtop-h: 48px; --tabbar-h: 56px;
+  --page-max: 1200px; --rail-left: 232px; --rail-feed: 304px; --rail-profile: 320px; --rail-tablet: 280px;
+  color-scheme: light;
 }
-
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --canvas: #0E0E0D; --surface: #161615; --surface-2: #1B1B19; --hover: #21211E; --pressed: #292926;
+    --border: #2A2A27; --divider: #222220; --border-strong: #3A3A36; --control: #706F69;
+    --fg-1: #EDEDEA; --fg-2: #A9A8A2; --fg-3: #8C8B85; --fg-disabled: #5F5E59;
+    --accent: #4F5DDB; --accent-hover: #4553D2; --accent-pressed: #3C49C0; --accent-subtle: #1C1F3A; --on-accent: #FFFFFF;
+    --link: #8F9AFF; --focus: #8F9AFF; --danger: #F97066; --danger-subtle: #3A1D1B;
+    --badge-bg: #EDEDEA; --badge-fg: #161615; --org-bg: #1F1F1D; --org-fg: #C9C8C2;
+    --lvl-head: #EDEDEA; --lvl-coord: #9C9B95; --lvl-pos: #55544F; --bar: #A9A8A2; --track: #292926;
+    --av1-bg: #222833; --av1-fg: #AFC0DA; --av2-bg: #1D2A22; --av2-fg: #A3CCAF; --av3-bg: #2E2719; --av3-fg: #DDC59A;
+    --av4-bg: #33201E; --av4-fg: #E3AFA7; --av5-bg: #2B2131; --av5-fg: #CDB3DC; --av6-bg: #172A2C; --av6-fg: #9ACED2;
+    --overlay: rgba(0, 0, 0, .64);
+    --elev-pop: 0 0 0 1px rgba(255, 255, 255, .06), 0 8px 24px -6px rgba(0, 0, 0, .6);
+    --elev-btn: none;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"], [data-theme="dark"] {
+  /* identical to the block above; keep the two in sync */
+  --canvas: #0E0E0D; --surface: #161615; --surface-2: #1B1B19; --hover: #21211E; --pressed: #292926;
+  --border: #2A2A27; --divider: #222220; --border-strong: #3A3A36; --control: #706F69;
+  --fg-1: #EDEDEA; --fg-2: #A9A8A2; --fg-3: #8C8B85; --fg-disabled: #5F5E59;
+  --accent: #4F5DDB; --accent-hover: #4553D2; --accent-pressed: #3C49C0; --accent-subtle: #1C1F3A; --on-accent: #FFFFFF;
+  --link: #8F9AFF; --focus: #8F9AFF; --danger: #F97066; --danger-subtle: #3A1D1B;
+  --badge-bg: #EDEDEA; --badge-fg: #161615; --org-bg: #1F1F1D; --org-fg: #C9C8C2;
+  --lvl-head: #EDEDEA; --lvl-coord: #9C9B95; --lvl-pos: #55544F; --bar: #A9A8A2; --track: #292926;
+  --av1-bg: #222833; --av1-fg: #AFC0DA; --av2-bg: #1D2A22; --av2-fg: #A3CCAF; --av3-bg: #2E2719; --av3-fg: #DDC59A;
+  --av4-bg: #33201E; --av4-fg: #E3AFA7; --av5-bg: #2B2131; --av5-fg: #CDB3DC; --av6-bg: #172A2C; --av6-fg: #9ACED2;
+  --overlay: rgba(0, 0, 0, .64);
+  --elev-pop: 0 0 0 1px rgba(255, 255, 255, .06), 0 8px 24px -6px rgba(0, 0, 0, .6);
+  --elev-btn: none;
+  color-scheme: dark;
+}
+/* A nested theme wrapper repaints itself (descendants pick the new tokens up by inheritance). */
+@layer base {
+  [data-theme] { background: var(--canvas); color: var(--fg-1); }
+}
+
+/* ---------- 2. Static scales ---------- */
+@theme {
+  --color-*: initial;            /* drop Tailwind's palette: only the tokens below exist */
+  --breakpoint-*: initial;
+  --breakpoint-md: 45.0625rem;   /* 721px  tablet */
+  --breakpoint-lg: 67.5625rem;   /* 1081px desktop */
+  --breakpoint-xl: 80rem;        /* 1280px wide desktop */
+  --spacing: 0.25rem;            /* 4px grid: p-1=4, p-2=8, p-3=12, p-4=16, p-5=20, p-6=24, p-8=32 ... */
+
+  --text-hero: 2.25rem;      --text-hero--line-height: 2.75rem;    --text-hero--letter-spacing: -0.025em;  --text-hero--font-weight: 600;
+  --text-hero-sm: 1.75rem;   --text-hero-sm--line-height: 2.25rem; --text-hero-sm--letter-spacing: -0.02em; --text-hero-sm--font-weight: 600;
+  --text-display: 1.5rem;    --text-display--line-height: 2rem;    --text-display--letter-spacing: -0.02em; --text-display--font-weight: 600;
+  --text-display-sm: 1.25rem; --text-display-sm--line-height: 1.75rem; --text-display-sm--letter-spacing: -0.02em; --text-display-sm--font-weight: 600;
+  --text-stat: 1.25rem;      --text-stat--line-height: 1.75rem;    --text-stat--letter-spacing: -0.015em;  --text-stat--font-weight: 600;
+  --text-stat-sm: 1.125rem;  --text-stat-sm--line-height: 1.5rem;  --text-stat-sm--letter-spacing: -0.01em; --text-stat-sm--font-weight: 600;
+  --text-title: 1rem;        --text-title--line-height: 1.5rem;    --text-title--letter-spacing: -0.01em;  --text-title--font-weight: 600;
+  --text-subtitle: 0.9375rem; --text-subtitle--line-height: 1.375rem; --text-subtitle--letter-spacing: -0.01em;
+  --text-body: 0.875rem;     --text-body--line-height: 1.25rem;
+  --text-prose: 0.875rem;    --text-prose--line-height: 1.375rem;
+  --text-small: 0.8125rem;   --text-small--line-height: 1.125rem;
+  --text-caption: 0.75rem;   --text-caption--line-height: 1rem;
+
+  --radius-xs: 4px;   /* chips, kbd, tooltips */
+  --radius-sm: 6px;   /* buttons, inputs, segmented, 32px org tiles */
+  --radius-md: 8px;   /* cards, menus, 40px org tiles */
+  --radius-lg: 12px;  /* dialogs, sheets, 56px org tiles */
+
+  --container-page: 75rem;     /* 1200px incl. 24px gutters -> 1152 content */
+  --container-main: 50.5rem;   /* 808px profile main column max */
+  --container-prose: 42.5rem;  /* ~68ch */
+  --container-dialog: 30rem;   /* 480px */
+}
+
+/* Motion (§5.5): 120ms ease on color/background/border; menus and toasts rise 4px over 140ms. */
+@theme {
+  --default-transition-duration: 120ms;
+  --default-transition-timing-function: ease;
+  --animate-pop-in: pop-in 140ms ease-out both;
+  --animate-spin-700: spin 700ms linear infinite;
+  @keyframes pop-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: none; }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ---------- 3. Runtime-resolved theme values ---------- */
+@theme inline {
+  --font-sans: var(--font-inter), "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --color-canvas: var(--canvas); --color-surface: var(--surface); --color-surface-2: var(--surface-2);
+  --color-hover: var(--hover); --color-pressed: var(--pressed);
+  --color-border: var(--border); --color-divider: var(--divider); --color-border-strong: var(--border-strong); --color-control: var(--control);
+  --color-fg-1: var(--fg-1); --color-fg-2: var(--fg-2); --color-fg-3: var(--fg-3); --color-fg-disabled: var(--fg-disabled);
+  --color-accent: var(--accent); --color-accent-hover: var(--accent-hover); --color-accent-pressed: var(--accent-pressed);
+  --color-accent-subtle: var(--accent-subtle); --color-on-accent: var(--on-accent);
+  --color-link: var(--link); --color-focus: var(--focus); --color-danger: var(--danger); --color-danger-subtle: var(--danger-subtle);
+  --color-badge-bg: var(--badge-bg); --color-badge-fg: var(--badge-fg); --color-org-bg: var(--org-bg); --color-org-fg: var(--org-fg);
+  --color-lvl-head: var(--lvl-head); --color-lvl-coord: var(--lvl-coord); --color-lvl-pos: var(--lvl-pos);
+  --color-bar: var(--bar); --color-track: var(--track); --color-overlay: var(--overlay);
+  --color-av1-bg: var(--av1-bg); --color-av1-fg: var(--av1-fg); --color-av2-bg: var(--av2-bg); --color-av2-fg: var(--av2-fg);
+  --color-av3-bg: var(--av3-bg); --color-av3-fg: var(--av3-fg); --color-av4-bg: var(--av4-bg); --color-av4-fg: var(--av4-fg);
+  --color-av5-bg: var(--av5-bg); --color-av5-fg: var(--av5-fg); --color-av6-bg: var(--av6-bg); --color-av6-fg: var(--av6-fg);
+  --color-transparent: transparent; --color-current: currentColor;
+  --shadow-pop: var(--elev-pop);
+  --shadow-btn: var(--elev-btn);
+}
+
+/* State variants. Each also matches data-force="hover|focus|active" so the
+   /dev/components gallery can show a forced state on a real component. */
+@custom-variant hover (&:hover, &[data-force~="hover"]);
+@custom-variant active (&:active, &[data-force~="active"]);
+@custom-variant focus-visible (&:focus-visible, &[data-force~="focus"]);
+@custom-variant focus-within (&:focus-within, &[data-force~="focus"]);
+
+/* ---------- 4. Base ---------- */
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--canvas); color: var(--fg-1); font-family: var(--font-sans);
+    font-size: 0.875rem; line-height: 1.25rem; font-optical-sizing: auto; font-feature-settings: "cv11";
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh; min-height: 100dvh;
+  }
+  p, li, h1, h2, h3, h4 { text-wrap: pretty; }
+  :focus-visible, [data-force~="focus"] { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+
+  /* Additions to the paste-ready block */
+  button:not(:disabled), [role="button"]:not([aria-disabled="true"]), summary { cursor: pointer; }
+  input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+  abbr[title] { text-decoration: none; }
+  ::selection { background: var(--accent-subtle); color: var(--fg-1); }
+  details > summary { list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+}
+
+/* ---------- 5. Utilities ---------- */
+/* Numbers that can sit in a column: seasons, ranges, counts, KPIs (§4). Never wraps. */
+@utility num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* Inferred year (§6.2): dotted 1.5px underline in --fg-3, 3px offset, help cursor. */
+@utility inf { text-decoration: underline dotted var(--fg-3); text-decoration-thickness: 1.5px; text-underline-offset: 3px; cursor: help; }
+/* 24px tall target for name and title links outside sentences (§8.1 Link). */
+@utility target-24 { padding-block: 3px; margin-block: -3px; }
+/* Feed headlines (§6.3). */
+@utility balance { text-wrap: balance; }
+
+/* ---------- 6. Shell ---------- */
+/* Phone pages leave room for the fixed bottom tab bar (§8.2). */
+@media (max-width: 720px) {
+  .has-tabbar { padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); }
+  /* Capture aid (§10): automated full-page screenshots pin the tab bar to the end of the document. */
+  html.capture-full body { position: relative; }
+  html.capture-full [data-tabbar] { position: absolute; }
 }

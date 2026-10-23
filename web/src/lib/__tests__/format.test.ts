@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { hueFor, initials, levelShort, salaryRange, seasonCount, seasonRange } from "../format";
+import {
+  hueFor,
+  initials,
+  levelShort,
+  orgInitials,
+  salaryRange,
+  seasonCount,
+  seasonRange,
+  seasonRangeCompact,
+  seasonRangeMulti,
+  tintFor,
+  titleShort,
+} from "../format";
 
 describe("seasonRange", () => {
   it("formats a closed span with an en dash and season count", () => {
@@ -13,8 +25,8 @@ describe("seasonRange", () => {
     expect(seasonRange(2021, null, false)).toEqual({ range: "2021", count: "1 season" });
   });
   it("handles unknown dates", () => {
-    expect(seasonRange(null, null, true)).toEqual({ range: "Present", count: null });
-    expect(seasonRange(null, null, false)).toEqual({ range: "Dates not listed", count: null });
+    expect(seasonRange(null, null, true)).toEqual({ range: "Years not in source", count: null });
+    expect(seasonRange(null, null, false)).toEqual({ range: "Years not in source", count: null });
   });
 });
 
@@ -38,5 +50,41 @@ describe("helpers", () => {
     expect(levelShort(null)).toBeNull();
     expect(salaryRange(42000, 50000)).toBe("$42K–$50K");
     expect(salaryRange(null, null)).toBeNull();
+  });
+});
+
+describe("DESIGN.md §2.3 / §6 helpers", () => {
+  it("picks a stable tint 1..6", () => {
+    for (const slug of ["ian-falconer", "justin-leatherman", "a", ""]) {
+      const t = tintFor(slug);
+      expect(t).toBe(tintFor(slug));
+      expect(t).toBeGreaterThanOrEqual(1);
+      expect(t).toBeLessThanOrEqual(6);
+    }
+  });
+  it("formats compact ranges", () => {
+    expect(seasonRangeCompact(2010, 2019, false)).toBe("2010–19");
+    expect(seasonRangeCompact(2020, null, true)).toBe("2020–");
+    expect(seasonRangeCompact(2003, 2003, false)).toBe("2003");
+    expect(seasonRangeCompact(1998, 2003, false)).toBe("1998–2003");
+  });
+  it("formats non-contiguous stints at one program", () => {
+    expect(
+      seasonRangeMulti([
+        { startYear: 2003, endYear: 2003, isCurrent: false },
+        { startYear: 2006, endYear: 2009, isCurrent: false },
+      ]),
+    ).toEqual({ range: "2003, 2006–2009", count: "5 seasons · 2 stints" });
+    expect(seasonRangeMulti([{ startYear: 2010, endYear: 2019, isCurrent: false }])).toEqual({ range: "2010–2019", count: "10 seasons" });
+  });
+  it("shortens long titles only", () => {
+    expect(titleShort("Head Football Coach")).toBe("Head Football Coach");
+    expect(titleShort("Associate Head Coach for Defense / Defensive Coordinator")).toBe("Assoc. HC for Defense / DC");
+  });
+  it("derives org initials", () => {
+    expect(orgInitials("MIT")).toBe("MIT");
+    expect(orgInitials("Pacific (OR)", "Pacific University (Oregon)")).toBe("PU");
+    expect(orgInitials("Lewis & Clark", "Lewis & Clark College")).toBe("LC");
+    expect(orgInitials("Oberlin")).toBe("OB");
   });
 });

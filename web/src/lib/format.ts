@@ -24,7 +24,7 @@ export function seasonCount(start: number | null, end: number | null, isCurrent:
  * Uses an en dash; callers render it with tabular numerals.
  */
 export function seasonRange(start: number | null, end: number | null, isCurrent: boolean): { range: string; count: string | null } {
-  if (!start) return { range: isCurrent ? "Present" : "Dates not listed", count: null };
+  if (!start) return { range: YEARS_NOT_IN_SOURCE, count: null };
   const last = isCurrent ? "Present" : String(end ?? start);
   const range = last === String(start) ? String(start) : `${start}–${last}`;
   const n = seasonCount(start, end, isCurrent)!;
@@ -36,7 +36,7 @@ export function initials(name: string): string {
   return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
 }
 
-/** Stable hue (0-359) per name, for avatar tints. */
+/** @deprecated Use tintFor(): avatars use the six people tints (DESIGN.md §2.3). */
 export function hueFor(key: string): number {
   let h = 0;
   for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) % 360;
@@ -61,4 +61,109 @@ export function timeAgo(d: Date, now = new Date()): string {
   if (s < 86400) return `${Math.floor(s / 3600)}h`;
   if (s < 86400 * 7) return `${Math.floor(s / 86400)}d`;
   return `${Math.floor(s / (86400 * 7))}w`;
+}
+
+/* ---------- DESIGN.md §2.3, §6 additions ---------- */
+
+/** Shown in place of a range when the source gives no start year (DESIGN.md §6.1). */
+export const YEARS_NOT_IN_SOURCE = "Years not in source";
+
+export type Tint = 1 | 2 | 3 | 4 | 5 | 6;
+
+/** People tint 1..6: FNV-1a (32-bit) over the person's slug, mod 6, so a person keeps one color everywhere. */
+export function tintFor(slug: string): Tint {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < slug.length; i++) {
+    h ^= slug.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return ((h % 6) + 1) as Tint;
+}
+
+/**
+ * Compact range for tree rows, rails and the MoveRecord year column: "2010–19", "2020–", "2003".
+ * Pair it with seasonRangeLabel() in aria-label.
+ */
+export function seasonRangeCompact(start: number | null, end: number | null, isCurrent: boolean): string {
+  if (!start) return "–";
+  if (isCurrent) return `${start}–`;
+  const last = end ?? start;
+  if (last === start) return String(start);
+  const sameCentury = Math.floor(last / 100) === Math.floor(start / 100);
+  return `${start}–${sameCentury ? String(last).slice(2) : last}`;
+}
+
+/** Full range and count in one string, for aria-labels and titles: "2010–2019, 10 seasons". */
+export function seasonRangeLabel(start: number | null, end: number | null, isCurrent: boolean): string {
+  const { range, count } = seasonRange(start, end, isCurrent);
+  return count ? `${range}, ${count}` : range;
+}
+
+export type StintSpan = { startYear: number | null; endYear: number | null; isCurrent: boolean };
+
+/**
+ * Several stints at one program: "2003, 2006–2009" / "5 seasons · 2 stints" (DESIGN.md §6.1).
+ * Overlapping or adjacent stints merge into one span; undated stints are ignored.
+ */
+export function seasonRangeMulti(stints: StintSpan[]): { range: string; count: string | null } {
+  const spans = stints
+    .filter((s) => s.startYear)
+    .map((s) => ({ a: s.startYear!, b: s.isCurrent ? CURRENT_SEASON : (s.endYear ?? s.startYear!), cur: s.isCurrent }))
+    .sort((x, y) => x.a - y.a);
+  if (!spans.length) return { range: YEARS_NOT_IN_SOURCE, count: null };
+  const merged: { a: number; b: number; cur: boolean }[] = [];
+  for (const s of spans) {
+    const last = merged[merged.length - 1];
+    if (last && s.a <= last.b + 1) {
+      last.b = Math.max(last.b, s.b);
+      last.cur = last.cur || s.cur;
+    } else merged.push({ ...s });
+  }
+  if (merged.length === 1) {
+    const m = merged[0];
+    return seasonRange(m.a, m.cur ? null : m.b, m.cur);
+  }
+  const range = merged.map((m) => (m.cur ? `${m.a}–Present` : m.a === m.b ? String(m.a) : `${m.a}–${m.b}`)).join(", ");
+  const n = merged.reduce((sum, m) => sum + (m.b - m.a + 1), 0);
+  return { range, count: `${n} ${n === 1 ? "season" : "seasons"} · ${merged.length} stints` };
+}
+
+const TITLE_SHORT: [RegExp, string][] = [
+  [/\bStrength (?:&|and) Conditioning\b/gi, "S&C"],
+  [/\bSpecial Teams Coordinator\b/gi, "ST Coord."],
+  [/\bOffensive Coordinator\b/gi, "OC"],
+  [/\bDefensive Coordinator\b/gi, "DC"],
+  [/\bAssociate\b/gi, "Assoc."],
+  [/\bAssistant\b/gi, "Asst."],
+  [/\b(Assoc\.|Asst\.) Head Coach\b/gi, "$1 HC"],
+  [/\bQuarterbacks\b/gi, "QB"],
+  [/\bLinebackers\b/gi, "LB"],
+  [/\bDefensive Backs\b/gi, "DBs"],
+];
+
+/** Abbreviates titles over 40 characters for compact rows (DESIGN.md §6.3). Shorter titles pass through. */
+export function titleShort(title: string, max = 40): string {
+  if (title.length <= max) return title;
+  let t = title;
+  for (const [re, sub] of TITLE_SHORT) t = t.replace(re, sub);
+  return t;
+}
+
+const ORG_STOP_WORDS = new Set(["of", "the", "at", "and", "&", "in", "-", "–"]);
+
+/**
+ * Two or three letters for an organization tile (OrgMark) and the season strip:
+ * an acronym short name is kept ("MIT"), otherwise the first letters of the first two
+ * significant words ("Lewis & Clark College" -> "LC", "Pacific University" -> "PU").
+ */
+export function orgInitials(shortName: string, name?: string | null): string {
+  const short = shortName.replace(/\(.*?\)/g, "").trim();
+  if (/^[A-Z][A-Z&.-]{1,4}$/.test(short)) return short.replace(/[&.-]/g, "").slice(0, 3);
+  const words = (name || shortName)
+    .replace(/\(.*?\)/g, " ")
+    .split(/[\s/-]+/)
+    .filter((w) => w && !ORG_STOP_WORDS.has(w.toLowerCase()));
+  if (!words.length) return "?";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
 }
