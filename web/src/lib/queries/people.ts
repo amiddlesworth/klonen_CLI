@@ -223,8 +223,65 @@ export async function getProfile(slug: string): Promise<Profile | null> {
   };
 }
 
-export type TreeLink = { person: PersonSummary; org: Pick<OrgSummary, "slug" | "shortName">; startYear: number | null; endYear: number | null };
+/** One contiguous run of seasons two coaches shared on a staff (one tree_edges row). */
+export type TreePeriod = { startYear: number | null; endYear: number | null; orgShortName: string };
+
+/**
+ * One person in a coaching-tree bucket.
+ * - periods: every overlap period with this person in this bucket (tree_edges stores one row per
+ *   contiguous run of seasons, so a pair can have several, possibly at different programs), most recent first.
+ * - org, startYear, endYear: the most recent period, for callers that show a single range.
+ */
+export type TreeLink = {
+  person: PersonSummary;
+  org: Pick<OrgSummary, "slug" | "shortName">;
+  startYear: number | null;
+  endYear: number | null;
+  periods: TreePeriod[];
+};
 export type Tree = { mentors: TreeLink[]; mentees: TreeLink[]; peers: TreeLink[] };
+
+/** A tree_edges row joined to its organization, as getTree reads it. */
+export type TreeEdgeRow = {
+  kind: "worked_under" | "worked_alongside";
+  mentorId: string;
+  menteeId: string;
+  startYear: number | null;
+  endYear: number | null;
+  orgSlug: string;
+  orgShortName: string;
+};
+
+/** Most recent first: by end year, then start year; undated last. */
+const byRecency = (a: { startYear: number | null; endYear: number | null }, b: { startYear: number | null; endYear: number | null }) =>
+  (b.endYear ?? b.startYear ?? -Infinity) - (a.endYear ?? a.startYear ?? -Infinity) || (b.startYear ?? -Infinity) - (a.startYear ?? -Infinity);
+
+/**
+ * Group a coach's edge rows into the three tree buckets, one link per (bucket, person) with all of
+ * that pair's periods. Pure, so it can be tested without a database. People missing from
+ * `summaries` are left out. Within a bucket, people are ordered by their most recent period.
+ */
+export function aggregateTree(personId: string, edges: TreeEdgeRow[], summaries: Map<string, PersonSummary>): Tree {
+  const tree: Tree = { mentors: [], mentees: [], peers: [] };
+  const links = new Map<string, TreeLink>();
+  for (const e of [...edges].sort(byRecency)) {
+    const otherId = e.mentorId === personId ? e.menteeId : e.mentorId;
+    const bucket = e.kind === "worked_alongside" ? "peers" : e.mentorId === personId ? "mentees" : "mentors";
+    const person = summaries.get(otherId);
+    if (!person) continue;
+    const period: TreePeriod = { startYear: e.startYear, endYear: e.endYear, orgShortName: e.orgShortName };
+    const key = `${bucket}:${otherId}`;
+    const link = links.get(key);
+    if (link) {
+      link.periods.push(period);
+      continue;
+    }
+    const created: TreeLink = { person, org: { slug: e.orgSlug, shortName: e.orgShortName }, startYear: e.startYear, endYear: e.endYear, periods: [period] };
+    links.set(key, created);
+    tree[bucket].push(created);
+  }
+  return tree;
+}
 
 /** The coach's coaching tree: who they worked under, who worked under them, and who they worked alongside. */
 export async function getTree(personId: string): Promise<Tree> {
@@ -242,21 +299,10 @@ export async function getTree(personId: string): Promise<Tree> {
     .from(treeEdges)
     .innerJoin(org, eq(org.id, treeEdges.orgId))
     .where(or(eq(treeEdges.mentorId, personId), eq(treeEdges.menteeId, personId)))
-    .orderBy(desc(treeEdges.endYear));
+    .orderBy(desc(treeEdges.endYear), desc(treeEdges.startYear));
   const otherIds = edges.map((e) => (e.mentorId === personId ? e.menteeId : e.mentorId));
   const summaries = await getPeopleSummaries([...new Set(otherIds)]);
-  const tree: Tree = { mentors: [], mentees: [], peers: [] };
-  const seen = new Set<string>();
-  for (const e of edges) {
-    const otherId = e.mentorId === personId ? e.menteeId : e.mentorId;
-    const bucket = e.kind === "worked_alongside" ? "peers" : e.mentorId === personId ? "mentees" : "mentors";
-    const key = `${bucket}:${otherId}`;
-    const person = summaries.get(otherId);
-    if (!person || seen.has(key)) continue;
-    seen.add(key);
-    tree[bucket].push({ person, org: { slug: e.orgSlug, shortName: e.orgShortName }, startYear: e.startYear, endYear: e.endYear });
-  }
-  return tree;
+  return aggregateTree(personId, edges, summaries);
 }
 
 /** Coaches connected to this person's tree or past programs, for "People you may know" and "Same tree" rails. */

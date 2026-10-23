@@ -4,7 +4,7 @@ import { CURRENT_SEASON } from "@/lib/brand";
 import { getMoves } from "@/lib/queries/feed";
 import { listJobs } from "@/lib/queries/jobs";
 import { getAlumni, getStaff, listConferences, searchOrgs } from "@/lib/queries/orgs";
-import { getProfile, groupExperience, type OrgSummary, type TenureRow } from "@/lib/queries/people";
+import { aggregateTree, getProfile, getTree, groupExperience, type OrgSummary, type PersonSummary, type TenureRow, type TreeEdgeRow } from "@/lib/queries/people";
 import { facetOptions, searchPeople } from "@/lib/queries/search";
 
 /*
@@ -80,6 +80,88 @@ describe("groupExperience", () => {
     const [g, h] = groupExperience([stint("a", null, null, true), stint("b", null, 2020)]);
     expect(g).toMatchObject({ startYear: null, endYear: null, isCurrent: true, seasons: null });
     expect(h).toMatchObject({ startYear: null, endYear: 2020, isCurrent: false, seasons: null });
+  });
+});
+
+const summary = (id: string): PersonSummary => ({
+  id,
+  slug: id,
+  fullName: id,
+  currentTitle: null,
+  roleGroup: "position_coach",
+  claimed: false,
+  isDemo: false,
+  org: null,
+});
+const edge = (kind: TreeEdgeRow["kind"], mentorId: string, menteeId: string, startYear: number, endYear: number, org = "Hendrix"): TreeEdgeRow => ({
+  kind,
+  mentorId,
+  menteeId,
+  startYear,
+  endYear,
+  orgSlug: org.toLowerCase(),
+  orgShortName: org,
+});
+
+describe("aggregateTree", () => {
+  const people = new Map(["simmons", "buchanan", "neal", "packard"].map((id) => [id, summary(id)]));
+  it("keeps every overlap period per person, not only the latest row", () => {
+    // Hendrix (audit F10): Buchanan -> Simmons is two rows, 2015 and 2023-2026.
+    const tree = aggregateTree("buchanan", [edge("worked_under", "buchanan", "simmons", 2015, 2015), edge("worked_under", "buchanan", "simmons", 2023, CURRENT_SEASON)], people);
+    expect(tree.mentees).toHaveLength(1);
+    const [link] = tree.mentees;
+    expect(link.periods).toEqual([
+      { startYear: 2023, endYear: CURRENT_SEASON, orgShortName: "Hendrix" },
+      { startYear: 2015, endYear: 2015, orgShortName: "Hendrix" },
+    ]);
+    // startYear/endYear/org stay the most recent period for existing callers
+    expect(link).toMatchObject({ startYear: 2023, endYear: CURRENT_SEASON, org: { slug: "hendrix", shortName: "Hendrix" } });
+  });
+  it("sorts periods most recent first whatever order the rows come in, across programs", () => {
+    const tree = aggregateTree(
+      "simmons",
+      [edge("worked_alongside", "neal", "simmons", 2010, 2012, "Central Arkansas"), edge("worked_alongside", "neal", "simmons", 2015, 2015), edge("worked_alongside", "neal", "simmons", 2023, 2024)],
+      people,
+    );
+    expect(tree.peers.map((l) => l.person.id)).toEqual(["neal"]);
+    expect(tree.peers[0].periods.map((p) => [p.startYear, p.endYear, p.orgShortName])).toEqual([
+      [2023, 2024, "Hendrix"],
+      [2015, 2015, "Hendrix"],
+      [2010, 2012, "Central Arkansas"],
+    ]);
+    expect(tree.peers[0]).toMatchObject({ startYear: 2023, endYear: 2024, org: { shortName: "Hendrix" } });
+  });
+  it("aggregates per (bucket, person): the same person can be a mentor in one period and a peer in another", () => {
+    const tree = aggregateTree(
+      "simmons",
+      [edge("worked_under", "buchanan", "simmons", 2023, CURRENT_SEASON), edge("worked_alongside", "buchanan", "simmons", 2010, 2011), edge("worked_under", "simmons", "packard", 2020, 2021)],
+      people,
+    );
+    expect(tree.mentors.map((l) => [l.person.id, l.periods.length])).toEqual([["buchanan", 1]]);
+    expect(tree.peers.map((l) => [l.person.id, l.periods.length])).toEqual([["buchanan", 1]]);
+    expect(tree.mentees.map((l) => [l.person.id, l.startYear])).toEqual([["packard", 2020]]);
+  });
+  it("orders people in a bucket by their most recent period and skips unknown people", () => {
+    const tree = aggregateTree(
+      "buchanan",
+      [edge("worked_under", "buchanan", "neal", 2015, 2018), edge("worked_under", "buchanan", "ghost", 2024, 2025), edge("worked_under", "buchanan", "simmons", 2015, 2015), edge("worked_under", "buchanan", "simmons", 2023, CURRENT_SEASON)],
+      people,
+    );
+    expect(tree.mentees.map((l) => l.person.id)).toEqual(["simmons", "neal"]);
+  });
+});
+
+describe("getTree", () => {
+  it("returns all of a pair's periods from the seeded edges", async (ctx) => {
+    if (!dbUp) ctx.skip();
+    const { rows } = await pool.query<{ mentor_id: string; mentee_id: string; n: number }>(
+      "select mentor_id, mentee_id, count(*)::int as n from tree_edges where kind = 'worked_under' group by 1, 2 having count(*) > 1 order by 1, 2 limit 1",
+    );
+    if (!rows.length) return ctx.skip();
+    const tree = await getTree(rows[0].mentor_id);
+    const link = tree.mentees.find((l) => l.person.id === rows[0].mentee_id);
+    expect(link?.periods.length).toBe(rows[0].n);
+    expect(link?.endYear).toBe(Math.max(...link!.periods.map((p) => p.endYear ?? -Infinity)));
   });
 });
 

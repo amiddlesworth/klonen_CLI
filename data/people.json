@@ -570,8 +570,8 @@
   "isDemo": false
  },
  {
-  "id": "p-james-wright",
-  "slug": "james-wright",
+  "id": "p-james-wright-east-texas-baptist",
+  "slug": "james-wright-east-texas-baptist",
   "fullName": "James Wright",
   "firstName": "James",
   "lastName": "Wright",
@@ -1623,7 +1623,7 @@
   "currentOrgId": "ncaa-1124",
   "currentTitle": "Cornerbacks Coach",
   "roleGroup": "position_coach",
-  "unit": "offense",
+  "unit": "defense",
   "almaMater": "Hendrix College",
   "hometown": null,
   "about": null,
@@ -5852,8 +5852,8 @@
   "isDemo": false
  },
  {
-  "id": "p-frank-leonard",
-  "slug": "frank-leonard",
+  "id": "p-frank-leonard-chapman",
+  "slug": "frank-leonard-chapman",
   "fullName": "Frank Leonard",
   "firstName": "Frank",
   "lastName": "Leonard",
@@ -6137,15 +6137,15 @@
   "isDemo": false
  },
  {
-  "id": "p-alex-smith",
-  "slug": "alex-smith",
+  "id": "p-alex-smith-christopher-newport",
+  "slug": "alex-smith-christopher-newport",
   "fullName": "Alex Smith",
   "firstName": "Alex",
   "lastName": "Smith",
   "currentOrgId": "ncaa-139",
   "currentTitle": "Assistant Coach - Recruiting Coordinator / Cornerbacks",
   "roleGroup": "position_coach",
-  "unit": "offense",
+  "unit": "defense",
   "almaMater": "Bridgewater College",
   "hometown": null,
   "about": null,
@@ -13661,8 +13661,8 @@
   "isDemo": false
  },
  {
-  "id": "p-liam-murphy",
-  "slug": "liam-murphy",
+  "id": "p-liam-murphy-hobart",
+  "slug": "liam-murphy-hobart",
   "fullName": "Liam Murphy",
   "firstName": "Liam",
   "lastName": "Murphy",
@@ -14763,8 +14763,8 @@
   "isDemo": false
  },
  {
-  "id": "p-jeff-thomas",
-  "slug": "jeff-thomas",
+  "id": "p-jeff-thomas-northwestern-mn",
+  "slug": "jeff-thomas-northwestern-mn",
   "fullName": "Jeff Thomas",
   "firstName": "Jeff",
   "lastName": "Thomas",
@@ -16329,7 +16329,7 @@
   "currentOrgId": "ncaa-30164",
   "currentTitle": "Special Teams Coordinator and Offensive Line Coach",
   "roleGroup": "coordinator",
-  "unit": "defense",
+  "unit": "offense",
   "almaMater": "University of Southern California",
   "hometown": null,
   "about": null,
@@ -17214,8 +17214,8 @@
   "isDemo": false
  },
  {
-  "id": "p-alex-wood",
-  "slug": "alex-wood",
+  "id": "p-alex-wood-john-carroll",
+  "slug": "alex-wood-john-carroll",
   "fullName": "Alex Wood",
   "firstName": "Alex",
   "lastName": "Wood",
@@ -23758,7 +23758,7 @@
   "currentOrgId": "ncaa-46",
   "currentTitle": "Special Teams Coordinator / Director of Football Operations / Safeties Coach",
   "roleGroup": "coordinator",
-  "unit": "defense",
+  "unit": "special_teams",
   "almaMater": "Baldwin Wallace University",
   "hometown": null,
   "about": null,
@@ -24928,8 +24928,8 @@
   "isDemo": false
  },
  {
-  "id": "p-andrew-brown",
-  "slug": "andrew-brown",
+  "id": "p-andrew-brown-north-carolina-wesleyan",
+  "slug": "andrew-brown-north-carolina-wesleyan",
   "fullName": "Andrew Brown",
   "firstName": "Andrew",
   "lastName": "Brown",
@@ -33030,7 +33030,7 @@
   "currentOrgId": "ncaa-724",
   "currentTitle": "Fullbacks Coach",
   "roleGroup": "position_coach",
-  "unit": null,
+  "unit": "offense",
   "almaMater": null,
   "hometown": null,
   "about": null,
@@ -38065,7 +38065,7 @@
   "currentOrgId": "ncaa-801",
   "currentTitle": "Running Backs Coach",
   "roleGroup": "position_coach",
-  "unit": "defense",
+  "unit": "offense",
   "almaMater": "University of Wisconsin-River Falls",
   "hometown": null,
   "about": null,
@@ -40611,7 +40611,7 @@
   "currentOrgId": "ncaa-8911",
   "currentTitle": "Defensive Backs Coach",
   "roleGroup": "position_coach",
-  "unit": null,
+  "unit": "defense",
   "almaMater": "Wisconsin Lutheran College",
   "hometown": null,
   "about": null,

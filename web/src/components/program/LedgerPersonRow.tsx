@@ -12,6 +12,8 @@ type LedgerPersonRowProps = {
   context?: ReactNode;
   /** Season ledger on the right (desktop) or under the text (phone). */
   ledger?: ReactNode;
+  /** The signed-in viewer's own row: "· you" after the name (from the session, never hard-coded). */
+  isViewer?: boolean;
   className?: string;
 };
 
@@ -20,14 +22,17 @@ type LedgerPersonRowProps = {
  * optional context, and the season range in a right-aligned 128px ledger column (under the text on
  * phone). The whole row is one link to the profile, at least 44px tall; hover underlines the name.
  */
-export function LedgerPersonRow({ person, line, context, ledger, className }: LedgerPersonRowProps) {
+export function LedgerPersonRow({ person, line, context, ledger, isViewer, className }: LedgerPersonRowProps) {
   return (
     <Link href={`/in/${person.slug}`} className={cn("group/row flex min-h-11 min-w-0 items-start gap-3 rounded-xs focus-visible:outline-offset-4", className)}>
       <Avatar name={person.fullName} tintKey={person.slug} size={40} />
       {/* Phone order: name, line, range (right after the title, §8.4), context. md+: range in a right column. */}
       <div className="grid min-w-0 flex-1 grid-cols-1 items-start md:grid-cols-[minmax(0,1fr)_auto] md:gap-x-4">
         <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 md:col-start-1">
-          <span className="text-body font-semibold text-fg-1 underline-offset-2 group-hover/row:underline">{person.fullName}</span>
+          <span className="text-body font-semibold text-fg-1">
+            <span className="underline-offset-2 group-hover/row:underline">{person.fullName}</span>
+            {isViewer && <span className="whitespace-nowrap font-normal text-fg-3"> · you</span>}
+          </span>
           {person.isDemo ? <SampleChip /> : !person.claimed && <UnclaimedChip />}
         </p>
         {line && <p className="text-small text-fg-2 md:col-start-1">{line}</p>}

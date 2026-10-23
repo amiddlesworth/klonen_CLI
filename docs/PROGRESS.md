@@ -25,4 +25,11 @@ Started 2026-10-23 05:07 UTC. Branch: `coach-network-mvp`.
 - Data spot-check, 25 random stints from the full run, two independent verifiers: 18-20 correct, 3-5 partly correct, 2 unverifiable (empty bios), **0 wrong, 0 wrong-school matches**. Partly-correct cases: years derived from durations flagged as explicit; one basketball stint recorded as football.
 - Adversarial review + dataset sweep: 42 findings raised, **30 confirmed** by a skeptic pass, 12 rejected. Biggest: unguarded fuzzy org matches merging different schools; undated current stints producing no tree edges; bare position titles classed "other"; head-coach detection catching JV/interim roles; non-football stints in the football data; one duplicated person; titles read from the wrong table column at two programs; feed/alumni queries choosing the wrong stint; seeded hiring pipeline and sample jobs implying things about real coaches.
 - Decision: a real coach can be the demo "view as" persona, but we never mark a real person's profile as claimed; public profile stays Unclaimed.
-- Fixes: in progress (pipeline+dataset and web data layer in parallel, then fresh verification).
+- Fixes (two rounds, each independently verified):
+  - Org matching: no unguarded fuzzy matches; level-aware ties; renamed schools merge; state hints for high schools. Exact NCAA matches 6,260 -> 6,361.
+  - Tree: undated current staff now count for the 2026 season; one edge row per contiguous overlap; no self edges. "Worked under" 1,393 -> 2,367, "worked alongside" 4,633 -> 11,715; coaches with no tree link 862 -> 2.
+  - Roles: bare position titles -> position coach; head coach only for varsity football HC. 195/196 programs have exactly one current head coach (Plymouth State lists co-head coaches).
+  - Honesty: 572 derived years now flagged inferred; invented end years removed (9 -> 0); non-football stints tagged (330) and kept out of football counts and edges; "seasons coached" counts distinct covered seasons (e.g. 43 -> 5 for one coach whose sources cover 5).
+  - Demo data: fictional candidates in the hiring pipeline; sample jobs only at programs with no staff on the network; demo search renamed.
+  - New `pipeline/check_dataset.py` asserts the invariants on every run; 17 pipeline test groups, 63 web tests.
+  - Fresh 25-stint spot-check after fixes: 21 correct, 3 unverifiable (empty bios), 1 partly correct, 0 wrong.

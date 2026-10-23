@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { BRAND } from "@/lib/brand";
 import { getProgramAlumni, getProgramPlayers, type ProgramCounts, type ProgramOrg } from "@/lib/queries/program";
 import { ALUMNI_PAGE_SIZE, AlumniList } from "./AlumniList";
+import { rangeHasInferred } from "./LedgerRange";
 import { ProgramHeader } from "./ProgramHeader";
 import { ProgramJsonLd } from "./ProgramJsonLd";
 import { WhereNowCard } from "./ProgramRail";
@@ -57,7 +58,8 @@ export async function LightOrgPage({ org, counts, page, url, origin }: { org: Pr
           <AlumniList
             id="coached"
             title="Coached here"
-            subtitle={`Worked at ${org.shortName}, most recent first`} entries={alumni}
+            subtitle={`Worked at ${org.shortName}, most recent first`}
+            entries={alumni}
             kind="coached"
             page={page}
             hrefForPage={(p) => (p > 1 ? `${base}?page=${p}` : base)}
@@ -68,7 +70,7 @@ export async function LightOrgPage({ org, counts, page, url, origin }: { org: Pr
             subtitle={`Former ${org.shortName} players who now coach`}
             entries={players}
             kind="played"
-            explainInferred={!alumni.slice((page - 1) * ALUMNI_PAGE_SIZE, page * ALUMNI_PAGE_SIZE).some((e) => e.inferred)}
+            explainInferred={!alumni.slice((page - 1) * ALUMNI_PAGE_SIZE, page * ALUMNI_PAGE_SIZE).some((e) => rangeHasInferred(e.stints))}
           />
         </>
       )}

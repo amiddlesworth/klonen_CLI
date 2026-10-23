@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Info } from "lucide-react";
+import { Building2, Info } from "lucide-react";
 import { ProgramBadges } from "@/components/data/Badges";
 import { SourceLink } from "@/components/data/SourceLink";
 import { StatGroup, type Stat } from "@/components/data/StatGroup";
@@ -20,6 +20,8 @@ type ProgramHeaderProps = {
   tabs?: TabItem[];
   /** A --surface-2 band at the bottom of the card (light pages explain what they are). */
   note?: ReactNode;
+  /** Personal reason from the session ("your program"): a ContextStrip band at the top of the card (§8.3). */
+  context?: string;
 };
 
 /**
@@ -28,10 +30,21 @@ type ProgramHeaderProps = {
  * (under the identity at 721–1080, a full-width row on phone), StatBand, then the tabs flush with the
  * card's bottom edge.
  */
-export function ProgramHeader({ org, stats, actions, tabs, note }: ProgramHeaderProps) {
+export function ProgramHeader({ org, stats, actions, tabs, note, context }: ProgramHeaderProps) {
   const sub = [org.nickname, placeLine(org.city, org.state)].filter(Boolean).join(" · ");
   return (
     <Card aria-labelledby="program-name" className={cn("px-4 pt-4 md:px-6 md:pt-6", note && !tabs && "overflow-hidden")}>
+      {context && (
+        <p className="-mx-4 -mt-4 mb-4 flex items-center gap-1.5 border-b border-divider px-4 py-2 text-caption text-fg-2 md:-mx-6 md:-mt-6 md:mb-5 md:px-6">
+          <Icon icon={Building2} size={12} className="text-fg-2" />
+          <span className="sr-only">Why you&apos;re seeing this: </span>
+          <b className="min-w-0 truncate font-semibold text-fg-1">{org.shortName}</b>
+          <span aria-hidden="true" className="text-fg-3">
+            ·
+          </span>
+          <span className="min-w-0 truncate">{context}</span>
+        </p>
+      )}
       <div className="grid grid-cols-[48px_minmax(0,1fr)] gap-x-3 gap-y-4 md:grid-cols-[56px_minmax(0,1fr)] md:gap-x-5 lg:grid-cols-[56px_minmax(0,1fr)_auto]">
         <OrgMark shortName={org.shortName} name={org.name} size={56} className="max-md:size-12 max-md:rounded-[10px] max-md:text-[16px]" />
         <div className="min-w-0 md:pt-0.5">

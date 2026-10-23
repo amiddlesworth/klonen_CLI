@@ -4,7 +4,9 @@ Run: python3 -I pipeline/test_resolve.py
 Covers: role classification (cases from audit 1), sport handling, name cleaning, role and
 title cleaning, semicolon splitting, yearsExplicit, spans and edge intervals, org matching
 (ties, renamed schools, guarded fuzzy matches, state hints), unmatched-org keys, org kinds,
-bio excerpts, and crawl.py's robots/429 handling and header-aware staff parsing.
+bio excerpts, crawl.py's robots/429 handling and header-aware staff parsing, and the residual-data
+fixes: superseded stints keep an unknown end (no invented continuous tenure), the Hendrix F10 edge,
+support-staff sports, role annotations and placeholders, and stable namesake slugs.
 """
 import json
 import sys
@@ -16,9 +18,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import crawl  # noqa: E402
 import resolve as R  # noqa: E402
 from resolve import (  # noqa: E402
-    CURRENT_SEASON, assign_unmatched, bio_excerpt, build_edges, classify, clean_conference_abbr, clean_role,
-    clean_title, normalize_sport, norm_org, org_kind, org_query, parse_name, span, split_stint, state_hint_in,
-    years_explicit,
+    CURRENT_SEASON, PINNED_SLUGS, apply_staff_title, assign_slugs, assign_unmatched, bio_excerpt, build_edges,
+    choose_current, classify, clean_conference_abbr, clean_role, clean_title, current_title_note, normalize_sport,
+    norm_org, org_kind, org_query, parse_name, span, split_stint, state_hint_in, strip_annotations, years_explicit,
 )
 
 CASES = [
@@ -64,7 +66,7 @@ CASES = [
     ("Assistant Head Coach / Offensive Line", ("coordinator", "offense")),
     ("Specialist Head Coach / Strength and Speed Assistant", ("position_coach", "special_teams")),
     ("Futures Head Coach / Chief Advisor for Player Experience / Asst. Defensive Line", ("position_coach", "defense")),
-    ("Not stated (described as his tenure leading the program; likely Head Coach)", ("position_coach", None)),
+    ("Not stated (described as his tenure leading the program; likely Head Coach)", ("other", None)),
     # one rule for run and passing game coordinators
     ("Passing Game Coordinator", ("coordinator", "offense")),
     ("Run Game Coordinator", ("coordinator", "offense")),
@@ -75,6 +77,26 @@ CASES = [
     # notes about other periods do not define the stint's role
     ("Defensive Backs Coach (now Co-Defensive Coordinator)", ("position_coach", "defense")),
     ("Defensive Assistant (Defensive Coordinator in 2011)", ("position_coach", "defense")),
+    # placeholders name no job: 'other', never a position coach; 'Fullbacks' is a position
+    ("Coach", ("other", None)),
+    ("Staff", ("other", None)),
+    ("unspecified", ("other", None)),
+    ("Coach (role not stated)", ("other", None)),
+    ("Staff (role not stated)", ("other", None)),
+    ("Staff member (role not specified)", ("other", None)),
+    ("Coaching staff under Frank Beamer (role not stated)", ("other", None)),
+    ("Football Coach", ("other", None)),
+    ("Coach (head coach implied; two-time Section II Class D Coach of the Year)", ("other", None)),
+    ("Coach (running backs, per accomplishments; title not stated)", ("other", None)),
+    ("Assistant Coach (role not stated)", ("position_coach", None)),  # an assistant coach is a job
+    ("Assistant Coach (role not stated; offense)", ("position_coach", "offense")),
+    ("Coach (offense)", ("position_coach", "offense")),
+    ("Staff (Graduate Assistant)", ("ga_analyst", None)),
+    ("Fullbacks", ("position_coach", "offense")),
+    ("Tight Ends / Fullbacks", ("position_coach", "offense")),
+    # extractor annotations do not define the role
+    ("Cornerbacks Coach (bio says wide receivers)", ("position_coach", "defense")),
+    ("Assistant Coach (Defensive Line; bio says Offensive Line)", ("position_coach", "defense")),
 ]
 NOT_HEAD_COACH = [
     "Head Coach, Women's Flag Football",
@@ -101,6 +123,18 @@ def test_sport() -> list[str]:
         "sprint football": "football", "football and baseball": "football",
         "women's flag football": "women's flag football", "flag football": "flag football",
         "women's tackle football": "women's tackle football", "Baseball": "baseball", "track and field": "track and field",
+        # football-staff support work is football staff work
+        "strength and conditioning": "football", "Strength and Conditioning": "football", "athletic training": "football",
+        "football operations": "football", "sports performance": "football", "sports performance training": "football",
+        "athletic performance training": "football", "strength and conditioning (all sports)": "football",
+        "strength and conditioning (sport not specified)": "football", "athletic training (strength and conditioning)": "football",
+        "strength and conditioning (football and olympic sports)": "football",
+        # ...unless the tag names a genuinely different sport
+        "basketball (strength and conditioning)": "basketball (strength and conditioning)",
+        "strength and conditioning (baseball, women's soccer)": "strength and conditioning (baseball, women's soccer)",
+        "athletic training / powerlifting": "athletic training / powerlifting",
+        "basketball": "basketball", "lacrosse": "lacrosse", "soccer": "soccer", "wrestling": "wrestling",
+        "athletics administration": "athletics administration",
     }
     return [f"normalize_sport({k!r}) = {normalize_sport(k)!r}, want {v!r}" for k, v in want.items() if normalize_sport(k) != v]
 
@@ -147,6 +181,23 @@ def test_roles_and_titles() -> list[str]:
         "Guard": "Guard",
         "wide receivers and defensive backs": "Wide receivers and defensive backs",
         "Interim Head Coach (previously Defensive Coordinator, then Associate Head Coach)": "Interim Head Coach",
+        # extractor annotations are stripped; the substantive role (and substantive notes) stay
+        "Co-Defensive Coordinator/Linebackers (bio text: Special Teams/Defensive Backs Coach)": "Co-Defensive Coordinator / Linebackers",
+        "Tight Ends / Pass Game Coordinator / Special Teams Coordinator (bio text: Wide Receivers Coach)":
+            "Tight Ends / Pass Game Coordinator / Special Teams Coordinator",
+        "Recruiting Coordinator / Cornerbacks (bio also lists Tight Ends)": "Recruiting Coordinator / Cornerbacks",
+        "Running Backs / Recruiting (bio: tight ends and recruiting assistant)": "Running Backs / Recruiting",
+        "Defensive Line Coach (per bio)": "Defensive Line Coach",
+        "Assistant Coach (Defensive Line; bio says Offensive Line)": "Assistant Coach (Defensive Line)",
+        "Volunteer Assistant Coach (Linebackers; bio says defensive backs / nickel backs)": "Volunteer Assistant Coach (Linebackers)",
+        "Special Teams Coordinator and Offensive Line Coach (bio text describes him as Defensive Line coach; also oversees equipment operations)":
+            "Special Teams Coordinator and Offensive Line Coach (also oversees equipment operations)",
+        "Coach (Hall of Fame Coach; led the Cedars, implying head coach)": "Coach (Hall of Fame Coach)",
+        "Coach (head coach implied)": "Coach",
+        "Running Backs Coach (second stint, current title Co-Offensive Coordinator)": "Running Backs Coach",
+        "Staff (role not stated)": "Staff",
+        "Role not stated": "",
+        "unspecified": "",
     }
     titles = {
         "Head Football Coach (Quarterbacks) Recruiting States - AK, AZ, CA": "Head Football Coach (Quarterbacks)",
@@ -252,6 +303,146 @@ def test_spans_and_edges() -> list[str]:
     got = rows([_t("a", "o", "head_coach", 2020, 2021), _t("b", "o", "head_coach", 2020, 2021)])
     if got:
         errors.append(f"co-head coaches: {got}")
+    return errors
+
+
+def _row(role, s, e, org="prog", rg=None, unit=None, evidence=None, split_from=None, title_note=None):
+    """A tenure row as main() builds it before choose_current."""
+    g, u = classify(role) if rg is None else (rg, unit)
+    return {"personId": "p", "orgId": org, "role": clean_role(role) or "Coach", "roleGroup": g, "unit": u, "sport": "football",
+            "startYear": s, "endYear": e, "isCurrent": False, "asPlayer": False, "yearsExplicit": True, "evidence": evidence,
+            "sourceUrl": None, "verified": False, "_fromBio": True, "_splitFrom": split_from, "_titleNote": title_note}
+
+
+def test_superseded_stints() -> list[str]:
+    """Item 1: a stint superseded by the current role keeps the source's end; without one, the end is
+    unknown (None), never max(start, current start - 1); its span is only its known season."""
+    errors = []
+    rb, dl = _row("Running Backs Coach", 2015, None), _row("Assistant Defensive Line Coach", 2023, None)
+    turf = _row("Athletic Fields & Turf Manager", None, None)
+    current, staff_only = choose_current([rb, dl, turf], "prog", "Assistant Defensive Line Coach", "p", None)
+    if current is not dl or staff_only or not dl["isCurrent"] or dl["endYear"] is not None:
+        errors.append(f"current stint: {current}")
+    if rb["endYear"] is not None or rb["isCurrent"]:
+        errors.append(f"superseded open stint must keep an unknown end, got endYear={rb['endYear']} (invented continuous tenure)")
+    if span(rb) != (2015, 2015):
+        errors.append(f"superseded stint spans only its known season: {span(rb)}")
+    # a stated end year is kept as stated
+    old, new = _row("Linebackers Coach", 2012, CURRENT_SEASON), _row("Defensive Coordinator", 2020, None)
+    choose_current([old, new], "prog", "Defensive Coordinator", "p", None)
+    if old["endYear"] != CURRENT_SEASON or not new["isCurrent"]:
+        errors.append(f"a source-stated end is kept: {old['endYear']}")
+    # a concurrent role the staff-page title still names stays open through the current season
+    dc, lb = _row("Defensive Coordinator", 2020, None), _row("Linebackers Coach", 2018, None)
+    choose_current([dc, lb], "prog", "Defensive Coordinator / Linebackers Coach", "p", None)
+    if lb["endYear"] != CURRENT_SEASON or lb["isCurrent"]:
+        errors.append(f"concurrent role named by the title: {lb['endYear']}")
+    # another part of the current stint's own open-ended source role is still held
+    src = "Wide Receivers / Tight Ends; Recruiting Coordinator (since 2023)"
+    parts = split_stint({"role": src, "start_year": 2019, "end_year": None, "evidence": "ev"})
+    rows = [_row(p["role"], p["start_year"], p["end_year"], evidence="ev", split_from=p.get("split_from")) for p in parts]
+    cur, _ = choose_current(rows, "prog", "Recruiting Coordinator/Wide Receivers", "p", None)
+    other = [r for r in rows if r is not cur]
+    if cur["startYear"] != 2023 or [r["endYear"] for r in other] != [CURRENT_SEASON]:
+        errors.append(f"split parts of the current source stint: {[(r['role'], r['startYear'], r['endYear'], r['isCurrent']) for r in rows]}")
+    # only stints at the person's program are touched
+    away = _row("Running Backs Coach", 2010, None, org="elsewhere")
+    choose_current([away, _row("Head Coach", 2015, None)], "prog", "Head Coach", "p", None)
+    if away["endYear"] is not None or away["isCurrent"]:
+        errors.append("stints at other programs keep their years")
+    return errors
+
+
+def test_f10_hendrix() -> list[str]:
+    """Item 2 / audit F10: Buchanan (head coach since 2013) -> Simmons (2015, end not stated; 2023-current)
+    is two rows, 2015 and 2023-current. The merge came from the invented 2022 end year, which made
+    the two stints contiguous; build_edges' per-season sets then had no gap to split on."""
+    errors = []
+    hc = _row("Head Coach", 2013, None, org="ncaa-1124")
+    hc["personId"] = "buchanan"
+    choose_current([hc], "ncaa-1124", "Head Coach", "buchanan", None)
+    simmons = [_row("Assistant Defensive Line Coach", 2023, None, org="ncaa-1124"), _row("Running Backs Coach", 2015, None, org="ncaa-1124"),
+               _row("Cornerbacks Coach", 2014, 2014, org="lyon")]
+    for r in simmons:
+        r["personId"] = "simmons"
+    choose_current(simmons, "ncaa-1124", "Assistant Defensive Line Coach", "simmons", None)
+    peer = _row("Outside Linebackers Coach", 2020, 2021, org="ncaa-1124")
+    peer["personId"] = "packard"
+    got = sorted((e["kind"], e["mentorId"], e["menteeId"], e["startYear"], e["endYear"]) for e in build_edges([hc, *simmons, peer]))
+    want = sorted([
+        ("worked_under", "buchanan", "simmons", 2015, 2015), ("worked_under", "buchanan", "simmons", 2023, CURRENT_SEASON),
+        ("worked_under", "buchanan", "packard", 2020, 2021),
+    ])
+    if got != want:
+        errors.append(f"Hendrix edges {got}, want {want} (no worked_alongside: Simmons was not there in 2020-2021)")
+    # two tenure pairs whose overlaps touch are one contiguous interval; a gap splits them
+    got = sorted((e["startYear"], e["endYear"]) for e in build_edges([
+        _t("hc", "o", "head_coach", 2000, None, cur=True), _t("a", "o", "position_coach", 2005, 2007),
+        _t("a", "o", "coordinator", 2008, 2010), _t("a", "o", "coordinator", 2013, 2014)]))
+    if got != [(2005, 2010), (2013, 2014)]:
+        errors.append(f"contiguous vs gapped tenure pairs: {got}")
+    return errors
+
+
+def test_staff_title() -> list[str]:
+    """The current stint takes the staff-page title when the bio names no job for it (a placeholder stays
+    'other' otherwise), when the extractor noted a different current title, or on a head-coach conflict."""
+    errors = []
+    cur = _row("Coach (role not stated)", 2021, None)
+    if cur["roleGroup"] != "other":
+        errors.append(f"placeholder current role is 'other' before the staff page: {cur['roleGroup']}")
+    if apply_staff_title(cur, "Defensive Backs Coach") != ["placeholder"] or (cur["role"], cur["roleGroup"], cur["unit"]) != (
+            "Defensive Backs Coach", "position_coach", "defense"):
+        errors.append(f"placeholder current role takes the staff title: {cur}")
+    cur = _row("Staff", None, None)
+    if apply_staff_title(cur, "") or cur["roleGroup"] != "other":
+        errors.append("no staff title: the placeholder stays 'other'")
+    cur = _row("Running Backs Coach (second stint, current title Co-Offensive Coordinator)", 2022, None,
+               title_note=current_title_note("Running Backs Coach (second stint, current title Co-Offensive Coordinator)"))
+    if cur["role"] != "Running Backs Coach" or cur["roleGroup"] != "position_coach":
+        errors.append(f"the note is not part of the role: {cur}")
+    if apply_staff_title(cur, "Co-Offensive Coordinator") != ["noted"] or (cur["role"], cur["roleGroup"]) != ("Co-Offensive Coordinator", "coordinator"):
+        errors.append(f"noted current title: {cur}")
+    note = current_title_note("Defensive Line Coach (header title: Defensive Assistant Coach)")
+    cur = _row("Defensive Line Coach (header title: Defensive Assistant Coach)", None, None, title_note=note)
+    if note != "Defensive Assistant Coach" or apply_staff_title(cur, "Assistant Football Coach / Defensive Assistant Coach") or cur["role"] != "Defensive Line Coach":
+        errors.append(f"a noted title with the same group and unit keeps the bio's more specific role: {note!r} {cur['role']!r}")
+    if current_title_note("Assistant Coach (Tight Ends Coach per title; bio says he leads the quarterback room)") != "Tight Ends Coach":
+        errors.append("'X per title' is a title note")
+    if strip_annotations("Assistant Coach (Tight Ends Coach per title; bio says he leads the quarterback room)") != "Assistant Coach":
+        errors.append("strip_annotations drops every annotation segment")
+    return errors
+
+
+def test_slugs() -> list[str]:
+    """Item 5: every namesake gets a program suffix, independent of order; unique names stay bare;
+    the demo account's slug is pinned."""
+    errors = []
+    people = [("liam-murphy", "", "nichols", "ncaa-484"), ("liam-murphy", "", "hobart", "ncaa-282"), ("ian-falconer", "", "pacific-or", "ncaa-2751")]
+    got = assign_slugs(people)
+    if got != ["liam-murphy-nichols", "liam-murphy-hobart", "ian-falconer"]:
+        errors.append(f"namesakes all suffixed, unique bare: {got}")
+    if assign_slugs(people[::-1]) != got[::-1]:
+        errors.append("slugs do not depend on the order people are processed in")
+    # adding a namesake later never hands the bare slug to someone else: the old bare slug disappears
+    if "liam-murphy" in assign_slugs(people + [("liam-murphy", "", "brockport", "ncaa-1")]):
+        errors.append("a colliding name never keeps a bare slug")
+    # namesakes at one program: the name suffix tells them apart
+    got = assign_slugs([("mike-smith", "", "hobart", "h"), ("mike-smith", "jr", "hobart", "h")])
+    if got != ["mike-smith-hobart", "mike-smith-jr-hobart"]:
+        errors.append(f"same-program namesakes: {got}")
+    # a bare slug never takes a namesake's program-suffixed slug
+    got = assign_slugs([("liam-murphy-nichols", "", "x", "x"), ("liam-murphy", "", "nichols", "n"), ("liam-murphy", "", "hobart", "hb")])
+    if got[1] != "liam-murphy-nichols" or len(set(got)) != 3:
+        errors.append(f"suffixed slugs are reserved first: {got}")
+    # the demo account (web/scripts/seed.ts DEMO_COACH_ID p-justin-leatherman) keeps its slug, even with a namesake
+    if PINNED_SLUGS.get("justin-leatherman") != "ncaa-2751" or parse_name("Justin Leatherman")["slug"] != "justin-leatherman":
+        errors.append("justin-leatherman is pinned to Pacific (OR)")
+    got = assign_slugs([("justin-leatherman", "", "pacific-or", "ncaa-2751"), ("justin-leatherman", "", "hobart", "h")])
+    if got != ["justin-leatherman", "justin-leatherman-hobart"]:
+        errors.append(f"pinned demo slug: {got}")
+    if assign_slugs([("justin-leatherman", "", "hobart", "h")]) != ["justin-leatherman"]:
+        errors.append("a pinned name without its pinned person is an ordinary name")
     return errors
 
 
@@ -487,6 +678,7 @@ def test_parse_staff() -> list[str]:
 
 
 TESTS = [test_classify, test_sport, test_names, test_roles_and_titles, test_split, test_years_explicit, test_spans_and_edges,
+         test_superseded_stints, test_f10_hendrix, test_staff_title, test_slugs,
          test_org_matching, test_unmatched_keys, test_org_kinds, test_bio_excerpt, test_crawl_politeness, test_parse_staff]
 
 

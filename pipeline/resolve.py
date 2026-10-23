@@ -22,12 +22,21 @@ Rules this file enforces (see pipeline/audits/audit1_pipeline_findings.json):
     different states stay apart and the stateless rest of such a name is marked
     ambiguous (no tree edges). Placeholders ("Unnamed high school") collapse
     into one unknown org per kind and never form edges.
-  - Sport: every stint keeps its sport; non-football stints are kept but get
-    roleGroup 'other' and never count for edges, head coaches or a person's role.
-  - Roles: classify() as documented there; role strings are cleaned and
-    semicolon-joined roles are split into separate stints.
-  - Current stint: the latest dated open football stint at the person's program
-    (title match breaks ties); concurrent roles stay open, earlier ones close.
+  - Sport: every stint keeps its sport; football-staff support work tagged as its
+    own sport (strength and conditioning, athletic training, sports performance,
+    football operations) is football unless the tag names another sport.
+    Non-football stints are kept but get roleGroup 'other' and never count for
+    edges, head coaches or a person's role.
+  - Roles: classify() as documented there; role strings are cleaned (no extractor
+    annotations such as '(bio text: ...)' or '(role not stated)'), semicolon-joined
+    roles are split into separate stints, and placeholder roles ('Coach', 'Staff')
+    stay roleGroup 'other'.
+  - Current stint (choose_current): the latest dated open football stint at the
+    person's program (title match breaks ties); concurrent roles the title names
+    stay open; superseded ones keep the source's end year, which is unknown (None)
+    when the source gives none: never an invented end the season before.
+  - Slugs (assign_slugs): bare when the name is unique; every namesake gets a
+    program suffix; pinned slugs (the demo account) never change.
   - Tree edges: per-season sets, one row per contiguous interval, worked_under
     only in seasons the mentor was head coach and the mentee was on staff,
     worked_alongside never in the same seasons as worked_under, no self edges.
@@ -234,21 +243,36 @@ RENAMED = {
 
 # ------------------------------------------------------------------ sport
 NOT_TACKLE = re.compile(r"flag|touch|7v7|\bwomen|\bgirls|unified", re.I)
+# Football-staff support work the extractor tags with its own "sport" ('strength and conditioning',
+# 'athletic training', 'sports performance', 'football operations'): it is football staff work.
+SUPPORT_SPORT = re.compile(
+    r"strength|conditioning|athletic (?:performance )?training|(?:sports?|athletic|human) performance|"
+    r"performance training|football operations", re.I)
+# A support tag that names a genuinely different sport ('basketball (strength and conditioning)',
+# 'strength and conditioning (baseball, women's soccer)', 'athletic training / powerlifting') is not football.
+DIFFERENT_SPORT = re.compile(
+    r"basketball|baseball|softball|soccer|hockey|lacrosse|track|cross country|wrestling|volleyball|swimming|diving|"
+    r"tennis|golf|rowing|bowling|rugby|powerlifting|weightlifting|boxing|handball|bobsled|field hockey|\bwomen|\bgirls",
+    re.I)
 
 
 def normalize_sport(raw: str | None) -> str:
     """'football' for any (men's) tackle football, including arena/indoor/sprint/Canadian and
-    multi-sport roles that include football; otherwise the extracted sport, lowercased."""
+    multi-sport roles that include football, and for football-staff support work (strength and
+    conditioning, athletic training, sports performance, football operations) unless the tag names
+    another sport; otherwise the extracted sport, lowercased."""
     s = re.sub(r"\s+", " ", (raw or "").strip().lower())
     if not s:
         return "football"
     if "football" in s and not NOT_TACKLE.search(s):
         return "football"
+    if SUPPORT_SPORT.search(s) and not DIFFERENT_SPORT.search(s) and not NOT_TACKLE.search(s):
+        return "football"
     return s
 
 
 # ------------------------------------------------------------------ role classification
-OFF = r"offens|quarterback|\bqbs?\b|running back|\brbs?\b|wide receiver|receivers|\bwrs?\b|tight end|\btes?\b|offensive line|\bol\b|o-line|h-back|slot|pass(ing)? game|run(ning)? game"
+OFF = r"offens|quarterback|\bqbs?\b|running back|\brbs?\b|wide receiver|receivers|\bwrs?\b|tight end|\btes?\b|offensive line|\bol\b|o-line|h-back|full ?backs?|\bfb\b|slot|pass(ing)? game|run(ning)? game"
 DEF = r"defens|linebacker|\blbs?\b|defensive back|secondary|safet|cornerback|\bcbs?\b|\bdbs?\b|defensive line|\bdl\b|d-line|edge|nickel|outside linebacker|inside linebacker|defensive end|defensive tackle"
 ST = r"special teams|kicker|punter|kicking|\bst coordinator|\bspecialists?\b|long snap|snappers"
 SUPPORT = (r"strength|conditioning|performance|operations|\bops\b|director of|equipment|video|\bfilm|athletic train|manager|"
@@ -326,6 +350,51 @@ YEAR_PAREN = re.compile(r"\([^()]*\b(?:19|20)\d{2}\b[^()]*\)|\([^()]*\b\d+\s*(?:
 # "(now Offensive Coordinator)", "(previously Linebackers)": notes about other periods of a stint
 TEMPORAL_PAREN = re.compile(r"\(\s*(?:now|currently|previously|formerly|later|then|eventually|most recently)\b[^()]*\)", re.I)
 
+# Extractor annotations inside a role's parentheses: '(bio text: Wide Receivers Coach)', '(per bio)',
+# '(role not stated)', '(bio says safeties)', '(head coach implied)', '(current title: ...)'. They say
+# what the extractor saw or guessed, not the role; the substantive parts of the same parenthesis stay
+# ('Assistant Coach (Defensive Line; bio says Offensive Line)' -> 'Assistant Coach (Defensive Line)').
+ANNOTATION = re.compile(
+    r"\bbio\b|\bper\b|\bnot (?:stated|specified|explicit|named|given|listed)\b|\bunspecified\b|\bimpl(?:ied|ying|ies)\b|"
+    r"\blikely\b|\bpresumabl|\bprobabl|\bapparently\b|\bdescrib|\binferred\b|\bunclear\b|\bheader\b|\bcurrent title\b",
+    re.I,
+)
+
+
+def strip_annotations(role: str | None) -> str:
+    """Drop the extractor-annotation parts of every parenthesis (';'-separated) and empty parentheses."""
+    s = role or ""
+
+    def repl(m: re.Match) -> str:
+        keep = [seg.strip() for seg in m.group(1).split(";") if seg.strip() and not ANNOTATION.search(seg)]
+        return f"({'; '.join(keep)})" if keep else " "
+
+    prev = None
+    while prev != s:
+        prev, s = s, re.sub(r"\(([^()]*)\)", repl, s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
+CURRENT_TITLE_NOTE = re.compile(r"\((?:[^();]*;\s*)*[^();]*\b(?:current|header) title\b(?:\s+adds)?\s*:?\s*([^();]*)", re.I)
+PER_TITLE_NOTE = re.compile(r"[(;]\s*([^();]+?)\s+per (?:the )?(?:staff[- ]page |current |header )?title\b", re.I)
+
+
+def current_title_note(role: str) -> str | None:
+    """The title an extractor note says the staff page gives this stint ('(current title: X)',
+    '(header title: X)', '(current title adds X)', '(X per title; ...)'), or None."""
+    m = CURRENT_TITLE_NOTE.search(role or "") or PER_TITLE_NOTE.search(role or "")
+    return (m.group(1).strip() or None) if m else None
+
+
+# A role that names no job at all: 'Coach', 'Staff', 'Staff member', 'Coaching staff (under X)',
+# 'unspecified'. Kept as roleGroup 'other' (never upgraded to a position coach).
+PLACEHOLDER_ONLY = re.compile(
+    r"^(?:(?:football|coaching|team|program)\s+)*"
+    r"(?:coach(?:ing)?|staff(?:\s+member)?|member|role|position|unspecified|unknown|not stated|(?:role|position|title) not stated|n/?a)"
+    r"(?:\s+(?:role|position|staff|member))?(?:\s+under\s+.+)?$",
+    re.I,
+)
+
 
 def is_head_coach(role: str) -> bool:
     """Varsity football head coach. The phrase must sit in the title itself, not in a
@@ -358,12 +427,14 @@ def classify(role: str, as_player: bool = False) -> tuple[str, str | None]:
       'Head Coach / Assistant AD' is a head coach.
     - 'assistant/associate head coach', offensive/defensive/special teams,
       run game and passing game coordinators are coordinators.
-    - a title that names only a position ('Running Backs', 'Defensive Line') is a
+    - a title that names only a position ('Running Backs', 'Defensive Line', 'Fullbacks') is a
       position coach, as is a support title that also names a position.
+    - extractor annotations ('(bio says wide receivers)', '(head coach implied)') are not the role.
+    - a placeholder that names no job ('Coach', 'Staff', 'unspecified') stays 'other'.
     """
     if as_player:
         return "player", None
-    r = re.sub(r"\s+", " ", (role or "").replace("\xa0", " ")).lower().strip()
+    r = re.sub(r"\s+", " ", strip_annotations((role or "").replace("\xa0", " "))).lower().strip()
     if PLAYER_ROLE.match(r):
         return "player", None
     r2 = TEMPORAL_PAREN.sub(" ", YEAR_PAREN.sub(" ", r))  # notes about other seasons do not define this stint's role
@@ -376,6 +447,10 @@ def classify(role: str, as_player: bool = False) -> tuple[str, str | None]:
         unit = "offense"
     if is_head_coach(r):
         return "head_coach", None
+    core = _outside_parens(r2).strip(" .,;:-–")
+    if (not core or PLACEHOLDER_ONLY.match(core)) and not unit and not (
+            COORD.search(r2) or GA.search(r2) or MANAGER.search(r2) or re.search(SUPPORT, r2)):
+        return "other", None
     for seg in _top_level_split(r2):
         if COORD.search(seg) and not LEVEL_QUAL.search(seg):
             m = COORD.search(seg)
@@ -409,7 +484,7 @@ NOTE_PAREN = re.compile(
     r"part-time|first season)[^()]*)\)",
     re.I,
 )
-PLACEHOLDER_ROLE = re.compile(r"^(coaching position|not stated|role not stated|unknown|unspecified|staff)$", re.I)
+PLACEHOLDER_ROLE = re.compile(r"^(coaching position|not stated|(?:role|position|title) not stated|unknown|unspecified)$", re.I)
 ROLE_WORDS = re.compile(
     r"coach|coordinator|assistant|director|analyst|intern|manager|player|staff|line|backs?|receivers?|ends?\b|"
     r"quarterback|linebacker|safet|corner|special teams|kick|punt|snap|offens|defens|scout|video|recruit|strength|"
@@ -436,8 +511,10 @@ def _tidy(s: str) -> str:
 
 def clean_role(raw: str | None) -> str:
     """Display form of a role: no year ranges or season counts (they live in startYear/endYear),
-    no extraction notes, no trailing '/ coach' artifact, semicolon-joined parts joined with ' / '."""
-    s = re.sub(r"\s+", " ", (raw or "").replace("\xa0", " ")).strip()
+    no extraction notes or extractor annotations ('(bio text: ...)', '(per bio)', '(role not stated)'),
+    no trailing '/ coach' artifact, semicolon-joined parts joined with ' / '. A placeholder role
+    ('Staff', 'Coach') is kept as written; one that says nothing ('unspecified') becomes ''."""
+    s = strip_annotations(re.sub(r"\s+", " ", (raw or "").replace("\xa0", " ")).strip())
     s = s.replace("|", "/")
     for _ in range(2):
         s = TEMPORAL_PAREN.sub(" ", NOTE_PAREN.sub(" ", s))
@@ -1123,6 +1200,119 @@ def same_person_across_programs(a: dict, b: dict) -> bool:
     return any((_norm_text(s.get("org")), s.get("start_year"), s.get("end_year")) in dated for s in b.get("stints") or [] if s.get("start_year"))
 
 
+# ------------------------------------------------------------------ slugs
+# Slugs other records depend on: the coach demo account is p-justin-leatherman (web/scripts/seed.ts,
+# docs/ARCHITECTURE.md). The pinned person keeps the bare slug even if a namesake appears.
+PINNED_SLUGS = {"justin-leatherman": "ncaa-2751"}
+
+
+def assign_slugs(people: list[tuple[str, str, str, str]]) -> list[str]:
+    """Stable person slugs from (name slug, name suffix like 'jr' or '', program slug, program id).
+
+    A name slug that only one person has stays bare ('justin-leatherman'). When two or more people
+    share it, EVERY one of them gets a program suffix ('liam-murphy-nichols', 'liam-murphy-hobart'),
+    so a bare slug never changes meaning between runs as people are added or reordered. Namesakes at
+    the same program are told apart by the name suffix ('mike-smith-jr-hobart'). Pinned slugs
+    (PINNED_SLUGS) keep the bare form for the pinned person."""
+    count = Counter(base for base, _, _, _ in people)
+    pinned_owner = {}
+    for i, (base, _, _, prog_id) in enumerate(people):
+        if PINNED_SLUGS.get(base) == prog_id and base not in pinned_owner:
+            pinned_owner[base] = i
+    want = []
+    for i, (base, suffix, prog_slug, _) in enumerate(people):
+        if pinned_owner.get(base) == i or (count[base] == 1 and base not in pinned_owner):
+            want.append(base)
+        else:
+            want.append(f"{base}-{prog_slug}")
+    # namesakes at one program ('Mike Smith' and 'Mike Smith Jr.'): add the name suffix
+    dup = Counter(want)
+    for i, (base, suffix, prog_slug, _) in enumerate(people):
+        if dup[want[i]] > 1 and suffix:
+            want[i] = f"{base}-{suffix}-{prog_slug}"
+    out, used = [None] * len(people), set()
+    # suffixed slugs first, so a bare slug can never take a namesake's program-suffixed slug
+    for i in sorted(range(len(people)), key=lambda i: (want[i] == people[i][0], i)):
+        slug = want[i]
+        while slug in used:
+            slug += "-x"
+        used.add(slug)
+        out[i] = slug
+    return out  # type: ignore[return-value]
+
+
+# ------------------------------------------------------------------ current stint
+def choose_current(rows: list[dict], prog_id: str, title: str, pid: str, url: str | None) -> tuple[dict, bool]:
+    """Pick (and mark) the current stint among a person's tenure rows; returns (current, staff_page_only).
+
+    The current stint is the latest dated open football stint at the person's program (the staff-page
+    title breaks ties). The other open stints there are no longer held, except a concurrent role the
+    title still names (it runs to the current season). A superseded stint keeps the end year the source
+    states; when the source gives none, its end stays unknown (None): we never invent continuous tenure
+    up to the season before the current role, so its span is only its known season(s).
+    Without an open bio stint, the staff page alone gives an undated current stint."""
+    open_rows = [r for r in rows if r["orgId"] == prog_id and not r["asPlayer"] and r["sport"] == "football"
+                 and r["roleGroup"] != "other" and r["endYear"] in (None, CURRENT_SEASON)
+                 and (r["startYear"] is None or r["startYear"] <= CURRENT_SEASON)]
+    if not open_rows:  # e.g. only 'Staff (role not stated)': still listed on the staff page
+        open_rows = [r for r in rows if r["orgId"] == prog_id and not r["asPlayer"] and r["sport"] == "football"
+                     and r["endYear"] in (None, CURRENT_SEASON) and (r["startYear"] is None or r["startYear"] <= CURRENT_SEASON)]
+    if not open_rows:
+        g, u = classify(title, False)
+        current = {"personId": pid, "orgId": prog_id, "role": title or "Coach", "roleGroup": g, "unit": u,
+                   "sport": "football", "startYear": None, "endYear": None, "isCurrent": True, "asPlayer": False,
+                   "yearsExplicit": False, "evidence": f"Listed on the current staff page as {title}" if title else None,
+                   "sourceUrl": url, "verified": False, "_fromBio": False}
+        rows.append(current)
+        return current, True
+    title_is_hc = is_head_coach(title)
+    current = max(open_rows, key=lambda r: (
+        (r["roleGroup"] == "head_coach") == title_is_hc if title else True,  # agrees with the staff page on head coach
+        _title_overlap(r["role"], title) >= 0.5,  # names the current title
+        r["startYear"] is not None, r["startYear"] or 0, _title_overlap(r["role"], title),
+        len(_title_tokens(r["role"]) & _title_tokens(title))))
+    for r in open_rows:
+        if r is current:
+            continue
+        if r["startYear"] is not None and _title_overlap(r["role"], title) >= 0.6:
+            r["endYear"] = CURRENT_SEASON  # a concurrent role the staff-page title still names
+        elif (r["startYear"] is not None and r["endYear"] is None and r.get("_splitFrom")
+              and r.get("_splitFrom") == current.get("_splitFrom") and r.get("evidence") == current.get("evidence")):
+            # another part of the current stint's own open-ended source role
+            # ('Wide Receivers / Tight Ends; Recruiting Coordinator (since 2023)', 2019-): the source says it is still held
+            r["endYear"] = CURRENT_SEASON
+        # else: no longer held. Its endYear is what the source says (None: when it ended is unknown,
+        # which is not the season before the current role started)
+    current["isCurrent"] = True
+    current["endYear"] = None
+    return current, False
+
+
+def apply_staff_title(current: dict, title: str) -> list[str]:
+    """The staff page is the current source. The current stint takes the staff-page title (role,
+    roleGroup and unit) when the bio's role for it disagrees on head coach ('head_coach'), when the
+    extractor noted that the staff page names a different job ('noted': 'Running Backs Coach (current
+    title: Co-Offensive Coordinator)'), or when the bio names no job ('placeholder': 'Staff', 'Coach
+    (role not stated)'). Returns the reasons applied."""
+    if not title:
+        return []
+    reasons = []
+    note = current.get("_titleNote")
+    if note:
+        g, u = classify(note, False)
+        g, u = (g, u) if g != "other" else classify(title, False)
+        if g != "other" and (g, u) != (current["roleGroup"], current["unit"]):
+            current["role"], current["roleGroup"], current["unit"] = title, g, u
+            reasons.append("noted")
+    hc_conflict = is_head_coach(title) != (current["roleGroup"] == "head_coach")
+    placeholder = current["roleGroup"] == "other" and classify(title, False)[0] != "other"
+    if hc_conflict or placeholder:
+        current["role"] = title
+        current["roleGroup"], current["unit"] = classify(title, False)
+        reasons.append("head_coach" if hc_conflict else "placeholder")
+    return reasons
+
+
 # ------------------------------------------------------------------ main
 def main(extract_dir: Path) -> dict:
     registry = json.loads((WORK / "registry.json").read_text())
@@ -1208,7 +1398,7 @@ def main(extract_dir: Path) -> dict:
             else:
                 final.append(r)
     final.sort(key=lambda r: (r["_prog"]["id"], r.get("bio_url") or ""))
-    # keep the extraction order for slug assignment (first come keeps the bare slug)
+    # extraction order (slugs do not depend on it: see assign_slugs)
     order = {c.get("bio_url"): i for i, c in enumerate(coaches)}
     final.sort(key=lambda r: order.get(r.get("bio_url"), 0))
 
@@ -1293,17 +1483,19 @@ def main(extract_dir: Path) -> dict:
     stints_by_person: dict[int, list[tuple[dict, dict]]] = defaultdict(list)
     for pi, s, info in pending:
         stints_by_person[pi].append((s, info))
-    people, tenures, used_slugs = [], [], set()
+    people, tenures = [], []
     hc_title_conflicts = []
+    slugs = assign_slugs([(c["_name"]["slug"], c["_key"][1], c["_prog"]["slug"], c["_prog"]["id"]) for c in people_src])
+    stats_extra["people_with_program_suffixed_slug"] = sum(1 for c, s in zip(people_src, slugs) if s != c["_name"]["slug"])
+    for base, prog_id in PINNED_SLUGS.items():
+        owners = [s for c, s in zip(people_src, slugs) if c["_name"]["slug"] == base and c["_prog"]["id"] == prog_id]
+        if not owners:
+            print(f"warning: pinned person {base} ({prog_id}) is missing; the demo seed needs p-{base}", file=sys.stderr)
+        assert not owners or owners[0] == base, f"pinned slug {base} changed to {owners[0]}"
     for pi, c in enumerate(people_src):
         prog, title, nm = c["_prog"], c["_title"], c["_name"]
         url = c.get("bio_url")
-        slug = nm["slug"]
-        if slug in used_slugs:
-            slug = f"{slug}-{prog['slug']}"
-        while slug in used_slugs:
-            slug += "-x"
-        used_slugs.add(slug)
+        slug = slugs[pi]
         pid = "p-" + slug
         rows = []
         for s, info in stints_by_person[pi]:
@@ -1325,50 +1517,15 @@ def main(extract_dir: Path) -> dict:
                 "personId": pid, "orgId": oid, "role": role, "roleGroup": g, "unit": u, "sport": sport,
                 "startYear": s.get("start_year"), "endYear": s.get("end_year"), "isCurrent": False, "asPlayer": as_player,
                 "yearsExplicit": ye, "evidence": s.get("evidence"), "sourceUrl": url, "verified": False,
-                "_fromBio": True,
+                "_fromBio": True, "_splitFrom": s.get("split_from"), "_titleNote": current_title_note(s.get("role") or ""),
             })
-        # current stint: the latest dated open football stint at the program (title match breaks ties)
-        open_rows = [r for r in rows if r["orgId"] == prog["id"] and not r["asPlayer"] and r["sport"] == "football"
-                     and r["roleGroup"] != "other" and r["endYear"] in (None, CURRENT_SEASON)
-                     and (r["startYear"] is None or r["startYear"] <= CURRENT_SEASON)]
-        if not open_rows:  # e.g. only 'Staff (role not stated)': still listed on the staff page
-            open_rows = [r for r in rows if r["orgId"] == prog["id"] and not r["asPlayer"] and r["sport"] == "football"
-                         and r["endYear"] in (None, CURRENT_SEASON) and (r["startYear"] is None or r["startYear"] <= CURRENT_SEASON)]
-        current = None
-        if open_rows:
-            title_is_hc = is_head_coach(title)
-            current = max(open_rows, key=lambda r: (
-                (r["roleGroup"] == "head_coach") == title_is_hc if title else True,  # agrees with the staff page on head coach
-                _title_overlap(r["role"], title) >= 0.5,  # names the current title
-                r["startYear"] is not None, r["startYear"] or 0, _title_overlap(r["role"], title),
-                len(_title_tokens(r["role"]) & _title_tokens(title))))
-            for r in open_rows:
-                if r is current:
-                    continue
-                if r["startYear"] is not None and _title_overlap(r["role"], title) >= 0.6:
-                    r["endYear"] = CURRENT_SEASON  # a concurrent role the staff-page title still names
-                elif r["startYear"] is None or current["startYear"] is None or r["startYear"] >= current["startYear"]:
-                    r["endYear"] = None  # no longer held, and when it ended is unknown
-                else:
-                    r["endYear"] = max(r["startYear"], current["startYear"] - 1)  # replaced by the current role
-            current["isCurrent"] = True
-            current["endYear"] = None
-        else:
-            g, u = classify(title, False)
-            current = {"personId": pid, "orgId": prog["id"], "role": title or "Coach", "roleGroup": g, "unit": u,
-                       "sport": "football", "startYear": None, "endYear": None, "isCurrent": True, "asPlayer": False,
-                       "yearsExplicit": False, "evidence": f"Listed on the current staff page as {title}" if title else None,
-                       "sourceUrl": url, "verified": False, "_fromBio": False}
-            rows.append(current)
+        current, staff_only = choose_current(rows, prog["id"], title, pid, url)
+        if staff_only:
             stats_extra["current_from_staff_page_only"] += 1
-        title_hc = is_head_coach(title)
-        if title_hc != (current["roleGroup"] == "head_coach") and title:
+        if title and is_head_coach(title) != (current["roleGroup"] == "head_coach"):
             hc_title_conflicts.append({"personId": pid, "title": title, "currentRole": current["role"], "roleGroup": current["roleGroup"]})
-        # the staff page is the current source: when it still disagrees with the bio on head coach
-        # (no open bio stint matches it), the current stint takes the staff-page title
-        if title and title_hc != (current["roleGroup"] == "head_coach"):
-            current["role"] = title
-            current["roleGroup"], current["unit"] = classify(title, False)
+        for reason in apply_staff_title(current, title):
+            stats_extra[f"current_role_from_staff_title_{reason}"] += 1
         # corroboration: the bio's current stint and the program's staff page agree
         if current["_fromBio"] and ((prog["id"], url) in staff_listed or any((prog["id"], u) in staff_listed for u in c.get("merged_urls") or [])):
             current["verified"] = True

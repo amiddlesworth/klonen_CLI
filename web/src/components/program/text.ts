@@ -30,9 +30,18 @@ export function displayTitle(title: string | null | undefined): string | null {
   return title.replace(/\s*\(\s*\d{4}\s*[-–]\s*(?:\d{2,4})?\s*\)\s*$/, "").trim() || title;
 }
 
-/** "Now Head Football Coach at Linfield" (or the program alone when the title is missing). */
+/**
+ * A "title" that is really a class-year or school stamp left by a staff directory ("St. John's '25",
+ * "Class of 2019", "2024"), not a role. Those read as nonsense after "Now", so they are dropped.
+ */
+function isStampTitle(title: string): boolean {
+  return /['’‘]\s*\d{2}\s*$/.test(title) || /^(?:class of\s+)?\d{4}$/i.test(title.trim());
+}
+
+/** "Now Head Football Coach at Linfield" (or the program alone when the title is missing or not a role). */
 export function nowLine(rawTitle: string | null | undefined, orgShortName: string | null | undefined): string | null {
-  const title = displayTitle(rawTitle);
+  const shown = displayTitle(rawTitle);
+  const title = shown && !isStampTitle(shown) ? shown : null;
   if (title && orgShortName) return `Now ${title} at ${orgShortName}`;
   if (orgShortName) return `Now at ${orgShortName}`;
   if (title) return `Now ${title}`;

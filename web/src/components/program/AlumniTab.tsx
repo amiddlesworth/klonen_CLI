@@ -1,6 +1,7 @@
 import { GraduationCap } from "lucide-react";
 import { getProgramAlumni, getProgramPlayers, type ProgramOrg } from "@/lib/queries/program";
 import { ALUMNI_PAGE_SIZE, AlumniList } from "./AlumniList";
+import { rangeHasInferred } from "./LedgerRange";
 
 /**
  * Alumni coaches tab (§8.6): people who coached here and where they are now, most recent first,
@@ -32,7 +33,7 @@ export async function AlumniTab({ org, page }: { org: ProgramOrg; page: number }
         subtitle={`Former ${org.shortName} players who now coach`}
         entries={players}
         kind="played"
-        explainInferred={!alumni.slice((page - 1) * ALUMNI_PAGE_SIZE, page * ALUMNI_PAGE_SIZE).some((e) => e.inferred)}
+        explainInferred={!alumni.slice((page - 1) * ALUMNI_PAGE_SIZE, page * ALUMNI_PAGE_SIZE).some((e) => rangeHasInferred(e.stints))}
       />
     </>
   );

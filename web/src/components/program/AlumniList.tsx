@@ -2,13 +2,13 @@ import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { ContextLine } from "@/components/data/ContextLine";
 import { InferredFootnote } from "@/components/data/InferredYear";
-import { SeasonRange } from "@/components/data/SeasonRange";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Pagination } from "@/components/ui/Pagination";
 import type { AlumniEntry } from "@/lib/queries/program";
 import { LedgerPersonRow, LedgerUndated } from "./LedgerPersonRow";
-import { displayTitle, evidenceReason, nowLine, peopleCount } from "./text";
+import { LedgerRange, rangeHasInferred } from "./LedgerRange";
+import { displayTitle, nowLine, peopleCount } from "./text";
 
 export const ALUMNI_PAGE_SIZE = 50;
 
@@ -38,7 +38,7 @@ export function AlumniList({ id, title, subtitle, entries, kind, empty, page = 1
   const totalPages = Math.max(1, Math.ceil(entries.length / ALUMNI_PAGE_SIZE));
   const current = Math.min(Math.max(1, page), totalPages);
   const rows = entries.slice((current - 1) * ALUMNI_PAGE_SIZE, current * ALUMNI_PAGE_SIZE);
-  const hasInferred = explainInferred && rows.some((e) => e.inferred);
+  const hasInferred = explainInferred && rows.some((e) => rangeHasInferred(e.stints));
 
   return (
     <Card id={id} padding="main" aria-labelledby={`${id}-title`} className="scroll-mt-[calc(var(--nav-h)+16px)]">
@@ -60,24 +60,20 @@ export function AlumniList({ id, title, subtitle, entries, kind, empty, page = 1
                       <>
                         {displayTitle(e.role) ?? e.role}
                         {extraRoles > 0 && (
-                          <span className="text-fg-3">
+                          <>
                             {" "}
-                            · {extraRoles} earlier {extraRoles === 1 ? "role" : "roles"} here
-                          </span>
+                            {/* Wraps as a unit, so a bare number never ends a line. */}
+                            <span className="whitespace-nowrap text-fg-3">
+                              · {extraRoles} earlier {extraRoles === 1 ? "role" : "roles"} here
+                            </span>
+                          </>
                         )}
                       </>
                     }
                     context={now ? <ContextLine>{now}</ContextLine> : undefined}
                     ledger={
                       dated ? (
-                        <SeasonRange
-                          startYear={null}
-                          endYear={null}
-                          isCurrent={false}
-                          stints={e.stints}
-                          inferred={e.inferred}
-                          inferredReason={e.inferred ? evidenceReason(e.inferredEvidence) : null}
-                        />
+                        <LedgerRange stints={e.stints} />
                       ) : (
                         <LedgerUndated>Years not in source</LedgerUndated>
                       )
