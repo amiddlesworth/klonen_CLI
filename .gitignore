@@ -16,3 +16,5 @@ design/screens/
 design/foundation/
 design/proposals/**/*-390-*.png
 design/audit*/
+design/.tmp-*
+**/.tmp-*
