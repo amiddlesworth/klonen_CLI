@@ -153,8 +153,14 @@ export const jobs = pgTable(
     sourceUrl: text("source_url"),
     createdByUserId: text("created_by_user_id").references(() => users.id),
     isDemo: boolean("is_demo").notNull().default(false),
+    /**
+     * Listings posted from a shared demo account belong to the browser that posted them (the random
+     * id in its httpOnly demo scope cookie, lib/demo-scope.ts) and are shown only there, labeled
+     * "Demo listing". Null = a seeded or real listing everyone sees.
+     */
+    demoScope: text("demo_scope"),
   },
-  (t) => [index("jobs_org_idx").on(t.orgId), index("jobs_posted_idx").on(t.postedAt)],
+  (t) => [index("jobs_org_idx").on(t.orgId), index("jobs_posted_idx").on(t.postedAt), index("jobs_demo_scope_idx").on(t.demoScope)],
 );
 
 export const connections = pgTable(
@@ -180,14 +186,19 @@ export const availability = pgTable("availability", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const claims = pgTable("claims", {
-  id: serial("id").primaryKey(),
-  personId: text("person_id").notNull().references(() => people.id, { onDelete: "cascade" }),
-  userId: text("user_id").references(() => users.id),
-  email: text("email").notNull(),
-  status: text("status").notNull().default("started"), // started | verified | published
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+export const claims = pgTable(
+  "claims",
+  {
+    id: serial("id").primaryKey(),
+    personId: text("person_id").notNull().references(() => people.id, { onDelete: "cascade" }),
+    userId: text("user_id").references(() => users.id),
+    email: text("email").notNull(),
+    status: text("status").notNull().default("started"), // started | verified | published
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  // One claim per (person, user): a repeat publish updates the row (submitClaim upserts on this).
+  (t) => [uniqueIndex("claims_person_user_idx").on(t.personId, t.userId)],
+);
 
 export const shortlists = pgTable("shortlists", {
   id: serial("id").primaryKey(),
@@ -196,15 +207,20 @@ export const shortlists = pgTable("shortlists", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const shortlistEntries = pgTable("shortlist_entries", {
-  id: serial("id").primaryKey(),
-  shortlistId: integer("shortlist_id").notNull().references(() => shortlists.id, { onDelete: "cascade" }),
-  personId: text("person_id").notNull().references(() => people.id, { onDelete: "cascade" }),
-  stage: pipelineStage("stage").notNull().default("sourced"),
-  note: text("note"),
-  position: integer("position").notNull().default(0),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+export const shortlistEntries = pgTable(
+  "shortlist_entries",
+  {
+    id: serial("id").primaryKey(),
+    shortlistId: integer("shortlist_id").notNull().references(() => shortlists.id, { onDelete: "cascade" }),
+    personId: text("person_id").notNull().references(() => people.id, { onDelete: "cascade" }),
+    stage: pipelineStage("stage").notNull().default("sourced"),
+    note: text("note"),
+    position: integer("position").notNull().default(0),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  // A coach is in a search at most once, even when two adds race (addToPipeline inserts ON CONFLICT DO NOTHING).
+  (t) => [uniqueIndex("shortlist_entries_list_person_idx").on(t.shortlistId, t.personId)],
+);
 
 export const messages = pgTable(
   "messages",
