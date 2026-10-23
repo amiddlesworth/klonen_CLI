@@ -1,0 +1,1710 @@
+[
+ {
+  "team": "Adrian",
+  "nick": "Bulldogs",
+  "state": "Michigan",
+  "conf": "MIAA",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Adrian_College"
+ },
+ {
+  "team": "Albion",
+  "nick": "Britons",
+  "state": "Michigan",
+  "conf": "MIAA",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Albion_College"
+ },
+ {
+  "team": "Albright",
+  "nick": "Lions",
+  "state": "Pennsylvania",
+  "conf": "MAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Albright_College"
+ },
+ {
+  "team": "Alfred",
+  "nick": "Saxons",
+  "state": "New York",
+  "conf": "Empire 8",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Alfred_University"
+ },
+ {
+  "team": "Alfred State",
+  "nick": "Pioneers",
+  "state": "New York",
+  "conf": "Empire 8",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Alfred_State_College"
+ },
+ {
+  "team": "Allegheny",
+  "nick": "Gators",
+  "state": "Pennsylvania",
+  "conf": "PAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Allegheny_College"
+ },
+ {
+  "team": "Alma",
+  "nick": "Scots",
+  "state": "Michigan",
+  "conf": "MIAA",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Alma_College"
+ },
+ {
+  "team": "Alvernia",
+  "nick": "Golden Wolves",
+  "state": "Pennsylvania",
+  "conf": "MAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Alvernia_University"
+ },
+ {
+  "team": "Amherst ^",
+  "nick": "Mammoths",
+  "state": "Massachusetts",
+  "conf": "NESCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Amherst_College"
+ },
+ {
+  "team": "Anderson (IN)",
+  "nick": "Ravens",
+  "state": "Indiana",
+  "conf": "HCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Anderson_University_(Indiana)"
+ },
+ {
+  "team": "Augsburg",
+  "nick": "Auggies",
+  "state": "Minnesota",
+  "conf": "MIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Augsburg_University"
+ },
+ {
+  "team": "Augustana (IL)",
+  "nick": "Vikings",
+  "state": "Illinois",
+  "conf": "CCIW",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Augustana_College_(Illinois)"
+ },
+ {
+  "team": "Aurora",
+  "nick": "Spartans",
+  "state": "Illinois",
+  "conf": "NACC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Aurora_University"
+ },
+ {
+  "team": "Austin",
+  "nick": "Kangaroos",
+  "state": "Texas",
+  "conf": "SCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Austin_College"
+ },
+ {
+  "team": "Averett",
+  "nick": "Cougars",
+  "state": "Virginia",
+  "conf": "ODAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Averett_University"
+ },
+ {
+  "team": "Azusa Pacific",
+  "nick": "Cougars",
+  "state": "California",
+  "conf": "SCIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Azusa_Pacific_University"
+ },
+ {
+  "team": "Baldwin Wallace ^",
+  "nick": "Yellow Jackets",
+  "state": "Ohio",
+  "conf": "OAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Baldwin_Wallace_University"
+ },
+ {
+  "team": "Bates",
+  "nick": "Bobcats",
+  "state": "Maine",
+  "conf": "NESCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Bates_College"
+ },
+ {
+  "team": "Belhaven",
+  "nick": "Blazers",
+  "state": "Mississippi",
+  "conf": "USA South",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Belhaven_University"
+ },
+ {
+  "team": "Beloit",
+  "nick": "Buccaneers",
+  "state": "Wisconsin",
+  "conf": "MWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Beloit_College"
+ },
+ {
+  "team": "Benedictine",
+  "nick": "Eagles",
+  "state": "Illinois",
+  "conf": "NACC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Benedictine_University"
+ },
+ {
+  "team": "Berry",
+  "nick": "Vikings",
+  "state": "Georgia",
+  "conf": "SAA",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Berry_College"
+ },
+ {
+  "team": "Bethany",
+  "nick": "Bison",
+  "state": "West Virginia",
+  "conf": "PAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Bethany_College_(West_Virginia)"
+ },
+ {
+  "team": "Bethel",
+  "nick": "Royals",
+  "state": "Minnesota",
+  "conf": "MIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Bethel_University_(Minnesota)"
+ },
+ {
+  "team": "Bluffton",
+  "nick": "Beavers",
+  "state": "Ohio",
+  "conf": "HCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Bluffton_University"
+ },
+ {
+  "team": "Bowdoin",
+  "nick": "Polar Bears",
+  "state": "Maine",
+  "conf": "NESCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Bowdoin_College"
+ },
+ {
+  "team": "Brevard",
+  "nick": "Tornados",
+  "state": "North Carolina",
+  "conf": "USA South",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Brevard_College"
+ },
+ {
+  "team": "Bridgewater",
+  "nick": "Eagles",
+  "state": "Virginia",
+  "conf": "ODAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Bridgewater_College"
+ },
+ {
+  "team": "Bridgewater State",
+  "nick": "Bears",
+  "state": "Massachusetts",
+  "conf": "MASCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Bridgewater_State_University"
+ },
+ {
+  "team": "Brockport",
+  "nick": "Golden Eagles",
+  "state": "New York",
+  "conf": "Empire 8",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/SUNY_Brockport"
+ },
+ {
+  "team": "Buena Vista",
+  "nick": "Beavers",
+  "state": "Iowa",
+  "conf": "ARC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Buena_Vista_University"
+ },
+ {
+  "team": "Buffalo State",
+  "nick": "Bengals",
+  "state": "New York",
+  "conf": "Liberty",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Buffalo_State_University"
+ },
+ {
+  "team": "Cal Lutheran",
+  "nick": "Kingsmen",
+  "state": "California",
+  "conf": "SCIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/California_Lutheran_University"
+ },
+ {
+  "team": "Calvin",
+  "nick": "Knights",
+  "state": "Michigan",
+  "conf": "MIAA",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Calvin_University"
+ },
+ {
+  "team": "Capital",
+  "nick": "Comets",
+  "state": "Ohio",
+  "conf": "OAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Capital_University"
+ },
+ {
+  "team": "Carleton",
+  "nick": "Knights",
+  "state": "Minnesota",
+  "conf": "MIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Carleton_College"
+ },
+ {
+  "team": "Carnegie Mellon ^",
+  "nick": "Tartans",
+  "state": "Pennsylvania",
+  "conf": "Centennial",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Carnegie_Mellon_University"
+ },
+ {
+  "team": "Carroll (WI)",
+  "nick": "Pioneers",
+  "state": "Wisconsin",
+  "conf": "CCIW",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Carroll_University"
+ },
+ {
+  "team": "Carthage",
+  "nick": "Firebirds",
+  "state": "Wisconsin",
+  "conf": "CCIW",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Carthage_College"
+ },
+ {
+  "team": "Case Western Reserve ^",
+  "nick": "Spartans",
+  "state": "Ohio",
+  "conf": "PAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Case_Western_Reserve_University"
+ },
+ {
+  "team": "Catholic University ^",
+  "nick": "Cardinals",
+  "state": "District of Columbia",
+  "conf": "Landmark",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Catholic_University_of_America"
+ },
+ {
+  "team": "Centenary",
+  "nick": "Gentlemen",
+  "state": "Louisiana",
+  "conf": "SCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Centenary_College_of_Louisiana"
+ },
+ {
+  "team": "Central (IA)",
+  "nick": "Dutch",
+  "state": "Iowa",
+  "conf": "ARC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Central_College_(Iowa)"
+ },
+ {
+  "team": "Centre *",
+  "nick": "Colonels",
+  "state": "Kentucky",
+  "conf": "SAA",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Centre_College"
+ },
+ {
+  "team": "Chapman",
+  "nick": "Panthers",
+  "state": "California",
+  "conf": "SCIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Chapman_University"
+ },
+ {
+  "team": "Chicago *",
+  "nick": "Maroons",
+  "state": "Illinois",
+  "conf": "MWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Chicago"
+ },
+ {
+  "team": "Christopher Newport",
+  "nick": "Captains",
+  "state": "Virginia",
+  "conf": "NJAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Christopher_Newport_University"
+ },
+ {
+  "team": "Claremont-Mudd-Scripps",
+  "nick": "Stags",
+  "state": "California",
+  "conf": "SCIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Claremont_Colleges"
+ },
+ {
+  "team": "Coast Guard",
+  "nick": "Bears",
+  "state": "Connecticut",
+  "conf": "NEWMAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/United_States_Coast_Guard_Academy"
+ },
+ {
+  "team": "Coe",
+  "nick": "Kohawks",
+  "state": "Iowa",
+  "conf": "ARC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Coe_College"
+ },
+ {
+  "team": "Colby",
+  "nick": "Mules",
+  "state": "Maine",
+  "conf": "NESCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Colby_College"
+ },
+ {
+  "team": "TCNJ",
+  "nick": "Lions",
+  "state": "New Jersey",
+  "conf": "NJAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/The_College_of_New_Jersey"
+ },
+ {
+  "team": "Concordia (IL)",
+  "nick": "Cougars",
+  "state": "Illinois",
+  "conf": "NACC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Concordia_University_Chicago"
+ },
+ {
+  "team": "Concordia (Moorhead)",
+  "nick": "Cobbers",
+  "state": "Minnesota",
+  "conf": "MIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Concordia_College_(Moorhead,_Minnesota)"
+ },
+ {
+  "team": "Concordia (WI)",
+  "nick": "Falcons",
+  "state": "Wisconsin",
+  "conf": "NACC[g]",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Concordia_University_Wisconsin"
+ },
+ {
+  "team": "Cornell (IA)",
+  "nick": "Rams",
+  "state": "Iowa",
+  "conf": "MWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Cornell_College"
+ },
+ {
+  "team": "Cortland",
+  "nick": "Red Dragons",
+  "state": "New York",
+  "conf": "Empire 8",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/State_University_of_New_York_at_Cortland"
+ },
+ {
+  "team": "Crown",
+  "nick": "Polars",
+  "state": "Minnesota",
+  "conf": "UMAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Crown_College_(Minnesota)"
+ },
+ {
+  "team": "Curry",
+  "nick": "Colonels",
+  "state": "Massachusetts",
+  "conf": "CNE",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Curry_College"
+ },
+ {
+  "team": "Dean",
+  "nick": "Bulldogs",
+  "state": "Massachusetts",
+  "conf": "MASCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Dean_College"
+ },
+ {
+  "team": "Delaware Valley",
+  "nick": "Aggies",
+  "state": "Pennsylvania",
+  "conf": "MAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Delaware_Valley_University"
+ },
+ {
+  "team": "Denison",
+  "nick": "Big Red",
+  "state": "Ohio",
+  "conf": "NCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Denison_University"
+ },
+ {
+  "team": "DePauw ^",
+  "nick": "Tigers",
+  "state": "Indiana",
+  "conf": "NCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/DePauw_University"
+ },
+ {
+  "team": "Dickinson",
+  "nick": "Red Devils",
+  "state": "Pennsylvania",
+  "conf": "Centennial",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Dickinson_College"
+ },
+ {
+  "team": "Dubuque",
+  "nick": "Spartans",
+  "state": "Iowa",
+  "conf": "ARC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Dubuque"
+ },
+ {
+  "team": "East Texas Baptist",
+  "nick": "Tigers",
+  "state": "Texas",
+  "conf": "ASC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/East_Texas_Baptist_University"
+ },
+ {
+  "team": "Eastern",
+  "nick": "Eagles",
+  "state": "Pennsylvania",
+  "conf": "MAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Eastern_University_(United_States)"
+ },
+ {
+  "team": "Elmhurst",
+  "nick": "Bluejays",
+  "state": "Illinois",
+  "conf": "CCIW",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Elmhurst_University"
+ },
+ {
+  "team": "Endicott",
+  "nick": "Gulls",
+  "state": "Massachusetts",
+  "conf": "CNE",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Endicott_College"
+ },
+ {
+  "team": "Eureka",
+  "nick": "Red Devils",
+  "state": "Illinois",
+  "conf": "NACC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Eureka_College"
+ },
+ {
+  "team": "Fairleigh Dickinson-Florham",
+  "nick": "Devils",
+  "state": "New Jersey",
+  "conf": "MAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Fairleigh_Dickinson_University"
+ },
+ {
+  "team": "Fitchburg State",
+  "nick": "Falcons",
+  "state": "Massachusetts",
+  "conf": "MASCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Fitchburg_State_University"
+ },
+ {
+  "team": "Framingham State",
+  "nick": "Rams",
+  "state": "Massachusetts",
+  "conf": "MASCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Framingham_State_University"
+ },
+ {
+  "team": "Franklin",
+  "nick": "Grizzlies",
+  "state": "Indiana",
+  "conf": "HCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Franklin_College_(Indiana)"
+ },
+ {
+  "team": "Franklin & Marshall ^",
+  "nick": "Diplomats",
+  "state": "Pennsylvania",
+  "conf": "Centennial",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Franklin_&_Marshall_College"
+ },
+ {
+  "team": "Gallaudet",
+  "nick": "Bison",
+  "state": "District of Columbia",
+  "conf": "SCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Gallaudet_University"
+ },
+ {
+  "team": "Geneva ^",
+  "nick": "Golden Tornadoes",
+  "state": "Pennsylvania",
+  "conf": "PAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Geneva_College"
+ },
+ {
+  "team": "George Fox",
+  "nick": "Bruins",
+  "state": "Oregon",
+  "conf": "NWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/George_Fox_University"
+ },
+ {
+  "team": "Gettysburg",
+  "nick": "Bullets",
+  "state": "Pennsylvania",
+  "conf": "Centennial",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Gettysburg_College"
+ },
+ {
+  "team": "Greensboro",
+  "nick": "Pride",
+  "state": "North Carolina",
+  "conf": "USA South",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Greensboro_College"
+ },
+ {
+  "team": "Greenville",
+  "nick": "Panthers",
+  "state": "Illinois",
+  "conf": "UMAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Greenville_College"
+ },
+ {
+  "team": "Grinnell ^",
+  "nick": "Pioneers",
+  "state": "Iowa",
+  "conf": "MWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Grinnell_College"
+ },
+ {
+  "team": "Grove City",
+  "nick": "Wolverines",
+  "state": "Pennsylvania",
+  "conf": "PAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Grove_City_College"
+ },
+ {
+  "team": "Guilford",
+  "nick": "Quakers",
+  "state": "North Carolina",
+  "conf": "ODAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Guilford_College"
+ },
+ {
+  "team": "Gustavus Adolphus",
+  "nick": "Gusties",
+  "state": "Minnesota",
+  "conf": "MIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Gustavus_Adolphus_College"
+ },
+ {
+  "team": "Hamilton",
+  "nick": "Continentals",
+  "state": "New York",
+  "conf": "NESCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Hamilton_College_(New_York)"
+ },
+ {
+  "team": "Hamline",
+  "nick": "Pipers",
+  "state": "Minnesota",
+  "conf": "MIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Hamline_University"
+ },
+ {
+  "team": "Hampden-Sydney",
+  "nick": "Tigers",
+  "state": "Virginia",
+  "conf": "ODAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Hampden-Sydney_College"
+ },
+ {
+  "team": "Hanover",
+  "nick": "Panthers",
+  "state": "Indiana",
+  "conf": "HCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Hanover_College"
+ },
+ {
+  "team": "Hardin-Simmons ^",
+  "nick": "Cowboys",
+  "state": "Texas",
+  "conf": "ASC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Hardin-Simmons_University"
+ },
+ {
+  "team": "Hartwick",
+  "nick": "Hawks",
+  "state": "New York",
+  "conf": "Empire 8",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Hartwick_College"
+ },
+ {
+  "team": "Heidelberg ^",
+  "nick": "Student Princes",
+  "state": "Ohio",
+  "conf": "OAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Heidelberg_University_(Ohio)"
+ },
+ {
+  "team": "Hendrix",
+  "nick": "Warriors",
+  "state": "Arkansas",
+  "conf": "SCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Hendrix_College"
+ },
+ {
+  "team": "Hilbert",
+  "nick": "Hawks",
+  "state": "New York",
+  "conf": "Liberty",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Hilbert_College"
+ },
+ {
+  "team": "Hiram",
+  "nick": "Terriers",
+  "state": "Ohio",
+  "conf": "PAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Hiram_College"
+ },
+ {
+  "team": "Hobart",
+  "nick": "Statesmen",
+  "state": "New York",
+  "conf": "Liberty",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Hobart_and_William_Smith_Colleges"
+ },
+ {
+  "team": "Hope",
+  "nick": "Flying Dutchmen",
+  "state": "Michigan",
+  "conf": "MIAA",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Hope_College"
+ },
+ {
+  "team": "Howard Payne",
+  "nick": "Yellow Jackets",
+  "state": "Texas",
+  "conf": "ASC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Howard_Payne_University"
+ },
+ {
+  "team": "Huntingdon",
+  "nick": "Hawks",
+  "state": "Alabama",
+  "conf": "USA South",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Huntingdon_College"
+ },
+ {
+  "team": "Husson",
+  "nick": "Eagles",
+  "state": "Maine",
+  "conf": "CNE",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Husson_University"
+ },
+ {
+  "team": "Illinois College",
+  "nick": "Blueboys",
+  "state": "Illinois",
+  "conf": "MWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Illinois_College"
+ },
+ {
+  "team": "Illinois Wesleyan",
+  "nick": "Titans",
+  "state": "Illinois",
+  "conf": "CCIW",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Illinois_Wesleyan_University"
+ },
+ {
+  "team": "Ithaca",
+  "nick": "Bombers",
+  "state": "New York",
+  "conf": "Liberty",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Ithaca_College"
+ },
+ {
+  "team": "John Carroll ^",
+  "nick": "Blue Streaks",
+  "state": "Ohio",
+  "conf": "NCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/John_Carroll_University"
+ },
+ {
+  "team": "Johns Hopkins",
+  "nick": "Blue Jays",
+  "state": "Maryland",
+  "conf": "Centennial",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Johns_Hopkins_University"
+ },
+ {
+  "team": "Juniata",
+  "nick": "Eagles",
+  "state": "Pennsylvania",
+  "conf": "Landmark",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Juniata_College"
+ },
+ {
+  "team": "Kalamazoo",
+  "nick": "Hornets",
+  "state": "Michigan",
+  "conf": "MIAA",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Kalamazoo_College"
+ },
+ {
+  "team": "Kean",
+  "nick": "Cougars",
+  "state": "New Jersey",
+  "conf": "NJAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Kean_University"
+ },
+ {
+  "team": "Kenyon",
+  "nick": "Owls",
+  "state": "Ohio",
+  "conf": "NCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Kenyon_College"
+ },
+ {
+  "team": "Keystone",
+  "nick": "Giants",
+  "state": "Pennsylvania",
+  "conf": "Independent",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Keystone_College"
+ },
+ {
+  "team": "King's",
+  "nick": "Monarchs",
+  "state": "Pennsylvania",
+  "conf": "MAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/King's_College_(Pennsylvania)"
+ },
+ {
+  "team": "Knox",
+  "nick": "Prairie Fire",
+  "state": "Illinois",
+  "conf": "MWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Knox_College_(Illinois)"
+ },
+ {
+  "team": "La Verne",
+  "nick": "Leopards",
+  "state": "California",
+  "conf": "SCIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_La_Verne"
+ },
+ {
+  "team": "LaGrange",
+  "nick": "Panthers",
+  "state": "Georgia",
+  "conf": "USA South",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/LaGrange_College"
+ },
+ {
+  "team": "Lake Forest ^",
+  "nick": "Foresters",
+  "state": "Illinois",
+  "conf": "MWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Lake_Forest_College"
+ },
+ {
+  "team": "Lakeland",
+  "nick": "Muskies",
+  "state": "Wisconsin",
+  "conf": "NACC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Lakeland_University"
+ },
+ {
+  "team": "Lawrence",
+  "nick": "Vikings",
+  "state": "Wisconsin",
+  "conf": "MWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Lawrence_University"
+ },
+ {
+  "team": "Lebanon Valley",
+  "nick": "Flying Dutchmen",
+  "state": "Pennsylvania",
+  "conf": "MAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Lebanon_Valley_College"
+ },
+ {
+  "team": "Lewis & Clark",
+  "nick": "River Otters",
+  "state": "Oregon",
+  "conf": "NWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Lewis_&_Clark_College"
+ },
+ {
+  "team": "Linfield",
+  "nick": "Wildcats",
+  "state": "Oregon",
+  "conf": "NWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Linfield_University"
+ },
+ {
+  "team": "Loras",
+  "nick": "Duhawks",
+  "state": "Iowa",
+  "conf": "ARC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Loras_College"
+ },
+ {
+  "team": "Luther",
+  "nick": "Norse",
+  "state": "Iowa",
+  "conf": "MWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Luther_College_(Iowa)"
+ },
+ {
+  "team": "Lycoming",
+  "nick": "Warriors",
+  "state": "Pennsylvania",
+  "conf": "Landmark",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Lycoming_College"
+ },
+ {
+  "team": "Lyon",
+  "nick": "Scots",
+  "state": "Arkansas",
+  "conf": "SCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Lyon_College"
+ },
+ {
+  "team": "Macalester",
+  "nick": "Scots",
+  "state": "Minnesota",
+  "conf": "MIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Macalester_College"
+ },
+ {
+  "team": "Maine Maritime",
+  "nick": "Mariners",
+  "state": "Maine",
+  "conf": "CNE",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Maine_Maritime_Academy"
+ },
+ {
+  "team": "Manchester [ k ]",
+  "nick": "Spartans",
+  "state": "Indiana",
+  "conf": "HCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Manchester_University_(Indiana)"
+ },
+ {
+  "team": "Marietta",
+  "nick": "Pioneers",
+  "state": "Ohio",
+  "conf": "OAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Marietta_College"
+ },
+ {
+  "team": "Martin Luther",
+  "nick": "Knights",
+  "state": "Minnesota",
+  "conf": "UMAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Martin_Luther_College"
+ },
+ {
+  "team": "Mary Hardin-Baylor",
+  "nick": "Crusaders",
+  "state": "Texas",
+  "conf": "ASC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Mary_Hardin-Baylor"
+ },
+ {
+  "team": "Maryville (TN)",
+  "nick": "Scots",
+  "state": "Tennessee",
+  "conf": "SAA",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Maryville_College"
+ },
+ {
+  "team": "UMass Dartmouth",
+  "nick": "Corsairs",
+  "state": "Massachusetts",
+  "conf": "MASCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Massachusetts_Dartmouth"
+ },
+ {
+  "team": "Massachusetts Maritime",
+  "nick": "Buccaneers",
+  "state": "Massachusetts",
+  "conf": "MASCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Massachusetts_Maritime_Academy"
+ },
+ {
+  "team": "McDaniel ^",
+  "nick": "Green Terror",
+  "state": "Maryland",
+  "conf": "Centennial",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/McDaniel_College"
+ },
+ {
+  "team": "McMurry",
+  "nick": "War Hawks",
+  "state": "Texas",
+  "conf": "ASC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/McMurry_University"
+ },
+ {
+  "team": "Merchant Marine",
+  "nick": "Mariners",
+  "state": "New York",
+  "conf": "NEWMAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/United_States_Merchant_Marine_Academy"
+ },
+ {
+  "team": "Methodist",
+  "nick": "Monarchs",
+  "state": "North Carolina",
+  "conf": "USA South",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Methodist_University"
+ },
+ {
+  "team": "Middlebury",
+  "nick": "Panthers",
+  "state": "Vermont",
+  "conf": "NESCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Middlebury_College"
+ },
+ {
+  "team": "Millikin ^",
+  "nick": "Big Blue",
+  "state": "Illinois",
+  "conf": "CCIW",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Millikin_University"
+ },
+ {
+  "team": "Millsaps ^",
+  "nick": "Majors",
+  "state": "Mississippi",
+  "conf": "SAA[m]",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Millsaps_College"
+ },
+ {
+  "team": "Minnesota Morris",
+  "nick": "Cougars",
+  "state": "Minnesota",
+  "conf": "UMAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Minnesota_Morris"
+ },
+ {
+  "team": "Misericordia",
+  "nick": "Cougars",
+  "state": "Pennsylvania",
+  "conf": "MAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Misericordia_University"
+ },
+ {
+  "team": "MIT",
+  "nick": "Engineers",
+  "state": "Massachusetts",
+  "conf": "NEWMAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Massachusetts_Institute_of_Technology"
+ },
+ {
+  "team": "Monmouth (IL)",
+  "nick": "Fighting Scots",
+  "state": "Illinois",
+  "conf": "MWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Monmouth_College"
+ },
+ {
+  "team": "Montclair State",
+  "nick": "Red Hawks",
+  "state": "New Jersey",
+  "conf": "NJAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Montclair_State_University"
+ },
+ {
+  "team": "Moravian",
+  "nick": "Greyhounds",
+  "state": "Pennsylvania",
+  "conf": "Landmark",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Moravian_College"
+ },
+ {
+  "team": "Morrisville",
+  "nick": "Mustangs",
+  "state": "New York",
+  "conf": "Empire 8",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/State_University_of_New_York_at_Morrisville"
+ },
+ {
+  "team": "Mount Union ^",
+  "nick": "Purple Raiders",
+  "state": "Ohio",
+  "conf": "OAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Mount_Union"
+ },
+ {
+  "team": "Mount St. Joseph",
+  "nick": "Lions",
+  "state": "Ohio",
+  "conf": "HCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Mount_St._Joseph_University"
+ },
+ {
+  "team": "Muhlenberg",
+  "nick": "Mules",
+  "state": "Pennsylvania",
+  "conf": "Centennial",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Muhlenberg_College"
+ },
+ {
+  "team": "Muskingum",
+  "nick": "Fighting Muskies",
+  "state": "Ohio",
+  "conf": "OAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Muskingum_University"
+ },
+ {
+  "team": "Nebraska Wesleyan",
+  "nick": "Prairie Wolves",
+  "state": "Nebraska",
+  "conf": "ARC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Nebraska_Wesleyan_University"
+ },
+ {
+  "team": "New England (ME)",
+  "nick": "Nor'easters",
+  "state": "Maine",
+  "conf": "CNE",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_New_England_(United_States)"
+ },
+ {
+  "team": "New England College",
+  "nick": "Pilgrims",
+  "state": "New Hampshire",
+  "conf": "CNE",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/New_England_College"
+ },
+ {
+  "team": "Nichols",
+  "nick": "Bison",
+  "state": "Massachusetts",
+  "conf": "CNE",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Nichols_College"
+ },
+ {
+  "team": "North Carolina Wesleyan",
+  "nick": "Battling Bishops",
+  "state": "North Carolina",
+  "conf": "USA South",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/North_Carolina_Wesleyan_University"
+ },
+ {
+  "team": "North Central (IL)",
+  "nick": "Cardinals",
+  "state": "Illinois",
+  "conf": "CCIW",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/North_Central_College"
+ },
+ {
+  "team": "North Park",
+  "nick": "Vikings",
+  "state": "Illinois",
+  "conf": "CCIW",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/North_Park_University"
+ },
+ {
+  "team": "Northwestern (MN)",
+  "nick": "Eagles",
+  "state": "Minnesota",
+  "conf": "UMAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Northwestern_\u2013_St._Paul"
+ },
+ {
+  "team": "Norwich",
+  "nick": "Cadets",
+  "state": "Vermont",
+  "conf": "NEWMAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Norwich_University"
+ },
+ {
+  "team": "Oberlin ^",
+  "nick": "Yeomen",
+  "state": "Ohio",
+  "conf": "NCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Oberlin_College"
+ },
+ {
+  "team": "Ohio Northern",
+  "nick": "Polar Bears",
+  "state": "Ohio",
+  "conf": "OAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Ohio_Northern_University"
+ },
+ {
+  "team": "Ohio Wesleyan",
+  "nick": "Battling Bishops",
+  "state": "Ohio",
+  "conf": "NCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Ohio_Wesleyan_University"
+ },
+ {
+  "team": "Olivet",
+  "nick": "Comets",
+  "state": "Michigan",
+  "conf": "MIAA",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Olivet"
+ },
+ {
+  "team": "Otterbein",
+  "nick": "Cardinals",
+  "state": "Ohio",
+  "conf": "OAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Otterbein_University"
+ },
+ {
+  "team": "Pacific (OR)",
+  "nick": "Boxers",
+  "state": "Oregon",
+  "conf": "NWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Pacific_University"
+ },
+ {
+  "team": "Pacific Lutheran",
+  "nick": "Lutes",
+  "state": "Washington",
+  "conf": "NWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Pacific_Lutheran_University"
+ },
+ {
+  "team": "Plymouth State",
+  "nick": "Panthers",
+  "state": "New Hampshire",
+  "conf": "MASCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Plymouth_State_University"
+ },
+ {
+  "team": "Pomona-Pitzer",
+  "nick": "Sagehens",
+  "state": "California",
+  "conf": "SCIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Claremont_Colleges"
+ },
+ {
+  "team": "Puget Sound",
+  "nick": "Loggers",
+  "state": "Washington",
+  "conf": "NWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Puget_Sound"
+ },
+ {
+  "team": "Randolph-Macon",
+  "nick": "Yellow Jackets",
+  "state": "Virginia",
+  "conf": "ODAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Randolph-Macon_College"
+ },
+ {
+  "team": "Redlands",
+  "nick": "Bulldogs",
+  "state": "California",
+  "conf": "SCIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Redlands"
+ },
+ {
+  "team": "Rhodes ^",
+  "nick": "Lynx",
+  "state": "Tennessee",
+  "conf": "SAA",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Rhodes_College"
+ },
+ {
+  "team": "Ripon",
+  "nick": "Red Hawks",
+  "state": "Wisconsin",
+  "conf": "MWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Ripon_College_(Wisconsin)"
+ },
+ {
+  "team": "Roanoke",
+  "nick": "Maroons",
+  "state": "Virginia",
+  "conf": "ODAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Roanoke_College"
+ },
+ {
+  "team": "Rochester",
+  "nick": "Yellowjackets",
+  "state": "New York",
+  "conf": "Liberty",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Rochester"
+ },
+ {
+  "team": "Rockford",
+  "nick": "Regents",
+  "state": "Illinois",
+  "conf": "NACC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Rockford_College"
+ },
+ {
+  "team": "Rose-Hulman ^",
+  "nick": "Engineers",
+  "state": "Indiana",
+  "conf": "HCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Rose-Hulman_Institute_of_Technology"
+ },
+ {
+  "team": "Rowan",
+  "nick": "Profs",
+  "state": "New Jersey",
+  "conf": "NJAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Rowan_University"
+ },
+ {
+  "team": "RPI",
+  "nick": "Engineers",
+  "state": "New York",
+  "conf": "Liberty",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Rensselaer_Polytechnic_Institute"
+ },
+ {
+  "team": "Saint Francis ^",
+  "nick": "Red Wolves",
+  "state": "Pennsylvania",
+  "conf": "PAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Saint_Francis_University"
+ },
+ {
+  "team": "St. John Fisher",
+  "nick": "Cardinals",
+  "state": "New York",
+  "conf": "Empire 8",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/St._John_Fisher_College"
+ },
+ {
+  "team": "Saint John's (MN)",
+  "nick": "Johnnies",
+  "state": "Minnesota",
+  "conf": "MIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/College_of_Saint_Benedict_and_Saint_John's_University"
+ },
+ {
+  "team": "St. Lawrence",
+  "nick": "Saints",
+  "state": "New York",
+  "conf": "Liberty",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/St._Lawrence_University"
+ },
+ {
+  "team": "St. Norbert",
+  "nick": "Green Knights",
+  "state": "Wisconsin",
+  "conf": "NACC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/St._Norbert_College"
+ },
+ {
+  "team": "St. Olaf",
+  "nick": "Oles",
+  "state": "Minnesota",
+  "conf": "MIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/St._Olaf_College"
+ },
+ {
+  "team": "St. Scholastica",
+  "nick": "Saints",
+  "state": "Minnesota",
+  "conf": "MIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/College_of_St._Scholastica"
+ },
+ {
+  "team": "St. Vincent",
+  "nick": "Bearcats",
+  "state": "Pennsylvania",
+  "conf": "PAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Saint_Vincent_College"
+ },
+ {
+  "team": "Salisbury",
+  "nick": "Seagulls",
+  "state": "Maryland",
+  "conf": "NJAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Salisbury_University"
+ },
+ {
+  "team": "Salve Regina",
+  "nick": "Seahawks",
+  "state": "Rhode Island",
+  "conf": "NEWMAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Salve_Regina_University"
+ },
+ {
+  "team": "Schreiner",
+  "nick": "Mountaineers",
+  "state": "Texas",
+  "conf": "ASC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Schreiner_University"
+ },
+ {
+  "team": "Sewanee ^",
+  "nick": "Tigers",
+  "state": "Tennessee",
+  "conf": "SAA",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Sewanee:_The_University_of_the_South"
+ },
+ {
+  "team": "Shenandoah",
+  "nick": "Hornets",
+  "state": "Virginia",
+  "conf": "ODAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Shenandoah_University"
+ },
+ {
+  "team": "Simpson",
+  "nick": "Storm",
+  "state": "Iowa",
+  "conf": "ARC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Simpson_College"
+ },
+ {
+  "team": "Southern Virginia",
+  "nick": "Knights",
+  "state": "Virginia",
+  "conf": "USA South",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Southern_Virginia_University"
+ },
+ {
+  "team": "Southwestern ^",
+  "nick": "Pirates",
+  "state": "Texas",
+  "conf": "SAA[m]",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Southwestern_University"
+ },
+ {
+  "team": "Springfield",
+  "nick": "Pride",
+  "state": "Massachusetts",
+  "conf": "NEWMAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Springfield_College_(Massachusetts)"
+ },
+ {
+  "team": "Stevenson",
+  "nick": "Mustangs",
+  "state": "Maryland",
+  "conf": "MAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Stevenson_University"
+ },
+ {
+  "team": "SUNY-Maritime",
+  "nick": "Privateers",
+  "state": "New York",
+  "conf": "NEWMAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/State_University_of_New_York_Maritime_College"
+ },
+ {
+  "team": "Susquehanna",
+  "nick": "River Hawks",
+  "state": "Pennsylvania",
+  "conf": "Landmark",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Susquehanna_University"
+ },
+ {
+  "team": "Texas Lutheran",
+  "nick": "Bulldogs",
+  "state": "Texas",
+  "conf": "SCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Texas_Lutheran_University"
+ },
+ {
+  "team": "Thiel",
+  "nick": "Tomcats",
+  "state": "Pennsylvania",
+  "conf": "PAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Thiel_College"
+ },
+ {
+  "team": "Trine",
+  "nick": "Thunder",
+  "state": "Indiana",
+  "conf": "MIAA",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Trine_University"
+ },
+ {
+  "team": "Trinity (CT)",
+  "nick": "Bantams",
+  "state": "Connecticut",
+  "conf": "NESCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Trinity_College_(Connecticut)"
+ },
+ {
+  "team": "Trinity (TX)",
+  "nick": "Tigers",
+  "state": "Texas",
+  "conf": "SAA",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Trinity_University_(Texas)"
+ },
+ {
+  "team": "Tufts ^",
+  "nick": "Jumbos",
+  "state": "Massachusetts",
+  "conf": "NESCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Tufts_University"
+ },
+ {
+  "team": "Union",
+  "nick": "Garnet Chargers",
+  "state": "New York",
+  "conf": "Liberty",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Union_College"
+ },
+ {
+  "team": "Ursinus",
+  "nick": "Bears",
+  "state": "Pennsylvania",
+  "conf": "Centennial",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Ursinus_College"
+ },
+ {
+  "team": "Utica",
+  "nick": "Pioneers",
+  "state": "New York",
+  "conf": "Empire 8",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Utica_University"
+ },
+ {
+  "team": "Vermont State Castleton",
+  "nick": "Spartans",
+  "state": "Vermont",
+  "conf": "NJAC[r]",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Vermont_State_University"
+ },
+ {
+  "team": "Wabash ^",
+  "nick": "Little Giants",
+  "state": "Indiana",
+  "conf": "NCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Wabash_College"
+ },
+ {
+  "team": "Wartburg",
+  "nick": "Knights",
+  "state": "Iowa",
+  "conf": "ARC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Wartburg_College"
+ },
+ {
+  "team": "Washington & Jefferson *",
+  "nick": "Presidents",
+  "state": "Pennsylvania",
+  "conf": "PAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Washington_&_Jefferson_College"
+ },
+ {
+  "team": "Washington & Lee ^",
+  "nick": "Generals",
+  "state": "Virginia",
+  "conf": "ODAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Washington_and_Lee_University"
+ },
+ {
+  "team": "Washington (St. Louis) ^",
+  "nick": "Bears",
+  "state": "Missouri",
+  "conf": "NCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Washington_University_in_St._Louis"
+ },
+ {
+  "team": "Waynesburg",
+  "nick": "Yellow Jackets",
+  "state": "Pennsylvania",
+  "conf": "PAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Waynesburg_College"
+ },
+ {
+  "team": "Wesleyan ^",
+  "nick": "Cardinals",
+  "state": "Connecticut",
+  "conf": "NESCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Wesleyan_University"
+ },
+ {
+  "team": "Western Connecticut",
+  "nick": "Wolves",
+  "state": "Connecticut",
+  "conf": "Landmark",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Western_Connecticut_State_University"
+ },
+ {
+  "team": "Western New England",
+  "nick": "Golden Bears",
+  "state": "Massachusetts",
+  "conf": "CNE",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Western_New_England_University"
+ },
+ {
+  "team": "Westfield State",
+  "nick": "Owls",
+  "state": "Massachusetts",
+  "conf": "MASCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Westfield_State_University"
+ },
+ {
+  "team": "Westminster (MO)",
+  "nick": "Blue Jays",
+  "state": "Missouri",
+  "conf": "UMAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Westminster_College_(Missouri)"
+ },
+ {
+  "team": "Westminster (PA)",
+  "nick": "Titans",
+  "state": "Pennsylvania",
+  "conf": "PAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Westminster_College_(Pennsylvania)"
+ },
+ {
+  "team": "Wheaton (IL)",
+  "nick": "Thunder",
+  "state": "Illinois",
+  "conf": "CCIW",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Wheaton_College_(Illinois)"
+ },
+ {
+  "team": "Whittier",
+  "nick": "Poets",
+  "state": "California",
+  "conf": "SCIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Whittier_College"
+ },
+ {
+  "team": "Whitworth",
+  "nick": "Pirates",
+  "state": "Washington",
+  "conf": "NWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Whitworth_College"
+ },
+ {
+  "team": "Widener",
+  "nick": "Pride",
+  "state": "Pennsylvania",
+  "conf": "MAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Widener_University"
+ },
+ {
+  "team": "Wilkes",
+  "nick": "Colonels",
+  "state": "Pennsylvania",
+  "conf": "Landmark",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Wilkes_University"
+ },
+ {
+  "team": "Willamette",
+  "nick": "Bearcats",
+  "state": "Oregon",
+  "conf": "NWC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Willamette_University"
+ },
+ {
+  "team": "William Paterson",
+  "nick": "Pioneers",
+  "state": "New Jersey",
+  "conf": "NJAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/William_Paterson_University"
+ },
+ {
+  "team": "Williams",
+  "nick": "Ephs",
+  "state": "Massachusetts",
+  "conf": "NESCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Williams_College"
+ },
+ {
+  "team": "Wilmington",
+  "nick": "Quakers",
+  "state": "Ohio",
+  "conf": "OAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Wilmington_College_(Ohio)"
+ },
+ {
+  "team": "Wisconsin Lutheran",
+  "nick": "Warriors",
+  "state": "Wisconsin",
+  "conf": "NACC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Wisconsin_Lutheran_College"
+ },
+ {
+  "team": "Wisconsin-Eau Claire",
+  "nick": "Blugolds",
+  "state": "Wisconsin",
+  "conf": "WIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Wisconsin-Eau_Claire"
+ },
+ {
+  "team": "Wisconsin-La Crosse",
+  "nick": "Eagles",
+  "state": "Wisconsin",
+  "conf": "WIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Wisconsin-La_Crosse"
+ },
+ {
+  "team": "Wisconsin-Oshkosh",
+  "nick": "Titans",
+  "state": "Wisconsin",
+  "conf": "WIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Wisconsin-Oshkosh"
+ },
+ {
+  "team": "Wisconsin-Platteville",
+  "nick": "Pioneers",
+  "state": "Wisconsin",
+  "conf": "WIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Wisconsin-Platteville"
+ },
+ {
+  "team": "Wisconsin-River Falls",
+  "nick": "Falcons",
+  "state": "Wisconsin",
+  "conf": "WIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Wisconsin-River_Falls"
+ },
+ {
+  "team": "Wisconsin-Stevens Point",
+  "nick": "Pointers",
+  "state": "Wisconsin",
+  "conf": "WIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Wisconsin-Stevens_Point"
+ },
+ {
+  "team": "Wisconsin-Stout",
+  "nick": "Blue Devils",
+  "state": "Wisconsin",
+  "conf": "WIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Wisconsin-Stout"
+ },
+ {
+  "team": "Wisconsin-Whitewater",
+  "nick": "Warhawks",
+  "state": "Wisconsin",
+  "conf": "WIAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/University_of_Wisconsin-Whitewater"
+ },
+ {
+  "team": "Wittenberg",
+  "nick": "Tigers",
+  "state": "Ohio",
+  "conf": "NCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Wittenberg_University"
+ },
+ {
+  "team": "Wooster",
+  "nick": "Fighting Scots",
+  "state": "Ohio",
+  "conf": "NCAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/College_of_Wooster"
+ },
+ {
+  "team": "WPI",
+  "nick": "Engineers",
+  "state": "Massachusetts",
+  "conf": "NEWMAC",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Worcester_Polytechnic_Institute"
+ },
+ {
+  "team": "Worcester State",
+  "nick": "Lancers",
+  "state": "MASCAC",
+  "conf": "1985",
+  "wiki": "https://en.wikipedia.orghttps://en.wikipedia.org/wiki/Worcester_State_University"
+ }
+]

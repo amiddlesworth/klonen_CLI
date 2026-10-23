@@ -1,0 +1,401 @@
+[
+ {
+  "name": "Andrew Brown",
+  "program": "UMass Dartmouth",
+  "current_title": "Assistant Coach | Defensive Backs",
+  "bio_url": "https://corsairathletics.com/sports/football/roster/coaches/andrew-brown/1011",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "University of Massachusetts Dartmouth",
+    "level": "NCAA D-III",
+    "role": "Assistant Coach | Defensive Backs",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Assistant Coach | Defensive Backs"
+   }
+  ],
+  "notes": "Bio page has no text; current stint from staff-table title only."
+ },
+ {
+  "name": "Bryan McCann",
+  "program": "UMass Dartmouth",
+  "current_title": "Assistant Coach | Offensive Line",
+  "bio_url": "https://corsairathletics.com/sports/football/roster/coaches/bryan-mccann/1010",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "University of Massachusetts Dartmouth",
+    "level": "NCAA D-III",
+    "role": "Assistant Coach | Offensive Line",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Assistant Coach | Offensive Line"
+   }
+  ],
+  "notes": "Bio page has no text; current stint from staff-table title only."
+ },
+ {
+  "name": "Jonah Grilo",
+  "program": "UMass Dartmouth",
+  "current_title": "Assistant Coach | Recruiting Coordinator | RB's & TE's",
+  "bio_url": "https://corsairathletics.com/sports/football/roster/coaches/jonah-grilo/1016",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "University of Massachusetts Dartmouth",
+    "level": "NCAA D-III",
+    "role": "Assistant Coach | Recruiting Coordinator | RB's & TE's",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Assistant Coach | Recruiting Coordinator | RB's & TE's"
+   }
+  ],
+  "notes": "Bio page has no text; current stint from staff-table title only."
+ },
+ {
+  "name": "Josh Sylvester",
+  "program": "UMass Dartmouth",
+  "current_title": "Head Coach",
+  "bio_url": "https://corsairathletics.com/sports/football/roster/coaches/josh-sylvester/1012",
+  "bio_quality": "full",
+  "alma_mater": "Babson College",
+  "stints": [
+   {
+    "org": "University of Massachusetts Dartmouth",
+    "level": "NCAA D-III",
+    "role": "head coach",
+    "start_year": 2022,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Josh Sylvester concluded his third season as head coach of the UMass Dartmouth football team in 2024."
+   },
+   {
+    "org": "University of Massachusetts Dartmouth",
+    "level": "NCAA D-III",
+    "role": "assistant coach; offensive coordinator and quarterbacks coach",
+    "start_year": 2011,
+    "end_year": 2022,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Served as offensive coordinator for the Corsairs from 2011-2022"
+   },
+   {
+    "org": "Wareham High School",
+    "level": "high school",
+    "role": "three-sport athlete (sports not specified)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "Three-sport athlete at Wareham High School"
+   }
+  ],
+  "notes": "Bio inconsistent/stale: third HC season concluded 2024 (HC from 2022, 2022 MASCAC title listed as HC) yet OC listed 2011-2022; 2025 honors also listed. 'Assistant Coach at UMass Dartmouth for 13 seasons' implies assistant start before 2011. Babson 2005 graduate (no playing stated); MBA UMass Dartmouth 2020. Non-coaching role excluded: UMass Dartmouth director of alumni relations."
+ },
+ {
+  "name": "Justin Borden",
+  "program": "UMass Dartmouth",
+  "current_title": "Assistant Coach | Defensive Line",
+  "bio_url": "https://corsairathletics.com/sports/football/roster/coaches/justin-borden/1014",
+  "bio_quality": "thin",
+  "alma_mater": "University of Massachusetts Dartmouth",
+  "stints": [
+   {
+    "org": "University of Massachusetts Dartmouth",
+    "level": "NCAA D-III",
+    "role": "assistant coach (bio: offensive line coach; staff table: defensive line)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Justin Borden enters his eighth season as the offensive line coach for the Corsairs."
+   },
+   {
+    "org": "University of Massachusetts Dartmouth",
+    "level": "NCAA D-III",
+    "role": "offensive lineman (team captain)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "A 2015 UMass Dartmouth graduate, Borden was a mainstay on the Corsair offensive line in his four-year career."
+   }
+  ],
+  "notes": "Bio undated ('enters his eighth season'), so coaching start cannot be derived; appears stale (staff table now lists Defensive Line). Playing years not stated (2015 graduate, four-year career)."
+ },
+ {
+  "name": "Ralph Clark",
+  "program": "UMass Dartmouth",
+  "current_title": "Assistant Coach | Linebackers",
+  "bio_url": "https://corsairathletics.com/sports/football/roster/coaches/ralph-clark/1017",
+  "bio_quality": "full",
+  "alma_mater": "Robert Morris University",
+  "stints": [
+   {
+    "org": "University of Massachusetts Dartmouth",
+    "level": "NCAA D-III",
+    "role": "assistant football coach (linebackers); also inaugural head coach of women's flag football",
+    "start_year": 2026,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Ralph Clark became the inaugural head coach for Women's Flag Football at UMass Dartmouth in June of 2026."
+   },
+   {
+    "org": "Millersville University",
+    "level": "NCAA D-II",
+    "role": "defensive coordinator / linebackers coach; recruiting coordinator (2025)",
+    "start_year": null,
+    "end_year": 2025,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "He served as the defensive coordinator and linebackers coach, adding recruiting coordinator responsibilities in 2025."
+   },
+   {
+    "org": "Albright College",
+    "level": "NCAA D-III",
+    "role": "special teams coordinator",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Clark worked as the special teams coordinator at Albright College for two seasons"
+   },
+   {
+    "org": "Alvernia University",
+    "level": "NCAA D-III",
+    "role": "head coach (first in program history)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "He spent five seasons at Alvernia University, becoming the first head coach in program history."
+   },
+   {
+    "org": "Seton Hill University",
+    "level": "NCAA D-II",
+    "role": "defensive coordinator and recruiting coordinator",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Clark spent two seasons as the defensive coordinator and recruiting coordinator at Seton Hill University."
+   },
+   {
+    "org": "Millersville University",
+    "level": "NCAA D-II",
+    "role": "defensive coordinator",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "In his first stint at Millersville, Clark made significant improvements... during the 2015 season"
+   },
+   {
+    "org": "Bishop O'Connell High School",
+    "level": "high school",
+    "role": "assistant head football coach and defensive coordinator",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "He served as the assistant head football coach and defensive coordinator at Bishop... High School in Virginia."
+   },
+   {
+    "org": "Virginia Union University",
+    "level": "NCAA D-II",
+    "role": "linebackers coach and strength and conditioning coordinator",
+    "start_year": 2011,
+    "end_year": 2011,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "he coached linebackers and served as the strength and conditioning coordinator at Virginia Union in 2011"
+   },
+   {
+    "org": "Saint Francis University",
+    "level": "NCAA D-I FCS",
+    "role": "defensive coordinator",
+    "start_year": 2010,
+    "end_year": 2010,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "In 2010, Clark coordinated the defense at Saint Francis University."
+   },
+   {
+    "org": "Northeastern University",
+    "level": "NCAA D-I FCS",
+    "role": "linebackers coach; pro scout liaison, travel/compliance coordinator, academic counselor",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Clark served as linebackers coach, pro scout liaison... over two seasons at Northeastern University"
+   },
+   {
+    "org": "Rose-Hulman Institute of Technology",
+    "level": "NCAA D-III",
+    "role": "defensive coordinator",
+    "start_year": 2006,
+    "end_year": 2008,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "From 2006-2008, Clark coordinated the Rose-Hulman Institute defense"
+   },
+   {
+    "org": "Georgetown University",
+    "level": "NCAA D-I FCS",
+    "role": "secondary coach (2004); linebackers coach (2005)",
+    "start_year": 2004,
+    "end_year": 2005,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "began at Georgetown University as the secondary coach in 2004 and linebackers coach in 2005"
+   },
+   {
+    "org": "Three unnamed high schools (Virginia/District of Columbia area)",
+    "level": "high school",
+    "role": "coach",
+    "start_year": 1998,
+    "end_year": 2004,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Clark coached at three high schools in the Virginia/District of Columbia area from 1998-2004."
+   },
+   {
+    "org": "Robert Morris University",
+    "level": "NCAA D-I FCS",
+    "role": "running back (four-year letterman)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "He was a four-year letterman for the Colonials. He totaled 1,362 yards and 12 touchdowns as a running back."
+   }
+  ],
+  "notes": "Years not stated for Millersville (both stints), Albright (2 seasons), Alvernia (5), Seton Hill (2), Northeastern (2), Bishop O'Connell; listed reverse-chronologically per bio. Millersville second-stint end 2025 derived (RC added 2025; hired by UMassD June 2026). First Millersville stint included 2015. Robert Morris playing years not stated (1998 graduate); RMU was D-I-AA then."
+ },
+ {
+  "name": "Ryan Struthers",
+  "program": "UMass Dartmouth",
+  "current_title": "Assistant Head Coach | Offensive Coordinator / WR's",
+  "bio_url": "https://corsairathletics.com/sports/football/roster/coaches/ryan-struthers/1009",
+  "bio_quality": "full",
+  "alma_mater": "University of Massachusetts Dartmouth",
+  "stints": [
+   {
+    "org": "University of Massachusetts Dartmouth",
+    "level": "NCAA D-III",
+    "role": "assistant coach; now assistant head coach / offensive coordinator / wide receivers",
+    "start_year": 2012,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "He rejoined the Corsair staff the following season."
+   },
+   {
+    "org": "Becker College",
+    "level": "NCAA D-III",
+    "role": "wide receivers coach and passing coordinator",
+    "start_year": 2011,
+    "end_year": 2011,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "In 2011, Struthers accepted a coaching position at Becker College, sercing as the wide receivers and passing coordinator."
+   },
+   {
+    "org": "University of Massachusetts Dartmouth",
+    "level": "NCAA D-III",
+    "role": "assistant coach",
+    "start_year": 2007,
+    "end_year": 2010,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "serving as the team manager as an undergraduate for two seasons before joining the staff in 2007"
+   },
+   {
+    "org": "University of Massachusetts Dartmouth",
+    "level": "NCAA D-III",
+    "role": "team manager (undergraduate)",
+    "start_year": 2005,
+    "end_year": 2006,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "serving as the team manager as an undergraduate for two seasons before joining the staff in 2007"
+   }
+  ],
+  "notes": "Bio undated/stale: 'beginning his 15th year with the Corsairs' (about 2022 counting 2007-10 and 2012 on). First staff stint end 2010 and return 2012 derived from Becker 2011 + 'rejoined the following season'. Manager years 2005-06 derived. 2009 graduate (UMass Dartmouth implied). Non-coaching excluded: middle school teacher in Westport."
+ },
+ {
+  "name": "Sam Alicea",
+  "program": "UMass Dartmouth",
+  "current_title": "Assistant Coach | Edges",
+  "bio_url": "https://corsairathletics.com/sports/football/roster/coaches/sam-alicea/1018",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "University of Massachusetts Dartmouth",
+    "level": "NCAA D-III",
+    "role": "Assistant Coach | Edges",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Assistant Coach | Edges"
+   }
+  ],
+  "notes": "Bio page has no text; current stint from staff-table title only."
+ },
+ {
+  "name": "Steve Faniel",
+  "program": "UMass Dartmouth",
+  "current_title": "Associate Head Coach | Defensive Coordinator / DB's",
+  "bio_url": "https://corsairathletics.com/sports/football/roster/coaches/steve-faniel/1008",
+  "bio_quality": "full",
+  "alma_mater": "Westfield State University",
+  "stints": [
+   {
+    "org": "University of Massachusetts Dartmouth",
+    "level": "NCAA D-III",
+    "role": "defensive coordinator (since 2007); associate head coach (since 2015)",
+    "start_year": 2007,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "He also serves as the defensive coordinator, a post he has held since 2007."
+   },
+   {
+    "org": "Westfield State University",
+    "level": "NCAA D-III",
+    "role": "defensive line coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Faniel coached the defensive line for three seasons at his alma mater, Westfield State."
+   },
+   {
+    "org": "Westfield State University",
+    "level": "NCAA D-III",
+    "role": "four-year starter (position not stated)",
+    "start_year": 2001,
+    "end_year": 2004,
+    "as_player": true,
+    "years_explicit": true,
+    "evidence": "Faniel, a four-year starter, helped the Owls compile an overall record of 30-11 between 2001 and 2004."
+   }
+  ],
+  "notes": "Bio stale: 'now in his 11th season' with DC since 2007 (about 2017); references 2016 season. Westfield State coaching (three seasons before 2007) years not stated; ~2004-06 if contiguous, overlapping final playing season. HS playing in Wareham, Mass. (school not named; center/DL) not recorded. Non-coaching excluded: physics teacher at Wareham High School. 2005 graduate."
+ }
+]

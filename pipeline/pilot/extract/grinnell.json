@@ -1,0 +1,358 @@
+[
+ {
+  "name": "Brent Barnes",
+  "program": "Grinnell",
+  "current_title": "Head Football Coach (Linebackers)",
+  "bio_url": "https://pioneers.grinnell.edu/sports/football/roster/coaches/brent-barnes/3202",
+  "bio_quality": "thin",
+  "alma_mater": "Rice University",
+  "stints": [
+   {
+    "org": "Grinnell College",
+    "level": "NCAA D-III",
+    "role": "head football coach (linebackers)",
+    "start_year": 2020,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Brent Barnes was named head coach of the Pioneer football program in December 2019."
+   },
+   {
+    "org": "Alfred State College",
+    "level": "NCAA D-III",
+    "role": "defensive coordinator",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "He most recently served as defensive coordinator at Alfred State College, an NCAA Division III school in New York."
+   },
+   {
+    "org": "SBB Vukovi Beograd (Belgrade, Serbia)",
+    "level": "pro/semi-pro",
+    "role": "head coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "serve as head coach of SBB Vukovi Beograd, an American football team in Belgrade, Serbia"
+   },
+   {
+    "org": "Simon Fraser University",
+    "level": "unknown",
+    "role": "coach (role not stated; offense)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "During his time at Simon Fraser University, the team led the league in rushing offense"
+   },
+   {
+    "org": "Middlebury College",
+    "level": "NCAA D-III",
+    "role": "passing coordinator",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "as passing coordinator at Middlebury College his squad rolled up impressive passing numbers"
+   },
+   {
+    "org": "Rhodes College",
+    "level": "NCAA D-III",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Barnes has also enjoyed success during stops at Rhodes College, Millikin University, University of Chicago and Eastern Illinois University."
+   },
+   {
+    "org": "Millikin University",
+    "level": "NCAA D-III",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Barnes has also enjoyed success during stops at Rhodes College, Millikin University, University of Chicago and Eastern Illinois University."
+   },
+   {
+    "org": "University of Chicago",
+    "level": "NCAA D-III",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Barnes has also enjoyed success during stops at Rhodes College, Millikin University, University of Chicago and Eastern Illinois University."
+   },
+   {
+    "org": "Eastern Illinois University",
+    "level": "NCAA D-I FCS",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Barnes has also enjoyed success during stops at Rhodes College, Millikin University, University of Chicago and Eastern Illinois University."
+   }
+  ],
+  "notes": "Named HC December 2019; start_year 2020 = first fall season after hire. No dates for any prior stop; order unknown except Alfred State was most recent. 'More than two decades' coaching; OC experience mentioned without school. Simon Fraser level unknown (CIS/NAIA before NCAA D-II in 2010; years not stated). Serbian club recorded as pro/semi-pro (European club). Rice triple major (no playing stated); master's Montclair State."
+ },
+ {
+  "name": "Eddie Arias",
+  "program": "Grinnell",
+  "current_title": "Assistant Football Coach (Defensive Backs)",
+  "bio_url": "https://pioneers.grinnell.edu/sports/football/roster/coaches/eddie-arias/3203",
+  "bio_quality": "thin",
+  "alma_mater": "University of Northern Iowa",
+  "stints": [
+   {
+    "org": "Grinnell College",
+    "level": "NCAA D-III",
+    "role": "assistant coach (defensive backs)",
+    "start_year": 2021,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Eddie Arias joined the Grinnell College football staff in the summer of 2021."
+   },
+   {
+    "org": "Gavilan College",
+    "level": "NJCAA/JUCO",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "As a coach at Gavilan College, he helped the team establish the second-best junior college defense in California."
+   },
+   {
+    "org": "Cornell College",
+    "level": "NCAA D-III",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "He also served at Cornell College, Independence High School and Grinnell High School."
+   },
+   {
+    "org": "Independence High School",
+    "level": "high school",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "He also served at Cornell College, Independence High School and Grinnell High School."
+   },
+   {
+    "org": "Grinnell High School",
+    "level": "high school",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "He also served at Cornell College, Independence High School and Grinnell High School."
+   },
+   {
+    "org": "University of Dubuque",
+    "level": "NCAA D-III",
+    "role": "strong safety (four-year letter winner)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "attended the University of Dubuque where he was a four-year football letter winner while playing strong safety"
+   }
+  ],
+  "notes": "'Nine years of coaching experience' (as of bio); no years for prior stops, order unknown. Independence High School location not stated. Bachelor's from University of Northern Iowa, master's from LSU (no roles stated). Gavilan College is a California community college, classed JUCO."
+ },
+ {
+  "name": "Gene Blalock",
+  "program": "Grinnell",
+  "current_title": "Assistant Football Coach (Defensive Coordinator/Defensive Line)",
+  "bio_url": "https://pioneers.grinnell.edu/sports/football/roster/coaches/gene-blalock/3201",
+  "bio_quality": "full",
+  "alma_mater": "Upper Iowa University",
+  "stints": [
+   {
+    "org": "Grinnell College",
+    "level": "NCAA D-III",
+    "role": "assistant coach; defensive coordinator / defensive line",
+    "start_year": 2014,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Blalock began as an assistant coach at Grinnell in 2014."
+   },
+   {
+    "org": "T. R. Robinson High School",
+    "level": "high school",
+    "role": "defensive line coach",
+    "start_year": 2008,
+    "end_year": 2012,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "served as defensive line coach at T.R Robinson High School from 2004-2006 and 2008-2012"
+   },
+   {
+    "org": "North Carolina Academy",
+    "level": "unknown",
+    "role": "defensive line coach",
+    "start_year": 2007,
+    "end_year": 2008,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Blalock also served as defensive line coach at North Carolina Academy from 2007-2008"
+   },
+   {
+    "org": "T. R. Robinson High School",
+    "level": "high school",
+    "role": "defensive line coach",
+    "start_year": 2004,
+    "end_year": 2006,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "served as defensive line coach at T.R Robinson High School from 2004-2006 and 2008-2012"
+   },
+   {
+    "org": "Upper Iowa University",
+    "level": "unknown",
+    "role": "defensive lineman (three-year starter)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "played football at Upper Iowa University where he was a three-year starter on the defensive line"
+   }
+  ],
+  "notes": "North Carolina Academy (2007-08) overlaps second T.R. Robinson stint (2008); its level unclear (likely prep/HS). Upper Iowa playing years not stated (before 2004); Upper Iowa division in that era uncertain (D-III to D-II transition), set unknown. DC title from staff table; promotion year not stated. Master's from Capella University."
+ },
+ {
+  "name": "Malcolm J. Gibson",
+  "program": "Grinnell",
+  "current_title": "Assistant Football Coach (Offensive Coordinator/Quarterbacks)",
+  "bio_url": "https://pioneers.grinnell.edu/sports/football/roster/coaches/malcolm-j-gibson/3204",
+  "bio_quality": "full",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "Grinnell College",
+    "level": "NCAA D-III",
+    "role": "offensive coordinator / quarterbacks",
+    "start_year": 2025,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "new offensive coordinator in May of 2025"
+   },
+   {
+    "org": "Washington and Lee University",
+    "level": "NCAA D-III",
+    "role": "pass game coordinator / running backs and wide receivers coach / special teams assistant",
+    "start_year": 2023,
+    "end_year": 2024,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "In just two seasons as the Generals... Pass Game Coordinator/Running Backs and Wide Receivers Coach"
+   },
+   {
+    "org": "Salisbury University",
+    "level": "NCAA D-III",
+    "role": "assistant coach",
+    "start_year": null,
+    "end_year": 2022,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Gibson served as assistant coach at Salisbury University"
+   },
+   {
+    "org": "Coe College",
+    "level": "NCAA D-III",
+    "role": "player",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "As a player, Gibson was a member of conference championship teams at both Coe College and Salisbury."
+   },
+   {
+    "org": "Salisbury University",
+    "level": "NCAA D-III",
+    "role": "player",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "As a player, Gibson was a member of conference championship teams at both Coe College and Salisbury."
+   }
+  ],
+  "notes": "W&L 2023-24 derived from 'two seasons' before May 2025 hire. Salisbury coaching included 2021 and 2022 seasons (end 2022 derived; start not stated; 'three NJAC titles' suggests longer tenure). Playing years/positions not stated; Coe-then-Salisbury order assumed from listing. No degree/alma mater stated."
+ },
+ {
+  "name": "Owen Tuckey",
+  "program": "Grinnell",
+  "current_title": "Assistant Football Coach (Offensive Line)",
+  "bio_url": "https://pioneers.grinnell.edu/sports/football/roster/coaches/owen-tuckey/3251",
+  "bio_quality": "full",
+  "alma_mater": "St. Norbert College",
+  "stints": [
+   {
+    "org": "Grinnell College",
+    "level": "NCAA D-III",
+    "role": "assistant coach (offensive line)",
+    "start_year": 2026,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Owen Tuckey has joined Grinnell College as an assistant football coach in the spring of 2026."
+   },
+   {
+    "org": "Gogebic Miners (Bessemer / Wakefield-Marenisco co-op, Michigan)",
+    "level": "high school",
+    "role": "coach (offensive and defensive lines, special teams)",
+    "start_year": 2023,
+    "end_year": 2025,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Upon graduation, Tuckey spent three years coaching the Gogebic Miners, a high school co-op program"
+   },
+   {
+    "org": "St. Norbert College",
+    "level": "NCAA D-III",
+    "role": "offensive lineman",
+    "start_year": 2019,
+    "end_year": 2023,
+    "as_player": true,
+    "years_explicit": true,
+    "evidence": "Tuckey played offensive line at St. Norbert College from 2019-23"
+   }
+  ],
+  "notes": "Gogebic years derived: three seasons ending 'last season' (2025) before spring 2026 hire. 'Played at St. Norbert from 2019-23' may denote academic years (last season 2022) given HS coaching began on graduation; 2023 overlap unresolved."
+ },
+ {
+  "name": "Sean Grande",
+  "program": "Grinnell",
+  "current_title": "Assistant Football Coach (Special Teams Coordinator/Offensive Skills)",
+  "bio_url": "https://pioneers.grinnell.edu/sports/football/roster/coaches/sean-grande/3205",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "Grinnell College",
+    "level": "NCAA D-III",
+    "role": "assistant coach (special teams coordinator / offensive skills)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Assistant Football Coach (Special Teams Coorinator/Offensive Skills Coach)"
+   }
+  ],
+  "notes": "Bio page contains only the title; no career information."
+ }
+]

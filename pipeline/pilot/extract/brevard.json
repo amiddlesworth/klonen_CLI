@@ -1,0 +1,334 @@
+[
+ {
+  "name": "Bill Khayat",
+  "program": "Brevard",
+  "current_title": "Head Coach/Offensive Coordinator/Wide Receivers",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/bill-khayat/501",
+  "bio_quality": "thin",
+  "alma_mater": null,
+  "stints": [
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Head Coach/Offensive Coordinator (also tight ends; wide receivers from 2023)", "start_year": 2017, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "As a first-time head coach... he took over a program in late January of 2017"}
+  ],
+  "notes": "Bio covers only the Brevard tenure (first-time head coach, hired Jan 2017); no prior stops, playing career or alma mater given. Everett Lindsay's bio (not this one) says Lindsay began coaching with the Arizona Cardinals alongside Khayat; not extracted here."
+ },
+ {
+  "name": "Everett Lindsay",
+  "program": "Brevard",
+  "current_title": "Assistant Head Coach/Run Game Coordinator/Offensive Line Coach",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/everett-lindsay/502",
+  "bio_quality": "full",
+  "alma_mater": "University of Mississippi (Ole Miss)",
+  "stints": [
+   {"org": "University of Mississippi", "level": "NCAA D-I FBS", "role": "Offensive Tackle", "start_year": 1989, "end_year": 1992, "as_player": true, "years_explicit": true, "evidence": "1989-1992 Mississippi Offensive Tackle"},
+   {"org": "Minnesota Vikings", "level": "pro/semi-pro", "role": "Offensive Line", "start_year": 1993, "end_year": 1998, "as_player": true, "years_explicit": true, "evidence": "1993-1998 Minnesota Vikings Offensive Line"},
+   {"org": "Baltimore Ravens", "level": "pro/semi-pro", "role": "Offensive Line", "start_year": 1999, "end_year": 1999, "as_player": true, "years_explicit": true, "evidence": "1999 Baltimore Ravens Offensive Line"},
+   {"org": "Cleveland Browns", "level": "pro/semi-pro", "role": "Offensive Line", "start_year": 2000, "end_year": 2000, "as_player": true, "years_explicit": true, "evidence": "2000 Cleveland Browns Offensive Line"},
+   {"org": "Minnesota Vikings", "level": "pro/semi-pro", "role": "Offensive Line", "start_year": 2001, "end_year": 2003, "as_player": true, "years_explicit": true, "evidence": "2001-2003 Minnesota Vikings Offensive Line"},
+   {"org": "Arizona Cardinals", "level": "pro/semi-pro", "role": "Assistant Offensive Line Coach", "start_year": 2004, "end_year": 2004, "as_player": false, "years_explicit": true, "evidence": "2004 Arizona Cardinals Assistant Offensive Line Coach"},
+   {"org": "Arizona Cardinals", "level": "pro/semi-pro", "role": "Offensive Line Coach", "start_year": 2005, "end_year": 2005, "as_player": false, "years_explicit": true, "evidence": "2005 Arizona Cardinals Offensive Line Coach"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Offensive Line Coach", "start_year": 2017, "end_year": 2019, "as_player": false, "years_explicit": true, "evidence": "2017-2019 Brevard College Offensive Line Coach"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Associate Head Coach-Offense/Run Game Coordinator/Offensive Line Coach", "start_year": 2020, "end_year": 2021, "as_player": false, "years_explicit": true, "evidence": "2020-2021 Brevard College Associate Head Coach-Offense/Run Game Coordinator/Offensive Line Coach"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Assistant Head Coach/Run Game Coordinator/Offensive Line Coach", "start_year": 2022, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "2022-Present Brevard College Assistant Head Coach/Run Game Coordinator/Offensive Line Coach"}
+  ],
+  "notes": "Ravens/Browns years conflict: 'At a glance' says Ravens 1998, Browns 1999; career table and narrative say Ravens 1999, Browns 2000 (table used). Alma mater inferred from playing career (degree not stated). 2006-2016 gap; worked at Delta (MSP airport), undated, non-football. Bio says 'enters his ninth season ... in 2025'."
+ },
+ {
+  "name": "Terrance Gant",
+  "program": "Brevard",
+  "current_title": "Community Outreach/Linebackers",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/terrance-gant/508",
+  "bio_quality": "full",
+  "alma_mater": "Phoenix College / Purdue University",
+  "stints": [
+   {"org": "McClintock High School", "level": "high school", "role": "Football player (lettered)", "start_year": null, "end_year": null, "as_player": true, "years_explicit": false, "evidence": "Gant attended McClintock High School where he lettered in football, basketball and track."},
+   {"org": "Phoenix College", "level": "NJCAA/JUCO", "role": "Listed in career background without role (alma mater)", "start_year": 1997, "end_year": 1997, "as_player": false, "years_explicit": true, "evidence": "1997 Phoenix College"},
+   {"org": "Purdue University", "level": "NCAA D-I FBS", "role": "Listed in career background without role (alma mater)", "start_year": 1998, "end_year": 1998, "as_player": false, "years_explicit": true, "evidence": "1998 Purdue University"},
+   {"org": "Tempe High School", "level": "high school", "role": "Defensive Coordinator", "start_year": 2011, "end_year": 2012, "as_player": false, "years_explicit": true, "evidence": "2012 – 2011  Tempe High School Defensive Coordinator"},
+   {"org": "McClintock High School", "level": "high school", "role": "Linebacker Coach", "start_year": 2013, "end_year": 2015, "as_player": false, "years_explicit": true, "evidence": "2015 – 2013 McClintock High School Linebacker Coach"},
+   {"org": "NFL (Bill Walsh Minority Coaching Internship)", "level": "pro/semi-pro", "role": "Bill Walsh Minority Intern", "start_year": 2016, "end_year": 2017, "as_player": false, "years_explicit": true, "evidence": "2016 – NFL Bill Walsh Minority Internship"},
+   {"org": "Corona High School", "level": "high school", "role": "Defensive Coordinator", "start_year": 2018, "end_year": 2018, "as_player": false, "years_explicit": true, "evidence": "2018 – Corona High  School Defensive Coordinator"},
+   {"org": "Santiago High School", "level": "high school", "role": "Associate Head Coach/Linebackers", "start_year": 2019, "end_year": 2022, "as_player": false, "years_explicit": true, "evidence": "2022 – 2019 Santiago High School Associate Head Coach/ Linebackers"},
+   {"org": "Notre Dame High School", "level": "high school", "role": "Defensive Coordinator", "start_year": 2023, "end_year": 2023, "as_player": false, "years_explicit": true, "evidence": "2023 – Notre Dame High School Defensive Coordinator"},
+   {"org": "Santiago High School", "level": "high school", "role": "Defensive Coordinator", "start_year": 2024, "end_year": 2024, "as_player": false, "years_explicit": true, "evidence": "2024 – Santiago High School Defensive Coordinator"},
+   {"org": "Chaffey College", "level": "NJCAA/JUCO", "role": "Linebackers", "start_year": 2025, "end_year": 2025, "as_player": false, "years_explicit": true, "evidence": "2025 - Chaffey College Linebackers"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Community Outreach/Linebackers", "start_year": 2025, "end_year": null, "as_player": false, "years_explicit": false, "evidence": "Terrance Gant enters his second season at Brevard in 2026."}
+  ],
+  "notes": "Brevard start 2025 derived from 'second season ... in 2026', which overlaps the table's 2025 Chaffey College stint. Phoenix College (1997) and Purdue (1998) listed without a role; may have been student/player, not stated. NFL internship team not named (two years, 2016 and 2017). Tempe HS 2011-2012 overlaps end of USMC service (1999-2011, non-football, not a stint). Also did Phil Savage Scouting Course (NY Jets) and the Scouting Academy (undated). Chaffey is a California community college (CCCAA), coded JUCO."
+ },
+ {
+  "name": "Chris Symington",
+  "program": "Brevard",
+  "current_title": "Senior Offensive Coordinator/Running Backs Coach",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/chris-symington/503",
+  "bio_quality": "full",
+  "alma_mater": "University of Colorado",
+  "stints": [
+   {"org": "University of Colorado", "level": "NCAA D-I FBS", "role": "Offensive Lineman", "start_year": 1984, "end_year": 1988, "as_player": true, "years_explicit": true, "evidence": "An offensive lineman at the University of Colorado from 1984-88"},
+   {"org": "Tampa Bay Buccaneers", "level": "pro/semi-pro", "role": "Free agent signee (player)", "start_year": 1988, "end_year": 1988, "as_player": true, "years_explicit": true, "evidence": "Symington signed a free agent contract with the Tampa Bay Buccaneers in 1988."},
+   {"org": "University of Colorado", "level": "NCAA D-I FBS", "role": "Graduate Assistant", "start_year": 1989, "end_year": 1990, "as_player": false, "years_explicit": true, "evidence": "1989-1990: University of Colorado (Graduate Assistant)"},
+   {"org": "Vanderbilt University", "level": "NCAA D-I FBS", "role": "Offensive Line Coach", "start_year": 1991, "end_year": 1994, "as_player": false, "years_explicit": true, "evidence": "1991-1994: Vanderbilt University"},
+   {"org": "Northwood University (Mich.)", "level": "NCAA D-II", "role": "Offensive Coordinator", "start_year": 1994, "end_year": 1995, "as_player": false, "years_explicit": true, "evidence": "1994-1995: Northwood University (Mich.)"},
+   {"org": "Western Kentucky University", "level": "NCAA D-I FCS", "role": "Offensive Line Coach", "start_year": 1996, "end_year": 1999, "as_player": false, "years_explicit": true, "evidence": "1996-1999: Western Kentucky University"},
+   {"org": "Tennessee State University", "level": "NCAA D-I FCS", "role": "Offensive Line Coach", "start_year": 2000, "end_year": 2004, "as_player": false, "years_explicit": true, "evidence": "2000-2004: Tennesse State University"},
+   {"org": "Eastern Michigan University", "level": "NCAA D-I FBS", "role": "Offensive Line Coach", "start_year": 2004, "end_year": 2008, "as_player": false, "years_explicit": true, "evidence": "2004-2008: Eastern Michigan University"},
+   {"org": "Colorado State University-Pueblo", "level": "NCAA D-II", "role": "Assistant coach (offensive line; coached Ryan Jensen)", "start_year": 2009, "end_year": 2014, "as_player": false, "years_explicit": true, "evidence": "2009-2014: Colorado State University Pueblo"},
+   {"org": "Truman State University", "level": "NCAA D-II", "role": "Assistant coach (role not stated)", "start_year": 2016, "end_year": 2018, "as_player": false, "years_explicit": true, "evidence": "2016-2018: Truman State University"},
+   {"org": "Colorado State University-Pueblo", "level": "NCAA D-II", "role": "Assistant Coach/Offensive Line/Run Game Coordinator", "start_year": 2018, "end_year": 2022, "as_player": false, "years_explicit": true, "evidence": "2018-2022: Colorado State University Pueblo"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Senior Offensive Coordinator/Running Backs Coach", "start_year": 2023, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "2023-present: Brevard College"}
+  ],
+  "notes": "Narrative and timeline years conflict: narrative gives Vanderbilt 1990-94, Northwood 1995-96, Tennessee State 2000-03, Eastern Michigan 2003-08; timeline table values used. Roles at Vanderbilt/WKU/TSU/EMU (OL) and Northwood (OC) come from the narrative; Truman State role not stated; 'Assistant Coach/Offensive Line/Run Game Coordinator' (described as most recent) assigned to the 2018-22 CSU-Pueblo stint. WKU coded FCS (I-AA in 1996-99). Alma mater inferred from playing career (degree not stated). 2015 gap. Bio says 'enters his third season ... in 2025'."
+ },
+ {
+  "name": "Juwan Owens",
+  "program": "Brevard",
+  "current_title": "General Manager/Senior Defensive Coordinator/Safeties",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/juwan-owens/509",
+  "bio_quality": "full",
+  "alma_mater": "Limestone College (bachelor's 2016); Southern Nazarene University (master's 2021)",
+  "stints": [
+   {"org": "Southern Virginia University", "level": "NCAA D-III", "role": "Cornerback/special teams (player)", "start_year": 2013, "end_year": 2013, "as_player": true, "years_explicit": true, "evidence": "Owens played collegiately at Southern Virginia University (D3) playing in four games as a true freshman at corner"},
+   {"org": "Limestone College", "level": "NCAA D-II", "role": "Cornerback (player)", "start_year": null, "end_year": null, "as_player": true, "years_explicit": false, "evidence": "transferred and graduated from Limestone College (D2) in 2016, playing cornerback briefly for the Saints."},
+   {"org": "Gaffney High School", "level": "high school", "role": "Offensive Intern/Video Coordinator/JV & Varsity Assistant Running Backs Coach", "start_year": 2015, "end_year": 2016, "as_player": false, "years_explicit": true, "evidence": "He began his coaching foray at Gaffney (S.C.) High School in 2015 and 2016"},
+   {"org": "Scott's Branch High School", "level": "high school", "role": "Wide Receivers/Defensive Backs Coach (running backs per narrative)", "start_year": 2018, "end_year": 2018, "as_player": false, "years_explicit": true, "evidence": "As the running backs coach at Scott's Branch (S.C.) High School in 2018"},
+   {"org": "Dakota College at Bottineau", "level": "NJCAA/JUCO", "role": "Defensive Coordinator/Special Teams Coordinator/Recruiting Coordinator/Academic Support Coordinator", "start_year": 2019, "end_year": 2019, "as_player": false, "years_explicit": true, "evidence": "Owens was the defensive coordinator and special teams coach at Dakota College at Bottineau (N.D.) in the 2019 season."},
+   {"org": "Gardner-Webb University", "level": "NCAA D-I FCS", "role": "Assistant Defensive Backs Coach", "start_year": 2020, "end_year": 2020, "as_player": false, "years_explicit": true, "evidence": "2020: Gardner-Webb University | Boiling Springs, North Carolina (FCS) Assistant Defensive Backs Coach"},
+   {"org": "Calhoun Falls Charter School", "level": "high school", "role": "Head Football Coach/Head Baseball Coach/Science Teacher", "start_year": 2021, "end_year": 2021, "as_player": false, "years_explicit": true, "evidence": "2021: Calhoun Falls Charter School | Calhoun Falls, South Carolina (SCHSL) Head Football Coach"},
+   {"org": "Morehead State University", "level": "NCAA D-I FCS", "role": "Cornerbacks Coach/Recruiting Coordinator", "start_year": 2022, "end_year": 2022, "as_player": false, "years_explicit": true, "evidence": "2022: Morehead State University | Morehead, Kentucky (FCS) Cornerbacks Coach"},
+   {"org": "Greenville Senior High School", "level": "high school", "role": "Special Teams Coordinator/Defensive Backs Coach/JV Defensive Coordinator (also assistant head wrestling coach)", "start_year": 2024, "end_year": 2024, "as_player": false, "years_explicit": true, "evidence": "2024: Greenville Senior High School (SCHSL) | Greenville, South Carolina Special Teams Coordinator/ Defensive Backs Coach"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "General Manager/Senior Defensive Coordinator/Safeties/Nickelbacks", "start_year": 2025, "end_year": null, "as_player": false, "years_explicit": false, "evidence": "Juwan Owens is entering his second season with the Brevard College football program... in 2026."}
+  ],
+  "notes": "Brevard start 2025 derived from 'entering his second season ... in 2026'. Gardner-Webb was the COVID 2020-21 (spring 2021) season, coded 2020. Limestone playing years not stated (graduated 2016). No stint listed for 2017 or 2023."
+ },
+ {
+  "name": "Jarren Horton",
+  "program": "Brevard",
+  "current_title": "Associate Head Coach-Defense/Defensive Coordinator",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/jarren-horton/518",
+  "bio_quality": "full",
+  "alma_mater": "Portland State",
+  "stints": [
+   {"org": "Vanderbilt University", "level": "NCAA D-I FBS", "role": "Defensive Analytics Assistant", "start_year": 2015, "end_year": 2015, "as_player": false, "years_explicit": true, "evidence": "2015 - Vanderbilt University: Defensive Analytics Assistant"},
+   {"org": "Cleveland Browns", "level": "pro/semi-pro", "role": "Coaching Assistant", "start_year": 2016, "end_year": 2016, "as_player": false, "years_explicit": true, "evidence": "2016 - Cleveland Browns: Coaching Assistant"},
+   {"org": "Vanderbilt University", "level": "NCAA D-I FBS", "role": "Defensive Analytics Assistant", "start_year": 2017, "end_year": 2017, "as_player": false, "years_explicit": true, "evidence": "2017 - Vanderbilt University: Defensive Analytics Assistant"},
+   {"org": "Southeastern Louisiana University", "level": "NCAA D-I FCS", "role": "Defensive Graduate Assistant", "start_year": 2018, "end_year": 2018, "as_player": false, "years_explicit": true, "evidence": "2018 - Southeastern Louisiana: Defensive Graduate Assistant"},
+   {"org": "Atlanta Legends (AAF)", "level": "pro/semi-pro", "role": "Secondary Coach", "start_year": 2019, "end_year": 2019, "as_player": false, "years_explicit": true, "evidence": "2019 - Atlanta Legends (AAF): Secondary Coach"},
+   {"org": "University of Connecticut", "level": "NCAA D-I FBS", "role": "Stars, Nickels and Dimes/Defensive Backs and Interim Defensive Coordinator", "start_year": 2019, "end_year": 2021, "as_player": false, "years_explicit": true, "evidence": "2019-2021 - University of Connecticut: Stars, Nickels and Dimes / Defensive Backs and Interim Defensive Coordinator"},
+   {"org": "Pittsburgh Maulers (USFL)", "level": "pro/semi-pro", "role": "Defensive Coordinator/Assistant Head Coach", "start_year": 2022, "end_year": 2024, "as_player": false, "years_explicit": true, "evidence": "2022-2024 - Pittsburgh Maulers (USFL): Defensive Coordinator / Assistant Head Coach"},
+   {"org": "Memphis Showboats (UFL)", "level": "pro/semi-pro", "role": "Defensive Coordinator", "start_year": 2025, "end_year": 2025, "as_player": false, "years_explicit": true, "evidence": "2025 - Memphis Showboats (UFL): Defensive Coordinator"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Associate Head Coach-Defense/Defensive Coordinator", "start_year": 2026, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "Jarren Horton enters his first season as the Associate Head Coach-Defense/Defensive Coordinator for Brevard College in 2026."}
+  ],
+  "notes": "AAF, USFL and UFL years are spring seasons. Alma mater Portland State; no playing career described."
+ },
+ {
+  "name": "Matt Helton",
+  "program": "Brevard",
+  "current_title": "Special Teams Coordinator/Recruiting Coordinator",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/matt-helton/505",
+  "bio_quality": "full",
+  "alma_mater": "Presentation College",
+  "stints": [
+   {"org": "Presentation College", "level": "unknown", "role": "Offensive Lineman", "start_year": 2015, "end_year": 2018, "as_player": true, "years_explicit": true, "evidence": "2015-18: Offensive Lineman, Presentation College"},
+   {"org": "University of Northern Colorado", "level": "NCAA D-I FCS", "role": "Offensive Line Assistant", "start_year": 2019, "end_year": 2019, "as_player": false, "years_explicit": true, "evidence": "2019-20: Offensive Line Assistant, University of Northern Colorado"},
+   {"org": "Colorado Mesa University", "level": "NCAA D-II", "role": "Offensive Line Assistant", "start_year": 2021, "end_year": 2021, "as_player": false, "years_explicit": true, "evidence": "2021-22: Offensive Line Assistant, Colorado Mesa University"},
+   {"org": "Colorado State University-Pueblo", "level": "NCAA D-II", "role": "Tight Ends Coach", "start_year": 2022, "end_year": 2022, "as_player": false, "years_explicit": true, "evidence": "2022-23: Tight Ends Coach, Colorado State University-Pueblo"},
+   {"org": "Colorado State University", "level": "NCAA D-I FBS", "role": "Offensive Line Graduate Assistant", "start_year": 2023, "end_year": 2023, "as_player": false, "years_explicit": true, "evidence": "2023-24: Offensive Line Graduate Assistant, Colorado State University"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Special Teams Coordinator/Recruiting Coordinator", "start_year": 2024, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "2024-25: Special Teams Coordinator/Recruiting Coordinator, Brevard College"}
+  ],
+  "notes": "Coaching table uses academic-year labels (e.g. '2019-20'); each coded as the single fall season (first year). Presentation College (S.D.) division not certain; coded unknown. Alma mater = school where he was a student-athlete; degree not stated. Highlights say CSU-Pueblo reached the 'NCAA DIII Postseason' in 2022 but narrative says DII; CSU-Pueblo is D-II. Bio says 'enters his second full season ... in 2025'."
+ },
+ {
+  "name": "Kris Alvarez",
+  "program": "Brevard",
+  "current_title": "Futures Head Coach/Chief Advisor for Player Experience/Asst. Defensive Line",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/kris-alvarez/514",
+  "bio_quality": "full",
+  "alma_mater": "American Military University",
+  "stints": [
+   {"org": "Stuttgart Scorpions", "level": "pro/semi-pro", "role": "Linebackers Coach", "start_year": 2018, "end_year": 2018, "as_player": false, "years_explicit": true, "evidence": "2018: Linebackers, Stuttgart Scorpions"},
+   {"org": "Bondorf Bulls", "level": "pro/semi-pro", "role": "Defensive Coordinator/Linebackers", "start_year": 2018, "end_year": 2020, "as_player": false, "years_explicit": true, "evidence": "2018-20: Defensive Coordinator/Linebackers, Bondorf Bulls"},
+   {"org": "Crooked Oak High School", "level": "high school", "role": "Assistant Head Coach/Defensive Coordinator", "start_year": 2022, "end_year": 2022, "as_player": false, "years_explicit": true, "evidence": "2022-23: Assistant Head Coach/Defensive Coordinator, Crooked Oak High School"},
+   {"org": "Crooked Oak High School", "level": "high school", "role": "Assistant Coach, Men's Soccer", "start_year": 2022, "end_year": 2024, "as_player": false, "years_explicit": true, "evidence": "2022-24: Assistant Coach Men’s Soccer, Crooked Oak High School"},
+   {"org": "Putnam City West High School", "level": "high school", "role": "Assistant Head Coach/Defensive Coordinator", "start_year": 2023, "end_year": 2025, "as_player": false, "years_explicit": true, "evidence": "2023-26: Assistant Head Coach/Defensive Coordinator, Putnam City West High School"},
+   {"org": "Putnam City West High School", "level": "high school", "role": "Assistant Coach, Women's Soccer", "start_year": 2024, "end_year": 2026, "as_player": false, "years_explicit": true, "evidence": "2024-26: Assistant Coach Women’s Soccer, Putnam City West High School"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Futures Head Coach/Chief Advisor for Player Experience/Assistant Defensive Line", "start_year": 2026, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "Kris Alvarez enters his first full season on staff with Brevard College Football in 2026."}
+  ],
+  "notes": "Football ranges given as academic years ('2022-23', '2023-26'); converted to fall seasons (Crooked Oak 2022; Putnam City West 2023-2025). Soccer roles kept with stated years. German clubs coded pro/semi-pro (bio: 'part of the German Football League organizations'). 9 years active duty US Army (MP sergeant/drug investigator), undated, non-football, not a stint."
+ },
+ {
+  "name": "Zac Dysert",
+  "program": "Brevard",
+  "current_title": "Associate Head Coach-Offense/Quarterbacks",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/zac-dysert/507",
+  "bio_quality": "full",
+  "alma_mater": "Miami University (Ohio), 2012",
+  "stints": [
+   {"org": "Ada High School (Ohio)", "level": "high school", "role": "Quarterback (player)", "start_year": null, "end_year": null, "as_player": true, "years_explicit": false, "evidence": "He twice led Ada High School to the state playoffs, including a 2007 state semifinal appearance."},
+   {"org": "Miami University (Ohio)", "level": "NCAA D-I FBS", "role": "Quarterback", "start_year": 2009, "end_year": 2012, "as_player": true, "years_explicit": true, "evidence": "2009-12: Miami University (OH), Quarterback"},
+   {"org": "Denver Broncos", "level": "pro/semi-pro", "role": "Quarterback", "start_year": 2013, "end_year": 2015, "as_player": true, "years_explicit": true, "evidence": "2013-15: Denver Broncos, NFL Quarterback"},
+   {"org": "Houston Texans", "level": "pro/semi-pro", "role": "Quarterback", "start_year": 2015, "end_year": 2015, "as_player": true, "years_explicit": true, "evidence": "2015: Houston Texans, NFL Quarterback"},
+   {"org": "Arizona Cardinals", "level": "pro/semi-pro", "role": "Quarterback", "start_year": 2016, "end_year": 2017, "as_player": true, "years_explicit": true, "evidence": "2016-17: Arizona Cardinals, NFL Quarterback"},
+   {"org": "Dallas Cowboys", "level": "pro/semi-pro", "role": "Quarterback", "start_year": 2017, "end_year": 2017, "as_player": true, "years_explicit": true, "evidence": "2017: Dallas Cowboys, NFL Quarterback"},
+   {"org": "Chicago Bears", "level": "pro/semi-pro", "role": "Quarterback", "start_year": null, "end_year": null, "as_player": true, "years_explicit": false, "evidence": "had stints with the Chicago Bears, Houston Texans, Buffalo Bills, Miami Dolphins, Arizona Cardinals, and Dallas Cowboys"},
+   {"org": "Buffalo Bills", "level": "pro/semi-pro", "role": "Quarterback", "start_year": null, "end_year": null, "as_player": true, "years_explicit": false, "evidence": "had stints with the Chicago Bears, Houston Texans, Buffalo Bills, Miami Dolphins, Arizona Cardinals, and Dallas Cowboys"},
+   {"org": "Miami Dolphins", "level": "pro/semi-pro", "role": "Quarterback", "start_year": null, "end_year": null, "as_player": true, "years_explicit": false, "evidence": "had stints with the Chicago Bears, Houston Texans, Buffalo Bills, Miami Dolphins, Arizona Cardinals, and Dallas Cowboys"},
+   {"org": "Perrysburg High School", "level": "high school", "role": "Quarterbacks Coach/Scout Team Coordinator", "start_year": 2018, "end_year": 2018, "as_player": false, "years_explicit": true, "evidence": "2018-19: Quarterbacks Coach/Scout Team Coordinator, Perrysburg High School (Perrysburg, Ohio)"},
+   {"org": "Ada High School (Ohio)", "level": "high school", "role": "Quarterbacks Coach/Offensive Coordinator/Scout Team Coordinator", "start_year": 2019, "end_year": 2019, "as_player": false, "years_explicit": true, "evidence": "2019-20: Quarterbacks Coach/Offensive Coordinator/Scout Team Coordinator, Ada High School (Ada, Ohio)"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Futures Head Coach/Senior Offensive Analyst/Assistant Quarterbacks Coach", "start_year": 2024, "end_year": 2024, "as_player": false, "years_explicit": true, "evidence": "2024: Brevard College Futures Head Coach/Senior Offensive Analyst/Assistant Quarterbacks Coach"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Pass Game Coordinator/Quarterbacks Coach", "start_year": 2025, "end_year": 2025, "as_player": false, "years_explicit": true, "evidence": "2025: Brevard College Pass Game Coordinator/Quarterbacks Coach"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Associate Head Coach-Offense/Quarterbacks", "start_year": 2026, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "enters his third season on staff with Brevard College Football in 2026, serving as the Associate Head Coach-Offense/Quarterbacks"}
+  ],
+  "notes": "Redshirted at Miami in 2008; played 2009-12. Highlights say 2012 NFL Draft but table/narrative say 2013 (2013 used implicitly via Broncos 2013 start). Bears, Bills, Dolphins stints undated. HS coaching labels '2018-19'/'2019-20' coded as the fall season. No stints listed 2020-2023."
+ },
+ {
+  "name": "Chance Lee-Parker",
+  "program": "Brevard",
+  "current_title": "Academic Success Coordinator/Alumni Relations",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/chance-lee-parker/511",
+  "bio_quality": "thin",
+  "alma_mater": "Brevard College (2024)",
+  "stints": [
+   {"org": "Mars Hill University", "level": "NCAA D-II", "role": "Running back (player)", "start_year": 2020, "end_year": 2021, "as_player": true, "years_explicit": false, "evidence": "2020-25 NCAA running back at Mars Hill University (NCAA DII) and Brevard College."},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Running back (player)", "start_year": 2022, "end_year": 2024, "as_player": true, "years_explicit": true, "evidence": "Lee-Parker, a three-year Tornado student-athlete from Auburn, Georgia who finished his final season competing collegiately in 2024"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Academic Success Coordinator/Alumni Relations", "start_year": 2025, "end_year": null, "as_player": false, "years_explicit": false, "evidence": "enters his second season on staff with BC football in 2026 as the Academic Success Coordinator/Alumni Relations"}
+  ],
+  "notes": "Mars Hill years derived: college career began 2020 (2023 was his 'fourth year'), Brevard debut season 2022, so Mars Hill 2020-2021. Table says '2020-25' but final playing season was 2024. Staff start 2025 derived from 'second season ... in 2026'."
+ },
+ {
+  "name": "Chris Hatch",
+  "program": "Brevard",
+  "current_title": "Special Assistant to the Head Coach/Facilities Manager",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/chris-hatch/506",
+  "bio_quality": "full",
+  "alma_mater": "North Carolina Wesleyan University (2023)",
+  "stints": [
+   {"org": "Southern Wayne High School", "level": "high school", "role": "Offensive lineman (player)", "start_year": null, "end_year": null, "as_player": true, "years_explicit": false, "evidence": "attended high school at Southern Wayne High School where he played football for four seasons"},
+   {"org": "North Carolina Wesleyan University", "level": "NCAA D-III", "role": "Offensive Lineman", "start_year": 2018, "end_year": 2022, "as_player": true, "years_explicit": true, "evidence": "2018-2022: Offensive Lineman - North Carolina Wesleyan University"},
+   {"org": "North Carolina Wesleyan University", "level": "NCAA D-III", "role": "Football Intern (Offensive Line)", "start_year": 2023, "end_year": 2023, "as_player": false, "years_explicit": true, "evidence": "2023: Football Intern (Offensive Line) - North Carolina Wesleyan University"},
+   {"org": "Smithfield-Selma High School", "level": "high school", "role": "Interim Head Coach/Wide Receivers Coach/Offensive Line Coach", "start_year": 2023, "end_year": 2023, "as_player": false, "years_explicit": true, "evidence": "2023-24: Interim Head Coach / Wide Receivers Coach / Offensive Line Coach - Smithfield Selma High School"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Offensive Quality Control/Assistant Offensive Line Coach", "start_year": 2024, "end_year": 2024, "as_player": false, "years_explicit": true, "evidence": "2024: Brevard College Offensive Quality Control/Assistant Offensive Line Coach"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Facilities Director/Assistant Offensive Line Coach", "start_year": 2025, "end_year": 2025, "as_player": false, "years_explicit": true, "evidence": "2025: Brevard College Facilities Director/Assistant Offensive Line Coach"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Special Assistant to the Head Coach/Facilities Manager", "start_year": 2026, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "2026: Brevard College Special Assistant to the Head Coach/Facilities Manager"}
+  ],
+  "notes": "Smithfield-Selma listed as '2023-24'; coded as the 2023 fall season (same year as the NC Wesleyan internship, likely spring 2023). 'Third season on staff ... in 2026' consistent with 2024 Brevard start."
+ },
+ {
+  "name": "Steven Victoriano",
+  "program": "Brevard",
+  "current_title": "Director of High School Relations/Assistant Offensive Line",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/steven-victoriano/512",
+  "bio_quality": "thin",
+  "alma_mater": "Brevard College (2025)",
+  "stints": [
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Defensive line (player)", "start_year": 2021, "end_year": 2022, "as_player": true, "years_explicit": true, "evidence": "2021-2022 Brevard College Defensive Line"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Offensive line (player)", "start_year": 2023, "end_year": 2024, "as_player": true, "years_explicit": true, "evidence": "2023-2024 Brevard College Offensive Line"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Softball Intern", "start_year": 2025, "end_year": 2025, "as_player": false, "years_explicit": true, "evidence": "2025 Brevard College Softball Intern"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Futures Offensive Line Coach/Apparatus Facilitator", "start_year": 2025, "end_year": 2025, "as_player": false, "years_explicit": true, "evidence": "2025-26  Futures Offensive Line Coach/Apparatus Facilitator, Brevard College"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Director of High School Relations/Assistant Offensive Line", "start_year": 2026, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "2026 Director of High School Relations/Assistant Offensive Line, Brevard College"}
+  ],
+  "notes": "2021-2024 Brevard DL/OL entries treated as playing career (he was a student, graduated spring 2025); bio does not say 'player' explicitly. Futures OL '2025-26' coded as 2025 season. All career info is at Brevard."
+ },
+ {
+  "name": "Javian Byrd",
+  "program": "Brevard",
+  "current_title": "Chief Advisor for Defensive Integrity/Aviation Facilitator/Corners",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/javian-byrd/513",
+  "bio_quality": "full",
+  "alma_mater": "Colorado State University Pueblo; Chadron State College",
+  "stints": [
+   {"org": "Colorado State University-Pueblo", "level": "NCAA D-II", "role": "Defensive Back", "start_year": 2017, "end_year": 2019, "as_player": true, "years_explicit": true, "evidence": "2017-2019: Defensive Back at Colorado State University - Pueblo"},
+   {"org": "Golden West College", "level": "NJCAA/JUCO", "role": "Defensive Back", "start_year": 2020, "end_year": 2020, "as_player": true, "years_explicit": true, "evidence": "2020:Defensive Back at Golden West Community College"},
+   {"org": "Chadron State College", "level": "NCAA D-II", "role": "Defensive Back", "start_year": 2021, "end_year": 2023, "as_player": true, "years_explicit": true, "evidence": "2021-2023:Defensive Back at Chadron State College"},
+   {"org": "The Academy Charter School", "level": "high school", "role": "Varsity Defensive Backs Coach/Middle School Head Coach", "start_year": 2024, "end_year": 2024, "as_player": false, "years_explicit": true, "evidence": "2024: Varsity Defensive Backs Coach / Middle School Head Coach at The Academy Charter School"},
+   {"org": "Green Mountain High School", "level": "high school", "role": "Defensive Back Assistant", "start_year": 2025, "end_year": 2025, "as_player": false, "years_explicit": true, "evidence": "2025: Defensive Back assistant at Green Mountain Highschool"},
+   {"org": "Shreveport Rouxgaroux (National Arena League)", "level": "pro/semi-pro", "role": "Defensive Back", "start_year": 2025, "end_year": 2025, "as_player": true, "years_explicit": true, "evidence": "2025: Defensive Back with the Shreveport Rouxgaroux ( National Arena League ) and the Corpus Christi Tritons ( AF1 )"},
+   {"org": "Corpus Christi Tritons (AF1)", "level": "pro/semi-pro", "role": "Defensive Back", "start_year": 2025, "end_year": 2025, "as_player": true, "years_explicit": true, "evidence": "2025: Defensive Back with the Shreveport Rouxgaroux ( National Arena League ) and the Corpus Christi Tritons ( AF1 )"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Cornerbacks/Futures Pass Game Coordinator", "start_year": 2025, "end_year": 2025, "as_player": false, "years_explicit": true, "evidence": "2025-26: Cornerbacks / Futures Pass Game Coordinator, Brevard College"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Chief Advisor for Defensive Integrity/Aviation Facilitator/Corners", "start_year": 2026, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "2026: Chief Advisor for Defensive Integrity/Aviation Facilitator/Corners, Brevard College"}
+  ],
+  "notes": "Arena league seasons were spring 2025. Green Mountain HS (2025) and Brevard '2025-26' (coded 2025 season) may overlap. Golden West is a California community college, coded JUCO."
+ },
+ {
+  "name": "Brandon Unangst",
+  "program": "Brevard",
+  "current_title": "Director of Player Performance/Tight Ends/H-Backs",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/brandon-unangst/504",
+  "bio_quality": "full",
+  "alma_mater": "Brevard College (2023)",
+  "stints": [
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Offensive Tackle (player)", "start_year": 2018, "end_year": 2022, "as_player": true, "years_explicit": true, "evidence": "2018-2022: Brevard College Offensive Tackle"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Assistant Offensive Line Coach and Offensive Quality Control", "start_year": 2023, "end_year": 2023, "as_player": false, "years_explicit": true, "evidence": "2023: Brevard College Assistant Offensive Line Coach and Offensive Quality Control"},
+   {"org": "Sioux City Bandits (National Arena League)", "level": "pro/semi-pro", "role": "Offensive Line", "start_year": 2023, "end_year": 2023, "as_player": true, "years_explicit": true, "evidence": "2023: Sioux City Bandits OL – Sioux City, Iowa | National Arena League"},
+   {"org": "Lohja Crusaders (Finland)", "level": "pro/semi-pro", "role": "Offensive Tackle", "start_year": 2024, "end_year": 2024, "as_player": true, "years_explicit": true, "evidence": "2024: Lohja Crusaders OT – Lohja, Finland"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Director of High School Relations and Assistant Offensive Line Coach", "start_year": 2024, "end_year": 2024, "as_player": false, "years_explicit": true, "evidence": "2024: Brevard College Director of High School Relations and Assistant Offensive Line Coach"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Associate Head Coach-Defense/Director of HS Relations/OLB & Edges Coach", "start_year": 2025, "end_year": 2025, "as_player": false, "years_explicit": true, "evidence": "2025: Brevard College Associate Head Coach-Defense/Director of HS Relations/OLB & Edges Coach"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Director of Player Performance/Tight Ends/H-Backs", "start_year": 2026, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "2026: Brevard College Director of Player Performance/Tight Ends/H-Backs"}
+  ],
+  "notes": "Pro playing stints (NAL 2023, Finland 2024) overlapped Brevard staff roles (likely spring/summer seasons). 'Fourth season on staff ... in 2026' consistent with 2023 start."
+ },
+ {
+  "name": "Jeremy Boone",
+  "program": "Brevard",
+  "current_title": "Apparatus Liaison/Defensive Quality Control",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/jeremy-boone/515",
+  "bio_quality": "full",
+  "alma_mater": "American Military University",
+  "stints": [
+   {"org": "Swansboro High School", "level": "high school", "role": "Defensive Backs Coach", "start_year": 2014, "end_year": 2017, "as_player": false, "years_explicit": true, "evidence": "2014-2017: Defensive Backs Coach Swansboro High School"},
+   {"org": "Swansboro High School", "level": "high school", "role": "JV Head Coach/Defensive Line Coach", "start_year": 2018, "end_year": 2019, "as_player": false, "years_explicit": true, "evidence": "2018-2019: JV Head Coach/Defensive Line Coach Swansboro High School"},
+   {"org": "Swansboro High School", "level": "high school", "role": "Defensive Coordinator", "start_year": 2020, "end_year": 2023, "as_player": false, "years_explicit": true, "evidence": "2020-2023: Defensive Coordinator Swansboro High School"},
+   {"org": "Dixon High School", "level": "high school", "role": "Linebackers Coach", "start_year": 2024, "end_year": 2024, "as_player": false, "years_explicit": true, "evidence": "2024: Linebackers Coach Dixon High School"},
+   {"org": "Dixon High School", "level": "high school", "role": "Defensive Coordinator", "start_year": 2025, "end_year": 2025, "as_player": false, "years_explicit": true, "evidence": "2025: Defensive Coordinator Dixon High School"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Apparatus Liaison/Defensive Quality Control", "start_year": 2026, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "Jeremy Boone enters his first season as an assistant coach with the Brevard College Football program in 2026-27."}
+  ],
+  "notes": "Served 13 years in the US Marine Corps (field radio operator), medically retired 2011; non-football, not a stint."
+ },
+ {
+  "name": "Zane Smith",
+  "program": "Brevard",
+  "current_title": "Defensive Line Coach/Special Projects",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/zane-smith/510",
+  "bio_quality": "full",
+  "alma_mater": "Stetson University (BBA 2019)",
+  "stints": [
+   {"org": "Ridge View High School", "level": "high school", "role": "Defensive End/Defensive Tackle (player)", "start_year": 2011, "end_year": 2015, "as_player": true, "years_explicit": true, "evidence": "2011-2015: Ridge View High School, Columbia, SC - Defensive End and Defensive Tackle"},
+   {"org": "Stetson University", "level": "NCAA D-I FCS", "role": "Defensive Tackle (player)", "start_year": 2015, "end_year": 2019, "as_player": true, "years_explicit": true, "evidence": "2015-2019: Stetson University, Deland, FL – Defensive Tackle"},
+   {"org": "Green Bay Blizzard (Indoor Football League)", "level": "pro/semi-pro", "role": "Defensive Tackle", "start_year": 2020, "end_year": 2021, "as_player": true, "years_explicit": true, "evidence": "Played for the Green Bay Blizzard of the Indoor Football League (2020 & 2021)"},
+   {"org": "Alphas (The Spring League)", "level": "pro/semi-pro", "role": "Defensive Tackle", "start_year": 2021, "end_year": 2021, "as_player": true, "years_explicit": true, "evidence": "Played for the Alphas in The Spring League in Indianapolis (2021)"},
+   {"org": "Saltillo Dinos (Liga de Fútbol Americano Profesional)", "level": "pro/semi-pro", "role": "Defensive Tackle", "start_year": 2022, "end_year": 2022, "as_player": true, "years_explicit": true, "evidence": "Played for the Saltillo Dinos in the Liga de Fútbol Americano Professional, a spring league in Mexico (2022)"},
+   {"org": "Stetson University", "level": "NCAA D-I FCS", "role": "Defensive Quality Control Analyst", "start_year": 2022, "end_year": 2022, "as_player": false, "years_explicit": true, "evidence": "2022: Stetson University, Deland, FL - Defensive Quality Control Analyst"},
+   {"org": "Wheeler High School", "level": "high school", "role": "Defensive Line Coach", "start_year": 2023, "end_year": 2024, "as_player": false, "years_explicit": true, "evidence": "2023-2024: Wheeler High School, Marietta, GA – Defensive Line Coach"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Defensive Line Coach/Special Projects Coordinator", "start_year": 2025, "end_year": null, "as_player": false, "years_explicit": false, "evidence": "Zane Smith enters his second season on staff with BC football in 2026"}
+  ],
+  "notes": "HS (2011-2015) and Stetson (2015-2019) ranges appear to be school years (four-year college career, 41 games); kept as stated. Stetson coded FCS (Pioneer Football League). Brevard start 2025 derived from 'second season ... in 2026'."
+ },
+ {
+  "name": "Baylee Ramey",
+  "program": "Brevard",
+  "current_title": "Strength and Conditioning/Assistant Linebackers",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/baylee-ramey/516",
+  "bio_quality": "thin",
+  "alma_mater": "Brevard College",
+  "stints": [
+   {"org": "Forbush High School", "level": "high school", "role": "Linebacker (player)", "start_year": 2020, "end_year": 2021, "as_player": true, "years_explicit": true, "evidence": "2021: All-Conference and All-State Linebacker at Forbush High School"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Linebacker (student-athlete)", "start_year": 2022, "end_year": 2025, "as_player": true, "years_explicit": true, "evidence": "2022–2025: Student Athlete at Brevard College"},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Assistant Linebackers Coach & Strength and Conditioning Coach", "start_year": 2026, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "2026–Present: Assistant Linebackers Coach & Strength and Conditioning Coach, Brevard College"}
+  ],
+  "notes": "Forbush HS years reflect only the stated honors seasons (2020, 2021)."
+ },
+ {
+  "name": "Colby Pasiut",
+  "program": "Brevard",
+  "current_title": "Manager of Football Data/Assistant Special Teams",
+  "bio_url": "https://bctornados.com/sports/football/roster/coaches/colby-pasiut/517",
+  "bio_quality": "full",
+  "alma_mater": "Alfred State College of Technology",
+  "stints": [
+   {"org": "Alfred University", "level": "NCAA D-III", "role": "Assistant Defensive Line/Specialists Coach, JV Defensive Line Coach", "start_year": 2022, "end_year": 2022, "as_player": false, "years_explicit": true, "evidence": "2022-23: Assistant Defensive Line/Specialists Coach, Junior Varsity Defensive Line Coach, Alfred University"},
+   {"org": "Alfred University", "level": "NCAA D-III", "role": "Safeties/Specialists Coach, JV Assistant Defensive Coordinator", "start_year": 2023, "end_year": 2024, "as_player": false, "years_explicit": true, "evidence": "2023-24: Safeties/Specialists Coach, Junior Varsity Assistant Defensive Coordinator, Alfred University"},
+   {"org": "Alfred State College", "level": "NCAA D-III", "role": "Men's lacrosse player (captain/flex)", "start_year": 2024, "end_year": 2025, "as_player": true, "years_explicit": true, "evidence": "2024: Captain/Flex Lacrosse player, Alfred State College"},
+   {"org": "Alfred State College", "level": "NCAA D-III", "role": "Men's lacrosse Offensive Coordinator", "start_year": 2026, "end_year": 2026, "as_player": false, "years_explicit": true, "evidence": "Pasiut served as the Offensive Coordinator for the Alfred State Men's Lacrosse program during the 2026 season."},
+   {"org": "Brevard College", "level": "NCAA D-III", "role": "Manager of Football Data/Assistant Special Teams Coordinator", "start_year": 2026, "end_year": null, "as_player": false, "years_explicit": false, "evidence": "Colby Pasiut joins the Brevard College Football program as an Assistant Football Coach"}
+  ],
+  "notes": "Alfred University academic-year labels coded as fall seasons (2022; 2023-2024; 'three seasons' total). Lacrosse roles are spring seasons (career table lists 2024 and 2025 as player). Brevard start year not stated; 2026 inferred from joining after the spring 2026 lacrosse season."
+ }
+]

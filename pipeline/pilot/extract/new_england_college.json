@@ -1,0 +1,418 @@
+[
+ {
+  "name": "Kevin Kelly",
+  "program": "New England College",
+  "current_title": "Head Football Coach",
+  "bio_url": "https://athletics.nec.edu/sports/football/roster/coaches/kevin-kelly/693",
+  "bio_quality": "full",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "New England College",
+    "level": "NCAA D-III",
+    "role": "Head Coach",
+    "start_year": 2023,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Kevin Kelly was announced as the head coach of the New England College football program in August of 2023."
+   },
+   {
+    "org": "Georgetown University",
+    "level": "NCAA D-I FCS",
+    "role": "Head Coach",
+    "start_year": 2006,
+    "end_year": 2013,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "head coach of Georgetown University, where he was named Patriot League Coach of the Year for 2011, from 2006–2013"
+   },
+   {
+    "org": "Marshall University",
+    "level": "NCAA D-I FCS",
+    "role": "Assistant coach (staff member)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "While with Marshall in 1996, the team won an FCS National Championship"
+   },
+   {
+    "org": "United States Naval Academy (Navy)",
+    "level": "NCAA D-I FBS",
+    "role": "Assistant coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "While at Navy, the program won three Commander-in-Chief trophies."
+   },
+   {
+    "org": "Dartmouth College",
+    "level": "NCAA D-I FCS",
+    "role": "Assistant coach (staff member)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Kelly was part of an Ivy League championship-winning staff at Dartmouth College."
+   },
+   {
+    "org": "Salve Regina University",
+    "level": "NCAA D-III",
+    "role": "Defensive Backs Coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Most recently, he served as defensive backs coach at Salve Regina University in Rhode Island."
+   },
+   {
+    "org": "XFL",
+    "level": "pro/semi-pro",
+    "role": "Coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "He has also coached in the XFL and with Bryant University and Ball State University."
+   },
+   {
+    "org": "Bryant University",
+    "level": "unknown",
+    "role": "Coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "He has also coached in the XFL and with Bryant University and Ball State University."
+   },
+   {
+    "org": "Ball State University",
+    "level": "NCAA D-I FBS",
+    "role": "Coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "He has also coached in the XFL and with Bryant University and Ball State University."
+   }
+  ],
+  "notes": "Marshall: only 1996 mentioned (I-AA/FCS title season); actual span unknown. Navy, Dartmouth, Salve Regina, XFL, Bryant, Ball State years not stated; Salve Regina was most recent stop before NEC. Bryant level unknown (D-II until 2008, FCS after; era not stated). Georgetown years as written (2006-2013). Alma mater not stated."
+ },
+ {
+  "name": "Greg Pepper",
+  "program": "New England College",
+  "current_title": "Assistant Head Coach / Offensive Line",
+  "bio_url": "https://athletics.nec.edu/sports/football/roster/coaches/greg-pepper/694",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "New England College",
+    "level": "NCAA D-III",
+    "role": "Assistant Head Coach / Offensive Line",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Assistant Head Coach / Offensive Line"
+   }
+  ],
+  "notes": "Bio page empty; only staff-table title available."
+ },
+ {
+  "name": "Drew Luongo",
+  "program": "New England College",
+  "current_title": "Offensive Coordinator/Quarterbacks",
+  "bio_url": "https://athletics.nec.edu/sports/football/roster/coaches/drew-luongo/695",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "New England College",
+    "level": "NCAA D-III",
+    "role": "Offensive Coordinator / Quarterbacks Coach",
+    "start_year": 2025,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Drew Luongo was hired as the Offensive Coordinator for the NEC Football team in 2025."
+   }
+  ],
+  "notes": "Bio describes only current role (hired 2025); no prior career info."
+ },
+ {
+  "name": "Matt Elsker",
+  "program": "New England College",
+  "current_title": "Defensive Coordinator/Linebackers",
+  "bio_url": "https://athletics.nec.edu/sports/football/roster/coaches/matt-elsker/696",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "New England College",
+    "level": "NCAA D-III",
+    "role": "Defensive Coordinator / Linebackers Coach",
+    "start_year": 2025,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Elsker was hired as the Defensive Coordinator for the NEC Football team in 2025."
+   }
+  ],
+  "notes": "Bio describes only current role (hired 2025); no prior career info."
+ },
+ {
+  "name": "John Rafail",
+  "program": "New England College",
+  "current_title": "Wide Receivers Coach",
+  "bio_url": "https://athletics.nec.edu/sports/football/roster/coaches/john-rafail/697",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "New England College",
+    "level": "NCAA D-III",
+    "role": "Wide Receivers Coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Wide Receivers Coach"
+   }
+  ],
+  "notes": "Bio page empty; only staff-table title available."
+ },
+ {
+  "name": "Matt Creed",
+  "program": "New England College",
+  "current_title": "Football Assistant Coach - Offensive Line",
+  "bio_url": "https://athletics.nec.edu/sports/football/roster/coaches/matt-creed/698",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "New England College",
+    "level": "NCAA D-III",
+    "role": "Football Assistant Coach - Offensive Line",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Football Assistant Coach - Offensive Line"
+   }
+  ],
+  "notes": "Bio page empty; only staff-table title available."
+ },
+ {
+  "name": "Noah Pearson",
+  "program": "New England College",
+  "current_title": "Football Assistant Coach - Defensive Line",
+  "bio_url": "https://athletics.nec.edu/sports/football/roster/coaches/noah-pearson/699",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "New England College",
+    "level": "NCAA D-III",
+    "role": "Football Assistant Coach - Defensive Line",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Football Assistant Coach - Defensive Line"
+   }
+  ],
+  "notes": "Bio page empty; only staff-table title available."
+ },
+ {
+  "name": "Dan Shanley",
+  "program": "New England College",
+  "current_title": "Football Assistant Coach - Running Backs",
+  "bio_url": "https://athletics.nec.edu/sports/football/roster/coaches/dan-shanley/700",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "New England College",
+    "level": "NCAA D-III",
+    "role": "Football Assistant Coach - Running Backs",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Football Assistant Coach - Running Backs"
+   }
+  ],
+  "notes": "Bio page empty; only staff-table title available."
+ },
+ {
+  "name": "Kayden Baillargeon",
+  "program": "New England College",
+  "current_title": "Football Assistant Coach - Defensive Backs",
+  "bio_url": "https://athletics.nec.edu/sports/football/roster/coaches/kayden-baillargeon/701",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "New England College",
+    "level": "NCAA D-III",
+    "role": "Football Assistant Coach - Defensive Backs",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Football Assistant Coach - Defensive Backs"
+   }
+  ],
+  "notes": "Bio page empty; only staff-table title available."
+ },
+ {
+  "name": "Jim Hendrix",
+  "program": "New England College",
+  "current_title": "Football Assistant Coach - Kickers",
+  "bio_url": "https://athletics.nec.edu/sports/football/roster/coaches/jim-hendrix/716",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "New England College",
+    "level": "NCAA D-III",
+    "role": "Football Assistant Coach - Kickers",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Football Assistant Coach - Kickers"
+   }
+  ],
+  "notes": "Bio page empty; only staff-table title available."
+ },
+ {
+  "name": "Savanna Butterfield",
+  "program": "New England College",
+  "current_title": "Director of Football Operations",
+  "bio_url": "https://athletics.nec.edu/sports/football/roster/coaches/savanna-butterfield/717",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "New England College",
+    "level": "NCAA D-III",
+    "role": "Director of Football Operations",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Director of Football Operations"
+   }
+  ],
+  "notes": "Non-coaching staff role. Bio page empty; only staff-table title available."
+ },
+ {
+  "name": "Justin Draper",
+  "program": "New England College",
+  "current_title": "Football Student Manager",
+  "bio_url": "https://athletics.nec.edu/sports/football/roster/coaches/justin-draper/712",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "New England College",
+    "level": "NCAA D-III",
+    "role": "Football Student Manager",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Football Student Manager"
+   }
+  ],
+  "notes": "Student manager (non-coaching). Bio page empty; only staff-table title available."
+ },
+ {
+  "name": "Will Sonia",
+  "program": "New England College",
+  "current_title": "Football Student Manager",
+  "bio_url": "https://athletics.nec.edu/sports/football/roster/coaches/will-sonia/713",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "New England College",
+    "level": "NCAA D-III",
+    "role": "Football Student Manager",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Football Student Manager"
+   }
+  ],
+  "notes": "Student manager (non-coaching). Bio page empty; only staff-table title available."
+ },
+ {
+  "name": "Griffin LaFountain",
+  "program": "New England College",
+  "current_title": "Football Student Manager",
+  "bio_url": "https://athletics.nec.edu/sports/football/roster/coaches/griffin-lafountain/711",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "New England College",
+    "level": "NCAA D-III",
+    "role": "Football Student Manager",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Football Student Manager"
+   }
+  ],
+  "notes": "Student manager (non-coaching). Bio page empty; only staff-table title available."
+ },
+ {
+  "name": "Desmond Hossfeld",
+  "program": "New England College",
+  "current_title": "Football Student Manager",
+  "bio_url": "https://athletics.nec.edu/sports/football/roster/coaches/desmond-hossfeld/714",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "New England College",
+    "level": "NCAA D-III",
+    "role": "Football Student Manager",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Football Student Manager"
+   }
+  ],
+  "notes": "Student manager (non-coaching). Bio page empty; only staff-table title available."
+ },
+ {
+  "name": "Andrew Trafton",
+  "program": "New England College",
+  "current_title": "Football Student Manager",
+  "bio_url": "https://athletics.nec.edu/sports/football/roster/coaches/andrew-trafton/715",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "New England College",
+    "level": "NCAA D-III",
+    "role": "Football Student Manager",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Football Student Manager"
+   }
+  ],
+  "notes": "Student manager (non-coaching). Bio page empty; only staff-table title available."
+ }
+]

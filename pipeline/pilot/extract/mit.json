@@ -1,0 +1,422 @@
+[
+ {
+  "name": "Brian Bubna",
+  "program": "MIT",
+  "current_title": "Head Coach",
+  "bio_url": "https://mitathletics.com/sports/football/roster/coaches/brian-bubna/1337",
+  "bio_quality": "full",
+  "alma_mater": "Hobart College",
+  "stints": [
+   {
+    "org": "Massachusetts Institute of Technology",
+    "level": "NCAA D-III",
+    "role": "Head Coach",
+    "start_year": 2018,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Bubna was appointed to the position on March 20, 2018"
+   },
+   {
+    "org": "Massachusetts Institute of Technology",
+    "level": "NCAA D-III",
+    "role": "Assistant coach (Defensive Coordinator, Recruiting Coordinator)",
+    "start_year": null,
+    "end_year": 2017,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "after serving on the coaching staff for nine seasons, including as the team's defensive coordinator and recruiting coordinator"
+   },
+   {
+    "org": "Maine Maritime Academy",
+    "level": "NCAA D-III",
+    "role": "Defensive Line Coach",
+    "start_year": 2009,
+    "end_year": 2009,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "coached the defensive line for a squad that won the 2009 NEFC championship"
+   },
+   {
+    "org": "Charlestown Townies",
+    "level": "other",
+    "role": "Volunteer coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Bubna started coaching football as a volunteer with the Charlestown Townies Amateur team."
+   },
+   {
+    "org": "Hobart College",
+    "level": "NCAA D-III",
+    "role": "Player (three-year letter winner)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "Bubna was a four-year member of the Hobart College football program and a three-year letter winner"
+   }
+  ],
+  "notes": "Assistant stint: 'nine seasons' before March 2018 appointment implies 2009-2017 but conflicts with stated one season at Maine Maritime (2009), so start left null (likely 2010); end 2017 derived. Also MIT varsity equipment manager (non-coaching). Charlestown Townies = amateur adult team (level 'other'). Hobart BA 2004 (playing years not stated); MS Northeastern 2016."
+ },
+ {
+  "name": "Tanner Kingsley",
+  "program": "MIT",
+  "current_title": "Assistant Coach (Offensive Coordinator / Quarterbacks)",
+  "bio_url": "https://mitathletics.com/sports/football/roster/coaches/tanner-kingsley/1371",
+  "bio_quality": "full",
+  "alma_mater": "Anna Maria College",
+  "stints": [
+   {
+    "org": "Massachusetts Institute of Technology",
+    "level": "NCAA D-III",
+    "role": "Assistant Coach (Offensive Coordinator / Quarterbacks)",
+    "start_year": 2026,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Tanner Kingsley is in his first season as an Assistant Coach with the MIT football program in 2026-27."
+   },
+   {
+    "org": "Anna Maria College",
+    "level": "NCAA D-III",
+    "role": "Head Coach",
+    "start_year": 2025,
+    "end_year": 2025,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Kingsley led the AMCats to a share of the 2025 MASCAC regular season championship"
+   },
+   {
+    "org": "Anna Maria College",
+    "level": "NCAA D-III",
+    "role": "Offensive Coordinator / Quarterbacks Coach",
+    "start_year": 2021,
+    "end_year": 2024,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "From 2021 to 2025 he tutored multiple standout quarterbacks at Anna Maria"
+   },
+   {
+    "org": "East Coast Prep",
+    "level": "other",
+    "role": "Player (quarterback)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "Kingsley played college football as a quarterback at East Coast Prep, Central Connecticut State and Anna Maria."
+   },
+   {
+    "org": "Central Connecticut State University",
+    "level": "NCAA D-I FCS",
+    "role": "Player (quarterback)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "Kingsley played college football as a quarterback at East Coast Prep, Central Connecticut State and Anna Maria."
+   },
+   {
+    "org": "Anna Maria College",
+    "level": "NCAA D-III",
+    "role": "Player (quarterback)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "Kingsley played college football as a quarterback at East Coast Prep, Central Connecticut State and Anna Maria."
+   },
+   {
+    "org": "Woodland Regional High School",
+    "level": "high school",
+    "role": "Player (three-sport all-state athlete)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "He attended Woodland Regional High School where he was a three-sport all-state athlete in baseball, basketball, and football."
+   }
+  ],
+  "notes": "HC: 2025 season stated; OC 'previous four years' from 2021 derived as 2021-2024, so HC began 2025 (derived); Anna Maria closed spring 2026. Playing order presumably East Coast Prep -> CCSU -> Anna Maria; years not stated (graduated Anna Maria 2020). East Coast Prep = postgrad prep program (level 'other'). Also Assistant Varsity Equipment Manager at MIT."
+ },
+ {
+  "name": "Andy Byron",
+  "program": "MIT",
+  "current_title": "Assistant Coach (Defensive Line)",
+  "bio_url": "https://mitathletics.com/sports/football/roster/coaches/andy-byron/1339",
+  "bio_quality": "full",
+  "alma_mater": "Springfield College",
+  "stints": [
+   {
+    "org": "Massachusetts Institute of Technology",
+    "level": "NCAA D-III",
+    "role": "Assistant Coach (Defensive Line)",
+    "start_year": 2018,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Andy Byron is in his ninth season as an assistant coach with the MIT football team in 2026"
+   },
+   {
+    "org": "Merrimack College",
+    "level": "NCAA D-II",
+    "role": "Linebackers Coach",
+    "start_year": 2017,
+    "end_year": 2017,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Byron came to MIT from Merrimack College (Mass.), where he was the linebackers coach for the 2017 season."
+   },
+   {
+    "org": "Maine Maritime Academy",
+    "level": "NCAA D-III",
+    "role": "Defensive Coordinator / Strength and Conditioning Coordinator",
+    "start_year": 2014,
+    "end_year": 2016,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "served as the defensive coordinator and strength and conditioning coordinator at Maine Maritime Academy from 2014-2017"
+   },
+   {
+    "org": "Springfield College",
+    "level": "NCAA D-III",
+    "role": "Assistant coach (defensive backs, outside linebackers, video coordinator)",
+    "start_year": 2011,
+    "end_year": 2013,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "He was also an assistant coach at Springfield College (Mass.) from 2011-2014"
+   },
+   {
+    "org": "Haverhill High School",
+    "level": "high school",
+    "role": "Quarterbacks / Outside Linebackers Coach",
+    "start_year": 2010,
+    "end_year": 2010,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "high school level in 2010 as he was the quarterbacks and outside linebackers coach at Haverhill High School"
+   }
+  ],
+  "notes": "MIT start 2018 derived from 'ninth season in 2026'. Maine Maritime '2014-2017' and Springfield '2011-2014' read as academic-year ranges and normalized to fall seasons 2014-2016 and 2011-2013 (Merrimack 2017 season follows). Merrimack was NCAA D-II in 2017 (moved to D-I FCS 2019). Springfield BS 2009, MEd 2013; playing career not stated. Also MIT sports performance assistant."
+ },
+ {
+  "name": "Al Pogarian",
+  "program": "MIT",
+  "current_title": "Assistant Coach (Tight Ends)",
+  "bio_url": "https://mitathletics.com/sports/football/roster/coaches/al-pogarian/1343",
+  "bio_quality": "full",
+  "alma_mater": "University of Massachusetts Amherst",
+  "stints": [
+   {
+    "org": "Massachusetts Institute of Technology",
+    "level": "NCAA D-III",
+    "role": "Assistant Coach: RB coach (2007), Offensive Coordinator (2008-09), Defensive Line (from 2010), Tight Ends (2026)",
+    "start_year": 2007,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Pogarian joined MIT in 2007 as the running backs coach."
+   },
+   {
+    "org": "Waltham High School",
+    "level": "high school",
+    "role": "Offensive Line Coach",
+    "start_year": 2001,
+    "end_year": 2006,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Pogarian was the offensive line coach and nearby Waltham High School from 2001-06"
+   },
+   {
+    "org": "Marist College",
+    "level": "unknown",
+    "role": "Offensive Line Coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Pogarian has held positions of offensive line coach at Marist College and Westfield State University"
+   },
+   {
+    "org": "Westfield State University",
+    "level": "NCAA D-III",
+    "role": "Offensive Line Coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Pogarian has held positions of offensive line coach at Marist College and Westfield State University"
+   },
+   {
+    "org": "Dean College",
+    "level": "unknown",
+    "role": "Offensive Coordinator",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "as well as the offensive coordinator at Dean College."
+   },
+   {
+    "org": "University of Massachusetts Amherst",
+    "level": "NCAA D-I FCS",
+    "role": "Player (center; four-year letter-winner)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "A 1991 graduate of the University of Massachusetts, Pogarian was a four-year letter-winner for the Minutemen."
+   }
+  ],
+  "notes": "MIT tenure since 2007 (20th season in 2026) kept as one stint with role changes. Marist, Westfield State, Dean College years not stated (likely before 2001). Marist and Dean levels left unknown because era not stated (Marist moved D-III to D-I-AA in the 1990s; Dean was a junior college before NCAA D-III). UMass was NCAA Division I-AA (now FCS) per bio; playing years not stated."
+ },
+ {
+  "name": "Devone Williams",
+  "program": "MIT",
+  "current_title": "Assistant Coach (Defensive Coordinator/Defensive Backs)",
+  "bio_url": "https://mitathletics.com/sports/football/roster/coaches/devone-williams/1344",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "Massachusetts Institute of Technology",
+    "level": "NCAA D-III",
+    "role": "Assistant Coach (Defensive Coordinator / Defensive Backs)",
+    "start_year": 2017,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Devone Williams is in his tenth season as an assistant coach at MIT in 2026."
+   }
+  ],
+  "notes": "Start 2017 derived from 'tenth season in 2026'. No prior career info."
+ },
+ {
+  "name": "Josh Angoff",
+  "program": "MIT",
+  "current_title": "Assistant Coach (Wide Receivers)",
+  "bio_url": "https://mitathletics.com/sports/football/roster/coaches/josh-angoff/1340",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "Massachusetts Institute of Technology",
+    "level": "NCAA D-III",
+    "role": "Assistant Coach (Wide Receivers)",
+    "start_year": 2021,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Josh Angoff enters his sixth year as an assistant coach with the MIT football program in 2026."
+   }
+  ],
+  "notes": "Start 2021 derived from 'sixth year in 2026'. No prior career info."
+ },
+ {
+  "name": "Darrin Pearson",
+  "program": "MIT",
+  "current_title": "Assistant Coach (Running Backs)",
+  "bio_url": "https://mitathletics.com/sports/football/roster/coaches/darrin-pearson/1341",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "Massachusetts Institute of Technology",
+    "level": "NCAA D-III",
+    "role": "Assistant Coach (Running Backs)",
+    "start_year": 2022,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Darrin Pearson enters his fifth season as an assistant coach with the MIT football program in 2026."
+   }
+  ],
+  "notes": "Start 2022 derived from 'fifth season in 2026'. No prior career info."
+ },
+ {
+  "name": "Tom Nalen",
+  "program": "MIT",
+  "current_title": "Assistant Coach (Offensive Line)",
+  "bio_url": "https://mitathletics.com/sports/football/roster/coaches/tom-nalen/1347",
+  "bio_quality": "thin",
+  "alma_mater": "Boston College",
+  "stints": [
+   {
+    "org": "Massachusetts Institute of Technology",
+    "level": "NCAA D-III",
+    "role": "Assistant Coach (Offensive Line)",
+    "start_year": 2023,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Tom Nalen is in his fourth season as MIT's offensive line coach in 2026."
+   },
+   {
+    "org": "Boston College",
+    "level": "NCAA D-I FBS",
+    "role": "Player (offensive lineman; three-year starter)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "Nalen was a three-year starting offensive lineman for the Eagles and a Third Team All-American"
+   },
+   {
+    "org": "Denver Broncos (NFL)",
+    "level": "pro/semi-pro",
+    "role": "Player (offensive lineman)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "drafted in the seventh round of the NFL Draft by the Denver Broncos"
+   }
+  ],
+  "notes": "MIT start 2023 derived from 'fourth season in 2026'. Retired from NFL in 2009 after a 15-year career (two-time Super Bowl champion, five-time Pro Bowl); season years not stated. No prior coaching stops listed."
+ },
+ {
+  "name": "Anthony Behonick",
+  "program": "MIT",
+  "current_title": "Assistant Coach (Linebackers)",
+  "bio_url": "https://mitathletics.com/sports/football/roster/coaches/anthony-behonick/1368",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "Massachusetts Institute of Technology",
+    "level": "NCAA D-III",
+    "role": "Assistant Coach (Linebackers)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Assistant Coach (Linebackers)"
+   }
+  ],
+  "notes": "Bio page empty; only staff-table title available."
+ },
+ {
+  "name": "Connor Murray",
+  "program": "MIT",
+  "current_title": "Assistant Coach",
+  "bio_url": "https://mitathletics.com/sports/football/roster/coaches/connor-murray/1367",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "Massachusetts Institute of Technology",
+    "level": "NCAA D-III",
+    "role": "Assistant Coach",
+    "start_year": 2025,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Connor Murray is in his first season with the MIT football program in 2025-26."
+   }
+  ],
+  "notes": "Bio apparently not updated for 2026; start 2025 from 'first season ... 2025-26'. No prior career info."
+ }
+]

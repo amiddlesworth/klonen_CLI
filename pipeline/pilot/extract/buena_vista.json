@@ -1,0 +1,521 @@
+[
+ {
+  "name": "Adrian Saterstad",
+  "program": "Buena Vista",
+  "current_title": "Offensive Line Coach",
+  "bio_url": "https://bvuathletics.com/sports/football/roster/coaches/adrian-saterstad/725",
+  "bio_quality": "full",
+  "alma_mater": "Finlandia University",
+  "stints": [
+   {
+    "org": "Buena Vista University",
+    "level": "NCAA D-III",
+    "role": "offensive line coach",
+    "start_year": 2026,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "begins his first season on the BVU football coaching staff in 2026 and will serve as the offensive line coach"
+   },
+   {
+    "org": "Michigan Technological University",
+    "level": "NCAA D-II",
+    "role": "assistant defensive line coach",
+    "start_year": 2025,
+    "end_year": 2025,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "spent the 2025 season as an assistant defensive line coach at Michigan Tech"
+   },
+   {
+    "org": "Finlandia University",
+    "level": "unknown",
+    "role": "offensive line coach and strength and conditioning coordinator",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Following graduation, he served as an offensive line coach and strength and conditioning coordinator at Finlandia."
+   },
+   {
+    "org": "Finlandia University",
+    "level": "unknown",
+    "role": "offensive lineman (four years)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "a 2019 graduate of Finlandia University and also played four years on the offensive line"
+   }
+  ],
+  "notes": "Finlandia coaching began after 2019 graduation; start/end not stated (2020-2024 unaccounted). Playing years not stated (2019 graduate, four years). Finlandia was an NCAA D-III school (closed 2023) but football program status uncertain, so level unknown. Quality 'full' is borderline: one explicitly dated prior stop plus Finlandia stints anchored by 2019 graduation."
+ },
+ {
+  "name": "Alonzo Davis",
+  "program": "Buena Vista",
+  "current_title": "Running Backs Coach",
+  "bio_url": "https://bvuathletics.com/sports/football/roster/coaches/alonzo-davis/724",
+  "bio_quality": "thin",
+  "alma_mater": "Buena Vista University",
+  "stints": [
+   {
+    "org": "Buena Vista University",
+    "level": "NCAA D-III",
+    "role": "running backs coach",
+    "start_year": 2025,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Alonzo Davis joined the football coaching staff in 2025 after a successful career as a Beaver student-athlete."
+   },
+   {
+    "org": "Buena Vista University",
+    "level": "NCAA D-III",
+    "role": "defensive lineman",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "During his playing days on the defensive line for BVU, Davis played in over 30 games"
+   }
+  ],
+  "notes": "Playing years not stated. Graduation not explicitly stated; alma mater inferred from BVU playing career. Bio does not name his coaching position; title from staff table (RB coach despite playing DL)."
+ },
+ {
+  "name": "Austin Bresnahan",
+  "program": "Buena Vista",
+  "current_title": "Linebackers Coach",
+  "bio_url": "https://bvuathletics.com/sports/football/roster/coaches/austin-bresnahan/722",
+  "bio_quality": "full",
+  "alma_mater": "Kalamazoo College",
+  "stints": [
+   {
+    "org": "Buena Vista University",
+    "level": "NCAA D-III",
+    "role": "assistant coach (linebackers)",
+    "start_year": 2024,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "During his first campaign in 2024, Bresnahan helped coach a pair of individuals"
+   },
+   {
+    "org": "Kalamazoo College",
+    "level": "NCAA D-III",
+    "role": "graduate assistant coach",
+    "start_year": 2022,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "became a graduate assistant coach for the program in 2022"
+   },
+   {
+    "org": "Kalamazoo College",
+    "level": "NCAA D-III",
+    "role": "linebacker",
+    "start_year": 2018,
+    "end_year": 2021,
+    "as_player": true,
+    "years_explicit": true,
+    "evidence": "Bresnahan was a four-year linebacker at Kalamazoo College (2018-21)"
+   }
+  ],
+  "notes": "Kalamazoo GA end year not stated (presumably through 2023, before BVU 2024). Master's from Western Michigan University (2024); no coaching role stated there."
+ },
+ {
+  "name": "Austin Dickinson",
+  "program": "Buena Vista",
+  "current_title": "Head Football Coach",
+  "bio_url": "https://bvuathletics.com/sports/football/roster/coaches/austin-dickinson/718",
+  "bio_quality": "full",
+  "alma_mater": "Buena Vista University",
+  "stints": [
+   {
+    "org": "Buena Vista University",
+    "level": "NCAA D-III",
+    "role": "head football coach",
+    "start_year": 2023,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "enters his fourth season as head football coach at his alma mater in the fall of 2026"
+   },
+   {
+    "org": "University of Wisconsin-Eau Claire",
+    "level": "NCAA D-III",
+    "role": "defensive coordinator",
+    "start_year": 2021,
+    "end_year": 2022,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "spent the previous two seasons as the defensive coordinator at the University of Wisconsin-Eau Claire"
+   },
+   {
+    "org": "Minnesota State University, Mankato",
+    "level": "NCAA D-II",
+    "role": "recruiting coordinator and defensive coach",
+    "start_year": 2018,
+    "end_year": 2019,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "spent two seasons as the recruiting coordinator and a defensive coach at Minnesota State University-Mankato"
+   },
+   {
+    "org": "University of North Dakota",
+    "level": "NCAA D-I FCS",
+    "role": "coach (role not stated)",
+    "start_year": 2017,
+    "end_year": 2017,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Dickinson spent one year at the University of North Dakota before landing at Minnesota State"
+   },
+   {
+    "org": "Buena Vista University",
+    "level": "NCAA D-III",
+    "role": "assistant coach; defensive line coach and recruiting coordinator (final three years)",
+    "start_year": 2012,
+    "end_year": 2016,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "returning to BVU in the spring of 2012 where he spent the next five years"
+   },
+   {
+    "org": "Minot State University",
+    "level": "NCAA D-II",
+    "role": "graduate assistant",
+    "start_year": 2010,
+    "end_year": 2011,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "spent two years as a graduate assistant at Minot State University"
+   },
+   {
+    "org": "Buena Vista University",
+    "level": "NCAA D-III",
+    "role": "player (four-year letterwinner, three-year starter)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "A 2010 graduate of Buena Vista, Dickinson was a four-year letterwinner for the Beavers and a three-year starter."
+   }
+  ],
+  "notes": "HC start 2023 derived from 'fourth season in fall 2026' / 'named head coach following the 2022 campaign'. UWEC 2021-22 derived from 'previous two seasons' (2020 fall season disrupted; hire may date to 2020). BVU assistant 2012-16 from 'spring of 2012... next five years'; UND 2017 and Mankato 2018-19 derived from sequence, consistent with stated 2019 Mankato season. Minot State GA 2010-11 derived (2010 grad, two years, back at BVU spring 2012). Playing years and position not stated."
+ },
+ {
+  "name": "Eric Hubbard",
+  "program": "Buena Vista",
+  "current_title": "Defensive Coordinator / DB's / Recruiting Coordinator",
+  "bio_url": "https://bvuathletics.com/sports/football/roster/coaches/eric-hubbard/721",
+  "bio_quality": "full",
+  "alma_mater": "University of Wisconsin-Stevens Point",
+  "stints": [
+   {
+    "org": "Buena Vista University",
+    "level": "NCAA D-III",
+    "role": "football staff (2023, role not stated); defensive coordinator / defensive backs (2024-); recruiting coordinator",
+    "start_year": 2023,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Eric Hubbard begins his fourth season on the football staff in 2026."
+   },
+   {
+    "org": "Michigan Technological University",
+    "level": "NCAA D-II",
+    "role": "linebackers coach",
+    "start_year": 2022,
+    "end_year": 2022,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "spending the 2022 season at Michigan Tech University where he also coached the linebackers"
+   },
+   {
+    "org": "St. Norbert College",
+    "level": "NCAA D-III",
+    "role": "linebackers coach",
+    "start_year": 2019,
+    "end_year": 2021,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "From 2019 to 2021, Hubbard coached linebackers at St. Norbert College."
+   },
+   {
+    "org": "McKendree University",
+    "level": "NCAA D-II",
+    "role": "linebackers coach",
+    "start_year": 2018,
+    "end_year": 2018,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "coaching linebackers at both Mckendree University (2018) and Northern Illinois (2017)"
+   },
+   {
+    "org": "Northern Illinois University",
+    "level": "NCAA D-I FBS",
+    "role": "linebackers coach",
+    "start_year": 2017,
+    "end_year": 2017,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "coaching linebackers at both Mckendree University (2018) and Northern Illinois (2017)"
+   },
+   {
+    "org": "Middleton High School",
+    "level": "high school",
+    "role": "freshman football coach; defensive coordinator (final two years)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "three seasons coaching freshman football at Middleton High School with his final two years as defensive coordinator"
+   }
+  ],
+  "notes": "BVU start 2023 derived from 'fourth season in 2026'; DC since 2024 (explicit). Middleton High School years and state not stated. NIU 2017 coincides with his NIU master's (2017). B.S. UW-Stevens Point 2012; no playing career stated."
+ },
+ {
+  "name": "Jacob Kriewald",
+  "program": "Buena Vista",
+  "current_title": "Assistant Coach, Offensive Line & Tight Ends",
+  "bio_url": "https://bvuathletics.com/sports/football/roster/coaches/jacob-kriewald/804",
+  "bio_quality": "thin",
+  "alma_mater": "Buena Vista University",
+  "stints": [
+   {
+    "org": "Buena Vista University",
+    "level": "NCAA D-III",
+    "role": "assistant coach, offensive line & tight ends",
+    "start_year": 2026,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "begins his first season as an assistant football coach at Buena Vista University in the fall of 2026"
+   },
+   {
+    "org": "Buena Vista University",
+    "level": "NCAA D-III",
+    "role": "student coach",
+    "start_year": 2025,
+    "end_year": 2025,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "gaining valuable experience as a student coach during his senior year"
+   },
+   {
+    "org": "Buena Vista University",
+    "level": "NCAA D-III",
+    "role": "player (transfer)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "After transferring to BVU, Kriewald continued his playing career with the Beaver"
+   },
+   {
+    "org": "Doane University",
+    "level": "NAIA",
+    "role": "player (two seasons)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "began his collegiate playing career at Doane University, where he competed for two seasons"
+   }
+  ],
+  "notes": "Student-coach season 2025 derived from 2026 graduation (senior year = fall 2025). Playing years and position not stated."
+ },
+ {
+  "name": "Michael Sullivan",
+  "program": "Buena Vista",
+  "current_title": "Wide Receivers Coach",
+  "bio_url": "https://bvuathletics.com/sports/football/roster/coaches/michael-sullivan/720",
+  "bio_quality": "full",
+  "alma_mater": "Buena Vista University",
+  "stints": [
+   {
+    "org": "Buena Vista University",
+    "level": "NCAA D-III",
+    "role": "wide receivers coach",
+    "start_year": 2023,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "joined the Beaver football coaching staff in the fall of 2023"
+   },
+   {
+    "org": "Storm Lake High School",
+    "level": "high school",
+    "role": "assistant varsity football coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Sullivan also served as an assistant coach for the Tornado varsity football team"
+   },
+   {
+    "org": "Buena Vista University",
+    "level": "NCAA D-III",
+    "role": "wide receiver",
+    "start_year": 2001,
+    "end_year": 2004,
+    "as_player": true,
+    "years_explicit": true,
+    "evidence": "he was a stand-out receiver himself for BVU from 2001-04"
+   }
+  ],
+  "notes": "Storm Lake coaching occurred during an eight-year stint in the Storm Lake Community School District ending 2023 (bio also says he returned to Storm Lake in 2013); coaching years not stated. School name inferred from 'Tornado varsity football team' in Storm Lake CSD. Non-coaching roles excluded: elementary principal/assistant principal/teacher (Storm Lake), teaching in Arizona, Illinois, Connecticut, eastern Iowa. Quality 'full' borderline (HS stop only loosely dated)."
+ },
+ {
+  "name": "Neil Phipps",
+  "program": "Buena Vista",
+  "current_title": "Assistant Football Coach",
+  "bio_url": "https://bvuathletics.com/sports/football/roster/coaches/neil-phipps/723",
+  "bio_quality": "full",
+  "alma_mater": "University of Northern Iowa",
+  "stints": [
+   {
+    "org": "Buena Vista University",
+    "level": "NCAA D-III",
+    "role": "assistant coach (defensive line)",
+    "start_year": 2024,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Neil Phipps is in his third season in 2026 as an assistant coach for the Buena Vista University football team"
+   },
+   {
+    "org": "Northern University High School",
+    "level": "high school",
+    "role": "coach and teacher",
+    "start_year": null,
+    "end_year": 2002,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "following coaching and teaching stops at Holstein, Terril, Aurelia, and Northern University High School"
+   },
+   {
+    "org": "Aurelia, Iowa high school (school not named)",
+    "level": "high school",
+    "role": "football coach (1986 state runner-up team)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "his 1986 state runner-up Aurelia Bulldog football team"
+   },
+   {
+    "org": "Terril, Iowa school (not named)",
+    "level": "high school",
+    "role": "coach and teacher",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "following coaching and teaching stops at Holstein, Terril, Aurelia, and Northern University High School"
+   },
+   {
+    "org": "Holstein, Iowa school (not named)",
+    "level": "high school",
+    "role": "coach and teacher",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "following coaching and teaching stops at Holstein, Terril, Aurelia, and Northern University High School"
+   },
+   {
+    "org": "University of Northern Iowa",
+    "level": "NCAA D-II",
+    "role": "player (team captain)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "attend the University of Northern Iowa where he played football and served as a team captain"
+   }
+  ],
+  "notes": "BVU start 2024 derived from 'third season in 2026'. HS stops listed (order as in bio, likely chronological) with no years except Aurelia team in 1986 and NU High through 2002 (end derived from return to hometown in 2002). Returned to hometown Cherokee, Iowa in 2002 (school/role not stated; not recorded as a stint); retired 2017 after 39 years as coach/AD/teacher/administrator. Iowa HS levels assumed from 'Hall of Fame High School coach'. UNI was NCAA D-II in the 1975 'Mud Bowl' era; playing years not stated. Graduation from UNI not stated."
+ },
+ {
+  "name": "Tom Rethman",
+  "program": "Buena Vista",
+  "current_title": "Offensive Coordinator / QB's",
+  "bio_url": "https://bvuathletics.com/sports/football/roster/coaches/tom-rethman/717",
+  "bio_quality": "full",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "Buena Vista University",
+    "level": "NCAA D-III",
+    "role": "part-time assistant; running backs coach (2022-23); offensive coordinator / quarterbacks (2024-)",
+    "start_year": 2022,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "joined the Buena Vista football coaching staff in the fall of 2022 as a part-time assistant coach"
+   },
+   {
+    "org": "Briar Cliff University",
+    "level": "NAIA",
+    "role": "head football coach",
+    "start_year": 2008,
+    "end_year": 2016,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "spent nine seasons as head football coach at Briar Cliff University in Sioux City (2008-16)"
+   },
+   {
+    "org": "University of Wisconsin-Oshkosh",
+    "level": "NCAA D-III",
+    "role": "offensive coordinator",
+    "start_year": 2001,
+    "end_year": 2007,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "after serving as offensive coordinator for seven seasons at UW-Oshkosh"
+   },
+   {
+    "org": "Knox College",
+    "level": "NCAA D-III",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "also had coaching stints at Knox College, Southern Illinois University, Illinois State University and Carroll University"
+   },
+   {
+    "org": "Southern Illinois University",
+    "level": "NCAA D-I FCS",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "also had coaching stints at Knox College, Southern Illinois University, Illinois State University and Carroll University"
+   },
+   {
+    "org": "Illinois State University",
+    "level": "NCAA D-I FCS",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "also had coaching stints at Knox College, Southern Illinois University, Illinois State University and Carroll University"
+   },
+   {
+    "org": "Carroll University",
+    "level": "NCAA D-III",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "also had coaching stints at Knox College, Southern Illinois University, Illinois State University and Carroll University"
+   }
+  ],
+  "notes": "UW-Oshkosh 2001-07 derived assuming the seven seasons immediately preceded Briar Cliff (2008). Knox, SIU, Illinois State, Carroll: years, roles and order not stated. No playing career or alma mater stated."
+ }
+]

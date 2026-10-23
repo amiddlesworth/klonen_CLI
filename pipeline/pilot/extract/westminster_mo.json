@@ -1,0 +1,442 @@
+[
+ {
+  "name": "AJ Jackson",
+  "program": "Westminster (MO)",
+  "current_title": "Assistant Defensive Backs Coach",
+  "bio_url": "https://wcbluejays.wcmo.edu/sports/football/roster/coaches/aj-jackson/364",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "Westminster College (Missouri)",
+    "level": "NCAA D-III",
+    "role": "Assistant Defensive Backs Coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Assistant Defensive Backs Coach"
+   }
+  ],
+  "notes": "Bio page has no text; current stint from staff-table title only."
+ },
+ {
+  "name": "Dana Chambers",
+  "program": "Westminster (MO)",
+  "current_title": "Linebackers Coach",
+  "bio_url": "https://wcbluejays.wcmo.edu/sports/football/roster/coaches/dana-chambers/330",
+  "bio_quality": "full",
+  "alma_mater": "Lincoln University (Missouri)",
+  "stints": [
+   {
+    "org": "Westminster College (Missouri)",
+    "level": "NCAA D-III",
+    "role": "linebackers coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Dana Chambers enters his second season with the Blue Jays as linebackers coach"
+   },
+   {
+    "org": "Fulton High School",
+    "level": "high school",
+    "role": "head football coach",
+    "start_year": 2021,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "In 2021, Chambers became the head football coach at Fulton High School"
+   },
+   {
+    "org": "Hickman High School",
+    "level": "high school",
+    "role": "assistant coach (linebackers); defensive coordinator (2018-2021)",
+    "start_year": 2012,
+    "end_year": 2021,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "In 2012, he returned to Missouri to join the staff at Hickman High School"
+   },
+   {
+    "org": "Kalamazoo Central High School",
+    "level": "high school",
+    "role": "linebackers, wide receivers and running backs coach; defensive coordinator",
+    "start_year": 2010,
+    "end_year": 2011,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Chambers began his coaching career in 2010 at Kalamazoo Central High School"
+   },
+   {
+    "org": "Lincoln University (Missouri)",
+    "level": "NCAA D-II",
+    "role": "player (three seasons)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "A 2008 graduate of Lincoln University... playing three seasons of football for the Blue Tigers"
+   }
+  ],
+  "notes": "Westminster start year not stated ('enters his second season', no reference year). Fulton HC end not stated; 2021 overlaps Hickman DC 'through 2021'. Kalamazoo Central end 2011 derived from 2012 move. Lincoln identified as Lincoln University of Missouri from 'Blue Tigers'; playing years not stated (2008 graduate)."
+ },
+ {
+  "name": "Donnevan Plummer",
+  "program": "Westminster (MO)",
+  "current_title": "Assistant Defensive Line Coach",
+  "bio_url": "https://wcbluejays.wcmo.edu/sports/football/roster/coaches/donnevan-plummer/332",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "Westminster College (Missouri)",
+    "level": "NCAA D-III",
+    "role": "Assistant Defensive Line Coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Assistant Defensive Line Coach"
+   }
+  ],
+  "notes": "Bio page has no text; current stint from staff-table title only."
+ },
+ {
+  "name": "Dr. Matt Irvin",
+  "program": "Westminster (MO)",
+  "current_title": "Offensive Line Coach",
+  "bio_url": "https://wcbluejays.wcmo.edu/sports/football/roster/coaches/dr-matt-irvin/334",
+  "bio_quality": "thin",
+  "alma_mater": "Missouri State University",
+  "stints": [
+   {
+    "org": "Westminster College (Missouri)",
+    "level": "NCAA D-III",
+    "role": "offensive line coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Serving as the Blue Jays' Offensive Line Coach"
+   },
+   {
+    "org": "Mary Institute and Country Day School (MICDS)",
+    "level": "high school",
+    "role": "head coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Most recently, he served as the head coach at MICDS in St. Louis"
+   },
+   {
+    "org": "Washington University in St. Louis",
+    "level": "NCAA D-III",
+    "role": "tight ends coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "after serving as the Tight Ends Coach at Washington University in St. Louis"
+   },
+   {
+    "org": "Kirkwood High School",
+    "level": "high school",
+    "role": "head coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "At Kirkwood High School, he engineered a powerhouse program that went 54-9"
+   },
+   {
+    "org": "New Trier High School",
+    "level": "high school",
+    "role": "head coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "He also led highly successful programs at New Trier High School in Illinois"
+   },
+   {
+    "org": "Missouri State University",
+    "level": "NCAA D-I FCS",
+    "role": "offensive lineman (four-year letterman, captain)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "a four-year letterman and captain of the football team at Missouri State University"
+   }
+  ],
+  "notes": "No years for any stop; 'over three decades' experience; MICDS (most recent) followed WashU TE coach; order of Kirkwood/New Trier unknown. HS head-coach record 103-27. Missouri State was D-I-AA (Gateway). Graduation not stated; doctorate in education (school not stated). Non-coaching excluded: principal at Webster Groves High School. Westminster start not stated."
+ },
+ {
+  "name": "Jakari Hunnecook",
+  "program": "Westminster (MO)",
+  "current_title": "Wide Receivers Coach",
+  "bio_url": "https://wcbluejays.wcmo.edu/sports/football/roster/coaches/jakari-hunnecook/335",
+  "bio_quality": "thin",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "Westminster College (Missouri)",
+    "level": "NCAA D-III",
+    "role": "wide receivers coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Jakari Hunnecook joins Westminster as the Wide Receivers Coach"
+   },
+   {
+    "org": "Unnamed UMAC program",
+    "level": "NCAA D-III",
+    "role": "player",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "A former standout player in the UMAC Conference, Hunnecook was part of a conference championship team in 2025"
+   }
+  ],
+  "notes": "College not named; played on a 2025 UMAC conference championship team (UMAC is NCAA D-III). Position and years not stated. Westminster start not stated (likely 2026)."
+ },
+ {
+  "name": "Jantzen Bradford",
+  "program": "Westminster (MO)",
+  "current_title": "Head Strength and Conditioning Coach / Quarterbacks Coach",
+  "bio_url": "https://wcbluejays.wcmo.edu/sports/football/roster/coaches/jantzen-bradford/365",
+  "bio_quality": "thin",
+  "alma_mater": "Westminster College (Missouri)",
+  "stints": [
+   {
+    "org": "Westminster College (Missouri)",
+    "level": "NCAA D-III",
+    "role": "head strength and conditioning coach / quarterbacks coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Jantzen Bradford joins Westminster College"
+   },
+   {
+    "org": "Westminster College (Missouri)",
+    "level": "NCAA D-III",
+    "role": "defensive line coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "He later returned as Defensive Line Coach"
+   },
+   {
+    "org": "Westminster College (Missouri)",
+    "level": "NCAA D-III",
+    "role": "running backs coach and director of football strength and conditioning",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "previously served as the Blue Jays' Running Backs Coach while directing the football program's strength and conditioning efforts"
+   },
+   {
+    "org": "Fulton High School",
+    "level": "high school",
+    "role": "head strength and conditioning coach (also coordinated offenses)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Bradford has served as Head Strength and Conditioning Coach at Fulton High School and North Callaway High School"
+   },
+   {
+    "org": "North Callaway High School",
+    "level": "high school",
+    "role": "head strength and conditioning coach (also coordinated offenses)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Bradford has served as Head Strength and Conditioning Coach at Fulton High School and North Callaway High School"
+   },
+   {
+    "org": "Rock Bridge High School",
+    "level": "high school",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "He has also coached at Rock Bridge High School"
+   },
+   {
+    "org": "University of Missouri",
+    "level": "NCAA D-I FBS",
+    "role": "strength and conditioning intern",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "completed a Division I strength and conditioning internship at the University of Missouri"
+   }
+  ],
+  "notes": "No years for any stop; order unclear. Two earlier Westminster stints (RB coach/S&C, then DL coach). 'More than a decade' of experience. Non-coaching excluded: adjunct professor at William Woods University. Master's from Logan University. No playing career stated."
+ },
+ {
+  "name": "Kaden Olson",
+  "program": "Westminster (MO)",
+  "current_title": "Tight Ends Coach",
+  "bio_url": "https://wcbluejays.wcmo.edu/sports/football/roster/coaches/kaden-olson/363",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "Westminster College (Missouri)",
+    "level": "NCAA D-III",
+    "role": "Tight Ends Coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Tight Ends Coach"
+   }
+  ],
+  "notes": "Bio page has no text; current stint from staff-table title only."
+ },
+ {
+  "name": "Luke Butts",
+  "program": "Westminster (MO)",
+  "current_title": "Head Football Coach",
+  "bio_url": "https://wcbluejays.wcmo.edu/sports/football/roster/coaches/luke-butts/325",
+  "bio_quality": "full",
+  "alma_mater": "Lake Forest College",
+  "stints": [
+   {
+    "org": "Westminster College (Missouri)",
+    "level": "NCAA D-III",
+    "role": "head football coach",
+    "start_year": 2024,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "named the leader of the Blue Jays football program in 2024"
+   },
+   {
+    "org": "Lake Forest College",
+    "level": "NCAA D-III",
+    "role": "assistant; defensive coordinator (7 seasons), linebackers (6), associate head coach, recruiting/academic/special teams coordinator, cornerbacks",
+    "start_year": 2013,
+    "end_year": 2023,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "returning to Lake Forest as a full-time assistant coach in 2013... In 2023, Butts directed a defense"
+   },
+   {
+    "org": "Lindsey Wilson College",
+    "level": "NAIA",
+    "role": "outside linebackers coach",
+    "start_year": 2012,
+    "end_year": 2012,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Butts spent one season coaching outside linebackers at Lindsey Wilson College."
+   }
+  ],
+  "notes": "Lake Forest = 11 seasons, 2013-2023 (2023 defense explicitly referenced). Lindsey Wilson 2012 derived from 'one season' before 2013. Lake Forest is his alma mater ('returning'), but no playing career stated."
+ },
+ {
+  "name": "Trace Helsel",
+  "program": "Westminster (MO)",
+  "current_title": "Assistant Football Coach",
+  "bio_url": "https://wcbluejays.wcmo.edu/sports/football/roster/coaches/trace-helsel/366",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "Westminster College (Missouri)",
+    "level": "NCAA D-III",
+    "role": "Assistant Football Coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Assistant Football Coach"
+   }
+  ],
+  "notes": "Bio page has no text; current stint from staff-table title only."
+ },
+ {
+  "name": "Will Koustmer",
+  "program": "Westminster (MO)",
+  "current_title": "Defensive Line Coach - Special Teams Coordinator",
+  "bio_url": "https://wcbluejays.wcmo.edu/sports/football/roster/coaches/will-koustmer/326",
+  "bio_quality": "thin",
+  "alma_mater": "DePauw University",
+  "stints": [
+   {
+    "org": "Westminster College (Missouri)",
+    "level": "NCAA D-III",
+    "role": "defensive line coach, special teams coordinator, recruiting coordinator",
+    "start_year": 2024,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Will Koustmer is entering his third season with the Blue Jays in 2026"
+   },
+   {
+    "org": "Houston Christian University",
+    "level": "NCAA D-I FCS",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "previously coached at Houston Christian University, Towson University, Tabor College"
+   },
+   {
+    "org": "Towson University",
+    "level": "NCAA D-I FCS",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "previously coached at Houston Christian University, Towson University, Tabor College"
+   },
+   {
+    "org": "Tabor College",
+    "level": "NAIA",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "previously coached at Houston Christian University, Towson University, Tabor College"
+   },
+   {
+    "org": "Hughes High School (Cincinnati, OH)",
+    "level": "high school",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Hughes High School in Cincinnati, OH and St. Xavier High School in Cincinnati, OH"
+   },
+   {
+    "org": "St. Xavier High School (Cincinnati, OH)",
+    "level": "high school",
+    "role": "coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Hughes High School in Cincinnati, OH and St. Xavier High School in Cincinnati, OH"
+   }
+  ],
+  "notes": "Westminster start 2024 derived from 'third season in 2026'. No years/roles for prior stops; order unknown. Has coached DL, LB, secondary, OL, RB and held scouting/recruiting/S&C roles (schools unspecified). DePauw graduate; no playing career stated."
+ }
+]

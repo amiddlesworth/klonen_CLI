@@ -1,0 +1,168 @@
+[
+ {
+  "name": "Mark Raymond",
+  "program": "Williams",
+  "current_title": "Head Coach",
+  "bio_url": "https://ephsports.williams.edu/sports/football/roster/coaches/mark-raymond/1096",
+  "bio_quality": "full",
+  "alma_mater": "University at Buffalo (bachelor's 1993); St. Lawrence University (master's)",
+  "stints": [
+   {"org": "University at Buffalo", "level": "unknown", "role": "Player (three-year starter; captain 1992)", "start_year": null, "end_year": 1992, "as_player": true, "years_explicit": false, "evidence": "Raymond was a three-year starter and team captain (1992) at the University at Buffalo"},
+   {"org": "St. Lawrence University", "level": "NCAA D-III", "role": "Assistant Coach (linebackers, defensive ends, wide receivers; recruiting coordinator)", "start_year": 1993, "end_year": 1995, "as_player": false, "years_explicit": true, "evidence": "served as an Assistant Coach for three years (August 1993-May 1996)"},
+   {"org": "Syracuse University", "level": "NCAA D-I FBS", "role": "Graduate Assistant Coach and Head Strength Coach", "start_year": 1996, "end_year": 1997, "as_player": false, "years_explicit": false, "evidence": "He spent two years at Syracuse University as a Graduate Assistant Coach and Head Strength Coach"},
+   {"org": "SUNY Canton", "level": "unknown", "role": "Associate Head Coach", "start_year": 1998, "end_year": 1998, "as_player": false, "years_explicit": true, "evidence": "before taking an Associate Head Coaching position at SUNY Canton in 1998"},
+   {"org": "Ithaca College", "level": "NCAA D-III", "role": "Defensive Coordinator", "start_year": 1999, "end_year": 2005, "as_player": false, "years_explicit": false, "evidence": "Then in 1999, he moved to Ithaca College, spending seven years as Defensive Coordinator."},
+   {"org": "St. Lawrence University", "level": "NCAA D-III", "role": "Head Coach", "start_year": 2010, "end_year": 2015, "as_player": false, "years_explicit": true, "evidence": "St. Lawrence (2010-15)"},
+   {"org": "Williams College", "level": "NCAA D-III", "role": "Head Coach", "start_year": 2016, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "He was named head coach on Feb. 24, 2016."}
+  ],
+  "notes": "St. Lawrence assistant 'August 1993-May 1996' coded as 1993-1995 seasons. Syracuse 1996-1997 derived (two years before 1998 SUNY Canton). Ithaca end 2005 derived from 'seven years' from 1999. Buffalo playing years: lettered three years, captain 1992; UB's division then not certain (coded unknown). SUNY Canton football level unknown. U.S. Secret Service Special Agent 2007-10 (non-football, not a stint); 2006 unaccounted. No 2020 season (COVID)."
+ },
+ {
+  "name": "Mark McDonough",
+  "program": "Williams",
+  "current_title": "Defensive Coordinator / Defensive Backs",
+  "bio_url": "https://ephsports.williams.edu/sports/football/roster/coaches/mark-mcdonough/1099",
+  "bio_quality": "full",
+  "alma_mater": "Ithaca College (B.S. 2002); Springfield College (M.S. 2014)",
+  "stints": [
+   {"org": "Ithaca College", "level": "NCAA D-III", "role": "Linebacker (player)", "start_year": null, "end_year": null, "as_player": true, "years_explicit": false, "evidence": "McDonough played linebacker at Ithaca College and earned Third-Team All-American honors."},
+   {"org": "Springfield College", "level": "NCAA D-III", "role": "Inside Linebackers Coach", "start_year": 2003, "end_year": 2004, "as_player": false, "years_explicit": true, "evidence": "McDonough's first intercollegiate coaching opportunity was at Springfield College from 2003-04"},
+   {"org": "College of the Holy Cross", "level": "NCAA D-I FCS", "role": "Inside/Outside Linebackers Coach, Special Teams, Film/Video Coordinator", "start_year": 2005, "end_year": 2011, "as_player": false, "years_explicit": true, "evidence": "He then joined the staff at Holy Cross and spent seven seasons (2005-11) with the Crusaders"},
+   {"org": "Ithaca College", "level": "NCAA D-III", "role": "Defensive Coordinator/Linebackers Coach (interim head coach for four games in 2012)", "start_year": 2011, "end_year": 2016, "as_player": false, "years_explicit": true, "evidence": "McDonough spent six seasons coaching at Ithaca College (2011-16), serving as the defensive coordinator and linebackers coach"},
+   {"org": "USA Football (U.S. national team)", "level": "other", "role": "Linebackers Coach (2014 World Championships)", "start_year": 2014, "end_year": 2014, "as_player": false, "years_explicit": true, "evidence": "McDonough was the linebackers coach for the USA Football team that won the gold medal at the 2014 World Championships"},
+   {"org": "Williams College", "level": "NCAA D-III", "role": "Defensive Coordinator/Defensive Backs Coach", "start_year": 2017, "end_year": null, "as_player": false, "years_explicit": false, "evidence": "enters his 10th year as the defensive coordinator and defensive backs coach for the Williams College football team in 2026"}
+  ],
+  "notes": "Holy Cross 'seven seasons (2005-11)' overlaps Ithaca 2011-16 at 2011 (ranges kept as stated). Ithaca playing years not stated (played in 2001 Aztec Bowl; graduated 2002). Williams start 2017 derived from '10th year ... in 2026'."
+ },
+ {
+  "name": "Nick Hennessey",
+  "program": "Williams",
+  "current_title": "Offensive Coordinator",
+  "bio_url": "https://ephsports.williams.edu/sports/football/roster/coaches/nick-hennessey/1098",
+  "bio_quality": "full",
+  "alma_mater": "Colgate University (B.A. 2010); Western Michigan University (master's 2016)",
+  "stints": [
+   {"org": "Colgate University", "level": "NCAA D-I FCS", "role": "Offensive tackle (player)", "start_year": null, "end_year": null, "as_player": true, "years_explicit": false, "evidence": "Hennessey was an All-American offensive tackle at Colgate University before embarking on a professional career."},
+   {"org": "Buffalo Bills", "level": "pro/semi-pro", "role": "Player", "start_year": null, "end_year": null, "as_player": true, "years_explicit": false, "evidence": "A veteran of the NFL (Buffalo Bills), the United Football League (Omaha Nighthawks) and the Canadian Football League"},
+   {"org": "Omaha Nighthawks (UFL)", "level": "pro/semi-pro", "role": "Player", "start_year": null, "end_year": null, "as_player": true, "years_explicit": false, "evidence": "A veteran of the NFL (Buffalo Bills), the United Football League (Omaha Nighthawks) and the Canadian Football League"},
+   {"org": "Hamilton Tiger-Cats (CFL)", "level": "pro/semi-pro", "role": "Player", "start_year": null, "end_year": null, "as_player": true, "years_explicit": false, "evidence": "the Canadian Football League (Hamilton Tiger-Cats/British Columbia Lions)"},
+   {"org": "BC Lions (CFL)", "level": "pro/semi-pro", "role": "Player", "start_year": null, "end_year": null, "as_player": true, "years_explicit": false, "evidence": "the Canadian Football League (Hamilton Tiger-Cats/British Columbia Lions)"},
+   {"org": "St. Lawrence University", "level": "NCAA D-III", "role": "Offensive Line Coach, then Running Backs Coach", "start_year": 2010, "end_year": 2013, "as_player": false, "years_explicit": true, "evidence": "His college coaching career began as the offensive line coach then the running backs coach at St. Lawrence University (2010-13)"},
+   {"org": "Western Michigan University", "level": "NCAA D-I FBS", "role": "Assistant (role not stated)", "start_year": 2014, "end_year": 2015, "as_player": false, "years_explicit": true, "evidence": "followed by stints at Western Michigan University (2014-15)"},
+   {"org": "John Carroll University", "level": "NCAA D-III", "role": "Assistant (role not stated)", "start_year": 2016, "end_year": 2016, "as_player": false, "years_explicit": true, "evidence": "John Carroll University (2016)"},
+   {"org": "University of Tennessee at Chattanooga", "level": "NCAA D-I FCS", "role": "Assistant (role not stated)", "start_year": 2017, "end_year": 2018, "as_player": false, "years_explicit": true, "evidence": "the University of Tennessee at Chattanooga (2017-18)"},
+   {"org": "Williams College", "level": "NCAA D-III", "role": "Running Backs and Tight Ends Coach", "start_year": 2019, "end_year": 2020, "as_player": false, "years_explicit": false, "evidence": "Hennessey joined head coach Mark Raymond’s staff in May 2019"},
+   {"org": "Williams College", "level": "NCAA D-III", "role": "Offensive Coordinator", "start_year": 2021, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "He serves as the offensivec oordinator, a role he was promoted to in February 2021."}
+  ],
+  "notes": "Pro playing career (NFL Bills, UFL Omaha, CFL Hamilton/BC) undated; may overlap early St. Lawrence coaching years. Roles at Western Michigan, John Carroll and Chattanooga not stated. Williams RB/TE role from May 2019 until OC promotion in Feb 2021 (no 2020 season; end 2020 derived)."
+ },
+ {
+  "name": "Ramon Mignott",
+  "program": "Williams",
+  "current_title": "Linebackers Coach / Special Teams Coordinator / Assistant Recruiting Coordinator",
+  "bio_url": "https://ephsports.williams.edu/sports/football/roster/coaches/ramon-mignott/1097",
+  "bio_quality": "thin",
+  "alma_mater": "St. Lawrence University (2012)",
+  "stints": [
+   {"org": "St. Lawrence University", "level": "NCAA D-III", "role": "Running back (3 years), outside linebacker (senior) (player)", "start_year": 2008, "end_year": 2011, "as_player": true, "years_explicit": false, "evidence": "A four-year letterman at St. Lawrence, Mignott played two years under Raymond (2010-11)."},
+   {"org": "Unnamed high school (Bridgeport, Connecticut)", "level": "high school", "role": "High school football coach", "start_year": null, "end_year": null, "as_player": false, "years_explicit": false, "evidence": "Mignott went back to his hometown of Bridgeport, Connecticut, where he coached high school football for three years"},
+   {"org": "St. Lawrence University", "level": "NCAA D-III", "role": "Assistant coach", "start_year": null, "end_year": 2015, "as_player": false, "years_explicit": false, "evidence": "was a member of Raymond’s coaching staff that led the Saints to their second Liberty League Championship in 2015"},
+   {"org": "Williams College", "level": "NCAA D-III", "role": "Linebackers Coach/Special Teams Coordinator/Assistant Recruiting Coordinator", "start_year": 2016, "end_year": null, "as_player": false, "years_explicit": false, "evidence": "Ramon Mignott enters his 11th year as an assistant coach for the Williams College football team in 2026"}
+  ],
+  "notes": "St. Lawrence playing years 2008-2011 derived (four-year letterman, last two years 2010-11). Bridgeport high school not named and years not stated (after 2012 graduation, before St. Lawrence staff; also worked as a Head Start social service manager). St. Lawrence coaching start not stated. Williams start 2016 derived from '11th year ... in 2026' (Raymond's first Williams staff)."
+ },
+ {
+  "name": "Chris Rorke",
+  "program": "Williams",
+  "current_title": "Quarterbacks Coach",
+  "bio_url": "https://ephsports.williams.edu/sports/football/roster/coaches/chris-rorke/1100",
+  "bio_quality": "full",
+  "alma_mater": "Dartmouth College (1989)",
+  "stints": [
+   {"org": "Dartmouth College", "level": "NCAA D-I FCS", "role": "Quarterback (player)", "start_year": null, "end_year": null, "as_player": true, "years_explicit": false, "evidence": "A 1989 graduate and a quarterback at Dartmouth College"},
+   {"org": "Dartmouth College", "level": "NCAA D-I FCS", "role": "Receivers Coach", "start_year": 1991, "end_year": 1993, "as_player": false, "years_explicit": true, "evidence": "Rorke began his coaching career at his alma mater as the receivers coach from 1991-93"},
+   {"org": "Illinois Wesleyan University", "level": "NCAA D-III", "role": "Offensive Coordinator and Head Golf Coach (also QB coach, admissions counselor)", "start_year": 1993, "end_year": 1999, "as_player": false, "years_explicit": true, "evidence": "He wore two hats as the offensive coordinator of the football program and the head golf coach at Illinois Wesleyan"},
+   {"org": "Plymouth State University", "level": "NCAA D-III", "role": "Head Football Coach", "start_year": 1999, "end_year": 2003, "as_player": false, "years_explicit": true, "evidence": "Rorke was the head football coach and a physical education instructor at Plymouth State from 1999-2003"},
+   {"org": "Lehigh University", "level": "NCAA D-I FCS", "role": "Offensive Coordinator (quarterbacks)", "start_year": 2003, "end_year": 2006, "as_player": false, "years_explicit": true, "evidence": "Lehigh University, where he was the offensive coordinator from 2003-06"},
+   {"org": "Trinity College (Conn.)", "level": "NCAA D-III", "role": "Offensive Coordinator (quarterbacks)", "start_year": 2006, "end_year": 2011, "as_player": false, "years_explicit": true, "evidence": "having served as the offensive coordinator at Trinity College from 2006-11"},
+   {"org": "Dartmouth College", "level": "NCAA D-I FCS", "role": "Pass Game Coordinator (quarterbacks)", "start_year": 2011, "end_year": 2017, "as_player": false, "years_explicit": true, "evidence": "From 2011-17, Rorke was the pass game coordinator at Dartmouth College, coaching the quarterbacks"},
+   {"org": "Tabor Academy", "level": "high school", "role": "Head Football Coach and Class Dean", "start_year": 2017, "end_year": 2022, "as_player": false, "years_explicit": true, "evidence": "Rorke previously served as head football coach and was a class dean at Tabor Academy in Marion, Massachusetts, from 2017-22."},
+   {"org": "Williams College", "level": "NCAA D-III", "role": "Quarterbacks Coach", "start_year": 2023, "end_year": null, "as_player": false, "years_explicit": false, "evidence": "Chris Rorke enters his fourth year as the quarterbacks coach for the Williams College football team in 2026."}
+  ],
+  "notes": "Stated ranges overlap at endpoints (1993, 1999, 2003, 2006, 2011, 2017), suggesting academic-year ranges; kept as stated. Dartmouth playing years not stated (1989 graduate). Tabor Academy is a private prep school. Williams start 2023 derived from 'fourth year ... in 2026'."
+ },
+ {
+  "name": "Dayna Moneta",
+  "program": "Williams",
+  "current_title": "Running Backs Coach",
+  "bio_url": "https://ephsports.williams.edu/sports/football/roster/coaches/dayna-moneta/1102",
+  "bio_quality": "full",
+  "alma_mater": "SUNY Cortland (B.S. 2011); West Virginia University (M.S. 2022)",
+  "stints": [
+   {"org": "SUNY Cortland", "level": "NCAA D-III", "role": "Women's soccer goalkeeper (player)", "start_year": null, "end_year": null, "as_player": true, "years_explicit": false, "evidence": "At SUNY Cortland, she was a four-year participant for the Red Dragons, as a goalkeeper for the women’s soccer team."},
+   {"org": "Lehman Educational Campus", "level": "high school", "role": "Physical education teacher and athletic director", "start_year": null, "end_year": null, "as_player": false, "years_explicit": false, "evidence": "Moneta was a physical education teacher and athletic director at Lehman Educational Campus in the Bronx, New York"},
+   {"org": "New York Sharks (women's professional football)", "level": "pro/semi-pro", "role": "Center (player)", "start_year": 2018, "end_year": 2018, "as_player": true, "years_explicit": true, "evidence": "She was a member of two Division 2 National Championship teams, New York Sharks (2018) and New York Wolves (2023)."},
+   {"org": "New York Wolves (women's professional football)", "level": "pro/semi-pro", "role": "Center (player)", "start_year": 2023, "end_year": 2023, "as_player": true, "years_explicit": true, "evidence": "She was a member of two Division 2 National Championship teams, New York Sharks (2018) and New York Wolves (2023)."},
+   {"org": "Williams College", "level": "NCAA D-III", "role": "Assistant Offensive Line Coach (also athletic assistant for special projects)", "start_year": 2023, "end_year": 2024, "as_player": false, "years_explicit": false, "evidence": "Previously, she was an assistant offensive line coach for the Ephs"},
+   {"org": "Williams College", "level": "NCAA D-III", "role": "Running Backs Coach", "start_year": 2025, "end_year": null, "as_player": false, "years_explicit": false, "evidence": "Moneta enters her fourth season with the Williams College football program and second year as running backs coach in 2026."}
+  ],
+  "notes": "Williams start 2023 derived from 'fourth season ... in 2026'; RB coach from 2025 ('second year ... in 2026'). Women's pro football: only championship seasons given (Sharks 2018, Wolves 2023); she currently plays (team not named). Lehman years not stated."
+ },
+ {
+  "name": "Quinn Girard",
+  "program": "Williams",
+  "current_title": "Secondary Coach",
+  "bio_url": "https://ephsports.williams.edu/sports/football/roster/coaches/quinn-girard/1245",
+  "bio_quality": "full",
+  "alma_mater": "Plymouth State University (2022)",
+  "stints": [
+   {"org": "Plymouth State University", "level": "NCAA D-III", "role": "Defensive back (player)", "start_year": 2018, "end_year": 2022, "as_player": true, "years_explicit": true, "evidence": "Girard was a five-year letter winner, playing in 30 games from 2018-22."},
+   {"org": "Union College", "level": "NCAA D-III", "role": "Assistant coach (cornerbacks)", "start_year": 2025, "end_year": 2025, "as_player": false, "years_explicit": true, "evidence": "after spending the 2025 season at Union College where he worked primarily with the cornerbacks"},
+   {"org": "Williams College", "level": "NCAA D-III", "role": "Secondary Coach", "start_year": 2026, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "Quinn Girard joined the staff in the summer of 2026 and will serve as the secondary coach"}
+  ],
+  "notes": "No stints listed for 2023-2024."
+ },
+ {
+  "name": "Sam Serrano",
+  "program": "Williams",
+  "current_title": "Wide Receivers Coach",
+  "bio_url": "https://ephsports.williams.edu/sports/football/roster/coaches/sam-serrano/1231",
+  "bio_quality": "full",
+  "alma_mater": "Utica University (2024); Springfield College (M.Ed. 2026)",
+  "stints": [
+   {"org": "Utica University", "level": "NCAA D-III", "role": "Men's lacrosse player (captain)", "start_year": 2020, "end_year": 2024, "as_player": true, "years_explicit": true, "evidence": "Serrano was a lacrosse student-athlete at Utica from 2020-24"},
+   {"org": "Springfield College", "level": "NCAA D-III", "role": "Men's lacrosse player (graduate student)", "start_year": 2025, "end_year": 2025, "as_player": true, "years_explicit": true, "evidence": "He played one year of lacrosse as a graduate student at Springfield in 2025"},
+   {"org": "Arsenal Lacrosse Club", "level": "other", "role": "Lacrosse coach (summer)", "start_year": 2025, "end_year": 2025, "as_player": false, "years_explicit": true, "evidence": "he worked as a coach for the Arsenal Lacrosse Club in Hudson Valley, New York, during the summer of 2025"},
+   {"org": "Springfield College", "level": "NCAA D-III", "role": "Assistant men's lacrosse coach", "start_year": 2025, "end_year": 2026, "as_player": false, "years_explicit": true, "evidence": "serving as an assistant men's lacrosse coach at Springfield College during the 2025-26 academic year"},
+   {"org": "3d Lacrosse New England", "level": "other", "role": "Lacrosse assistant", "start_year": 2025, "end_year": 2026, "as_player": false, "years_explicit": false, "evidence": "assisted with 3d Lacrosse New England in Boston during this past school year"},
+   {"org": "Williams College", "level": "NCAA D-III", "role": "Wide Receivers Coach (also assistant men's lacrosse coach)", "start_year": 2026, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "enters his first season as an assistant coach for the Williams College football and men's lacrosse programs"}
+  ],
+  "notes": "No prior football experience stated; all prior stints are lacrosse (years as stated, academic/spring seasons). Also worked ticketing/sales for Utica Comets and Utica City FC, landscaping and childcare (non-coaching, not stints)."
+ },
+ {
+  "name": "Joe Doyle",
+  "program": "Williams",
+  "current_title": "Volunteer Assistant Coach",
+  "bio_url": "https://ephsports.williams.edu/sports/football/roster/coaches/joe-doyle/1103",
+  "bio_quality": "thin",
+  "alma_mater": "University of Massachusetts Amherst",
+  "stints": [
+   {"org": "University of Massachusetts Amherst", "level": "unknown", "role": "Football player (three-year letterman)", "start_year": null, "end_year": null, "as_player": true, "years_explicit": false, "evidence": "three-year letterman in football and lacrosse at UMass Amherst, playing on the 1964 Yankee Conference Championship football team"},
+   {"org": "Hoosac Valley High School", "level": "high school", "role": "Head Football Coach (17 years)", "start_year": null, "end_year": null, "as_player": false, "years_explicit": false, "evidence": "For 17 years, Doyle was the Head Football Coach at Hoosac Valley High School"},
+   {"org": "Williams College", "level": "NCAA D-III", "role": "Assistant coach (LB/DL/OL/RB/special teams at various times); now Operations Volunteer", "start_year": 1985, "end_year": null, "as_player": false, "years_explicit": true, "evidence": "Joe Doyle came to Williams College in 1985 to join Head Coach Bob Odell's staff"}
+  ],
+  "notes": "UMass football years not stated beyond the 1964 team (also played lacrosse 1963-64); UMass division in 1964 (pre-I-AA era) coded unknown. Alma mater inferred from playing career. Hoosac Valley years not stated. Retired 2004 as principal of Adams Memorial Middle School (non-coaching). ROW title Volunteer Assistant Coach; bio says Operations Volunteer."
+ },
+ {
+  "name": "Mike Hennessey",
+  "program": "Williams",
+  "current_title": "Volunteer Assistant Coach",
+  "bio_url": "https://ephsports.williams.edu/sports/football/roster/coaches/mike-hennessey/1104",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {"org": "Williams College", "level": "NCAA D-III", "role": "Volunteer Assistant Coach", "start_year": null, "end_year": null, "as_player": false, "years_explicit": false, "evidence": "Volunteer Assistant Coach"}
+  ],
+  "notes": "Bio page text is empty; current-job stint taken from the staff-table ROW only."
+ }
+]

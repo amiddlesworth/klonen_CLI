@@ -1,0 +1,12 @@
+node_modules/
+.next/
+dist/
+.env*
+!.env.example
+pipeline/work/
+__pycache__/
+*.pyc
+.DS_Store
+coverage/
+playwright-report/
+test-results/

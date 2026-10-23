@@ -1,0 +1,533 @@
+[
+ {
+  "name": "Bill Russell",
+  "program": "Norwich",
+  "current_title": "Head Coach",
+  "bio_url": "https://norwichathletics.com/sports/football/roster/coaches/bill-russell/739",
+  "bio_quality": "full",
+  "alma_mater": "Mount Ida College",
+  "stints": [
+   {
+    "org": "Norwich University",
+    "level": "NCAA D-III",
+    "role": "Head Coach",
+    "start_year": 2024,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "enters his third season as the head coach of the Norwich University football program in 2026."
+   },
+   {
+    "org": "Norwich University",
+    "level": "NCAA D-III",
+    "role": "Assistant coach: Associate Head Coach (10 yrs), Special Teams Coordinator, Inside Linebackers Coach",
+    "start_year": 2008,
+    "end_year": 2023,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Before his promotion, he spent 16 seasons on the Cadet sideline, including 10 years as Associate Head Coach."
+   },
+   {
+    "org": "Mount Ida College",
+    "level": "NCAA D-III",
+    "role": "Assistant coach (start of coaching career)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "after starting his coaching career at his alma mater, Mount Ida College."
+   },
+   {
+    "org": "Mount Ida College",
+    "level": "NCAA D-III",
+    "role": "Player (team captain senior year)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "He graduated in 2005 with a degree in Child Development and was a team captain his senior year."
+   }
+  ],
+  "notes": "HC start 2024 from 'third season in 2026'; record table confirms 2024 debut season (named HC Nov 30, 2023). Assistant span: 2008 start stated, end 2023 derived from 16 seasons / Nov 2023 promotion. Mount Ida coaching years not stated (between 2005 graduation and 2008). Mount Ida (closed 2018) was NCAA D-III. Playing position/years not stated."
+ },
+ {
+  "name": "Ryan Heasley",
+  "program": "Norwich",
+  "current_title": "Assistant Head Coach for Offense / Offensive Coordinator / Offensive Line Coach",
+  "bio_url": "https://norwichathletics.com/sports/football/roster/coaches/ryan-heasley/740",
+  "bio_quality": "full",
+  "alma_mater": "Bethany College",
+  "stints": [
+   {
+    "org": "Norwich University",
+    "level": "NCAA D-III",
+    "role": "Assistant Head Coach for Offense / Offensive Coordinator / Offensive Line Coach",
+    "start_year": 2026,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Ryan Heasley joined the Norwich Football coaching staff ahead of the 2026 seaspn."
+   },
+   {
+    "org": "St. John Fisher University",
+    "level": "NCAA D-III",
+    "role": "Offensive Coordinator / Offensive Line Coach",
+    "start_year": 2022,
+    "end_year": 2024,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Offensive Coordinator/Offensive Line Coach at St. John Fisher University from 2022 to 25"
+   },
+   {
+    "org": "SUNY Cortland",
+    "level": "NCAA D-III",
+    "role": "Assistant coach (offensive staff)",
+    "start_year": 2019,
+    "end_year": 2021,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Heasley spent three seasons at SUNY Cortland (2019-22), helping guide the Red Dragons to the 2021 Empire 8 Championship"
+   },
+   {
+    "org": "Ithaca College",
+    "level": "NCAA D-III",
+    "role": "Offensive Coordinator",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "previous offensive coordinator experience from Ithaca College"
+   }
+  ],
+  "notes": "Fisher written '2022 to 25' and Cortland '(2019-22)', each described as three seasons; normalized to fall seasons 2022-2024 and 2019-2021 (2025 season location unclear if Fisher range is literal). Ithaca years not stated. Bethany College 1999 graduate; playing career not stated. AFCA D-III Assistant Coaches Committee 2013-16 (not a stint)."
+ },
+ {
+  "name": "Keith Emery",
+  "program": "Norwich",
+  "current_title": "Assistant Head Coach for Defense / Defensive Coordinator / Inside Linebackers Coach",
+  "bio_url": "https://norwichathletics.com/sports/football/roster/coaches/keith-emery/741",
+  "bio_quality": "full",
+  "alma_mater": "Dickinson College",
+  "stints": [
+   {
+    "org": "Norwich University",
+    "level": "NCAA D-III",
+    "role": "Assistant Head Coach for Defense / Defensive Coordinator / Inside Linebackers Coach",
+    "start_year": 2026,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "enters his first season as the Defensive Coordinator and Linebackers Coach for the Norwich University football program in 2026."
+   },
+   {
+    "org": "Charlotte Catholic High School",
+    "level": "high school",
+    "role": "Head Coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "head football coach at Charlotte Catholic High School in Charlotte, N.C., where he posted a 17-8 record over two seasons"
+   },
+   {
+    "org": "University of North Carolina at Charlotte",
+    "level": "NCAA D-I FBS",
+    "role": "Offensive Analyst / Director of High School Relations",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "served as offensive analyst and director of high school relations at the University of North Carolina at Charlotte"
+   },
+   {
+    "org": "Presbyterian College",
+    "level": "NCAA D-I FCS",
+    "role": "Assistant Coach (Defensive Line)",
+    "start_year": 2022,
+    "end_year": 2022,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "He also spent the 2022 season as an assistant coach at Presbyterian College, working with the defensive line"
+   },
+   {
+    "org": "Western New England University",
+    "level": "NCAA D-III",
+    "role": "Head Coach (also coordinated defense, offense and kicking game at times)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Across 13 seasons, Emery compiled an 86-49 record, becoming the winningest coach in Western New England football history."
+   },
+   {
+    "org": "Johns Hopkins University",
+    "level": "NCAA D-III",
+    "role": "Assistant coach (Associate HC, Defensive Coordinator, LB, DL, Recruiting/ST Coordinator, S&C)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Emery spent seven seasons as an assistant coach at Johns Hopkins University"
+   },
+   {
+    "org": "Kenyon College",
+    "level": "NCAA D-III",
+    "role": "Coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "stops at Kenyon College, Enfield High School, Stafford High School, Providence Day School, and Myers Park High School"
+   },
+   {
+    "org": "Enfield High School",
+    "level": "high school",
+    "role": "Coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "stops at Kenyon College, Enfield High School, Stafford High School, Providence Day School, and Myers Park High School"
+   },
+   {
+    "org": "Stafford High School",
+    "level": "high school",
+    "role": "Defensive Coordinator",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "His early coordinator work included leading a Stafford High School defense"
+   },
+   {
+    "org": "Providence Day School",
+    "level": "high school",
+    "role": "Linebackers Coach",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "At Providence Day, he coached linebackers for the 2019 NCISAA Division II championship team."
+   },
+   {
+    "org": "Myers Park High School",
+    "level": "high school",
+    "role": "Coach (role not stated)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "stops at Kenyon College, Enfield High School, Stafford High School, Providence Day School, and Myers Park High School"
+   }
+  ],
+  "notes": "Most dates not stated. Charlotte Catholic: two seasons incl. 2024 (SW 4A title), likely 2024-2025 but not stated. WNE: 13 seasons, mentioned seasons span 2010-2017. JHU: seven seasons, mentioned seasons 2001-2004 (AFCA D-III Asst Coach of Year 2005). Stafford HS DC season 1994 mentioned; Providence Day 2019 season mentioned. UNC Charlotte role was before Charlotte Catholic; its order relative to Presbyterian 2022 not stated. Kenyon/Enfield/Myers Park order unknown. MS Springfield College 1996 (no football role stated)."
+ },
+ {
+  "name": "Jackson Latimer",
+  "program": "Norwich",
+  "current_title": "Wide Receivers Coach / Recruiting Coordinator",
+  "bio_url": "https://norwichathletics.com/sports/football/roster/coaches/jackson-latimer/742",
+  "bio_quality": "full",
+  "alma_mater": "Saint Anselm College",
+  "stints": [
+   {
+    "org": "Norwich University",
+    "level": "NCAA D-III",
+    "role": "Quarterbacks Coach / Pass Game Coordinator (at 2025 hire); staff table now Wide Receivers Coach / Recruiting Coordinator",
+    "start_year": 2025,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Quarterbacks Coach and Pass Game Coordinator ahead of the 2025 season."
+   },
+   {
+    "org": "Lake Erie College",
+    "level": "NCAA D-II",
+    "role": "Tight Ends Coach; promoted to Running Backs Coach and Recruiting Coordinator",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "following a stint at NCAA Division II Lake Erie College (Ohio), where he began as the Tight Ends Coach"
+   },
+   {
+    "org": "Endicott College",
+    "level": "NCAA D-III",
+    "role": "Wide Receivers Coach",
+    "start_year": 2023,
+    "end_year": 2023,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Latimer spent the 2023 season at Endicott College as the Wide Receivers Coach."
+   },
+   {
+    "org": "Massachusetts Maritime Academy",
+    "level": "NCAA D-III",
+    "role": "Wide Receivers Coach; Pass Game Coordinator and Recruiting Coordinator from 2022",
+    "start_year": 2021,
+    "end_year": 2022,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Latimer also served on staff at Massachusetts Maritime Academy from 2021 to 2023. He coached the wide receivers both seasons"
+   },
+   {
+    "org": "Saint Anselm College",
+    "level": "NCAA D-II",
+    "role": "Player (tight end)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "A 2021 graduate of Saint Anselm College, Latimer was a four-year member of the Hawks football team, playing tight end."
+   }
+  ],
+  "notes": "Staff table title (WR / Recruiting Coordinator) differs from hire-release bio (QB Coach & Pass Game Coordinator, 2025). Lake Erie years not stated (between Endicott 2023 and Norwich 2025, likely 2024). Mass Maritime '2021 to 2023' with 'both seasons' normalized to fall seasons 2021-2022. Saint Anselm (NE-10) = NCAA D-II; playing years not stated."
+ },
+ {
+  "name": "J.T. Hiscoe",
+  "program": "Norwich",
+  "current_title": "Quarterbacks Coach",
+  "bio_url": "https://norwichathletics.com/sports/football/roster/coaches/j-t-hiscoe/743",
+  "bio_quality": "full",
+  "alma_mater": "American International College",
+  "stints": [
+   {
+    "org": "Norwich University",
+    "level": "NCAA D-III",
+    "role": "Wide Receivers Coach (at 2025 hire); staff table now Quarterbacks Coach",
+    "start_year": 2025,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Wide Receivers Coach ahead of the 2025 season"
+   },
+   {
+    "org": "Franklin Pierce University",
+    "level": "NCAA D-II",
+    "role": "Wide Receivers Coach",
+    "start_year": 2022,
+    "end_year": 2024,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Hiscoe most recently spent three seasons (2022–2025) as the Wide Receivers Coach at Franklin Pierce University"
+   },
+   {
+    "org": "Milford Academy",
+    "level": "other",
+    "role": "Offensive Coordinator",
+    "start_year": 2021,
+    "end_year": 2021,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Hiscoe served as the Offensive Coordinator at Milford Academy (N.Y.) in 2021"
+   },
+   {
+    "org": "American International College",
+    "level": "NCAA D-II",
+    "role": "Player (quarterback; also baseball pitcher)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "Hiscoe played both Division II football and baseball at American International College, serving as a quarterback"
+   }
+  ],
+  "notes": "Staff table title (QB Coach) differs from hire-release bio (WR Coach, 2025). Franklin Pierce '(2022–2025)' with 'three seasons' normalized to fall seasons 2022-2024. Milford Academy (N.Y.) is a postgraduate prep school (level 'other'). AIC playing years and graduation not stated; alma_mater assumed from playing career."
+ },
+ {
+  "name": "John Rhoades",
+  "program": "Norwich",
+  "current_title": "Defensive Line Coach / Co-Special Teams Coordinator",
+  "bio_url": "https://norwichathletics.com/sports/football/roster/coaches/john-rhoades/744",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "Norwich University",
+    "level": "NCAA D-III",
+    "role": "Defensive Line Coach / Co-Special Teams Coordinator",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Defensive Line Coach / Co-Special Teams Coordinator"
+   }
+  ],
+  "notes": "Bio page empty; only staff-table title available."
+ },
+ {
+  "name": "Aaron Alvarez",
+  "program": "Norwich",
+  "current_title": "Defensive Backs Coach / Co-Special Teams Coordinator",
+  "bio_url": "https://norwichathletics.com/sports/football/roster/coaches/aaron-alvarez/745",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "Norwich University",
+    "level": "NCAA D-III",
+    "role": "Defensive Backs Coach / Co-Special Teams Coordinator",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Defensive Backs Coach / Co-Special Teams Coordinator"
+   }
+  ],
+  "notes": "Bio page empty; only staff-table title available."
+ },
+ {
+  "name": "RJ Malson",
+  "program": "Norwich",
+  "current_title": "Specialists Coach",
+  "bio_url": "https://norwichathletics.com/sports/football/roster/coaches/rj-malson/746",
+  "bio_quality": "full",
+  "alma_mater": "Thiel College",
+  "stints": [
+   {
+    "org": "Norwich University",
+    "level": "NCAA D-III",
+    "role": "Defensive Line Coach / Recruiting & Video Coordinator (per 2024 bio); staff table now Specialists Coach",
+    "start_year": 2020,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "after joining the coaching staff in August of 2020."
+   },
+   {
+    "org": "Western New England University",
+    "level": "NCAA D-III",
+    "role": "Graduate Assistant (defensive line)",
+    "start_year": 2017,
+    "end_year": 2018,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "Malson had spent the previous three years as a defensive line coach at Western New England."
+   },
+   {
+    "org": "Western New England University",
+    "level": "NCAA D-III",
+    "role": "Special Teams Coordinator / Defensive Line Coach (full-time)",
+    "start_year": 2019,
+    "end_year": 2019,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "In his final season with the Golden Bears, he was hired full-time"
+   },
+   {
+    "org": "Millikin University",
+    "level": "NCAA D-III",
+    "role": "Defensive Line Coach",
+    "start_year": 2016,
+    "end_year": 2016,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "Malson gained traction as a defensive line coach at Milliken University in 2016"
+   },
+   {
+    "org": "Thiel College",
+    "level": "NCAA D-III",
+    "role": "Assistant Coach (defensive line)",
+    "start_year": 2015,
+    "end_year": 2015,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "began coaching at his alma mater, Thiel College, as an assistant coach for the defensive line during the 2015 season"
+   },
+   {
+    "org": "Thiel College",
+    "level": "NCAA D-III",
+    "role": "Player (defensive end)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "In his final season with the Tomcats as an athlete, Malson posted 52 tackles"
+   }
+  ],
+  "notes": "Bio text written for 2024 ('fifth season ... in 2024'); staff table now lists Specialists Coach. WNE 'previous three years' before Aug 2020 derived as 2017-2019: first two as GA (2018 blocked-kick unit), final season full-time. Bio spells 'Milliken'; school is Millikin University. Transferred to Thiel from University of Mount Union; football at Mount Union not stated, so no stint. Thiel playing years not stated."
+ },
+ {
+  "name": "Eli LeBlanc",
+  "program": "Norwich",
+  "current_title": "Graduate Assistant Coach (Defense) / Outside Linebackers",
+  "bio_url": "https://norwichathletics.com/sports/football/roster/coaches/eli-leblanc/747",
+  "bio_quality": "thin",
+  "alma_mater": "Norwich University",
+  "stints": [
+   {
+    "org": "Norwich University",
+    "level": "NCAA D-III",
+    "role": "Graduate Assistant Coach (Defense) / Outside Linebackers",
+    "start_year": 2025,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": true,
+    "evidence": "as a defensive graduate assistant working with the outside linebackers ahead of the 2025 campaign"
+   },
+   {
+    "org": "Bonny Eagle High School",
+    "level": "high school",
+    "role": "Player",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "LeBlanc enjoyed a successful playing career at Bonny Eagle High School"
+   },
+   {
+    "org": "Norwich University",
+    "level": "NCAA D-III",
+    "role": "Player",
+    "start_year": null,
+    "end_year": null,
+    "as_player": true,
+    "years_explicit": false,
+    "evidence": "He went on to appear in 37 collegiate games with the Cadets"
+   }
+  ],
+  "notes": "Only playing career listed (undated). Four seasons with the Cadets (Norwich); years not stated. Alma mater inferred from playing career; graduation not stated."
+ },
+ {
+  "name": "Alex Benitez",
+  "program": "Norwich",
+  "current_title": "Graduate Assistant Coach (Offense) / Running Backs",
+  "bio_url": "https://norwichathletics.com/sports/football/roster/coaches/alex-benitez/748",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "Norwich University",
+    "level": "NCAA D-III",
+    "role": "Graduate Assistant Coach (Offense) / Running Backs",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Graduate Assistant Coach (Offense) / Running Backs"
+   }
+  ],
+  "notes": "Bio page empty; only staff-table title available."
+ },
+ {
+  "name": "Blake Kierstead",
+  "program": "Norwich",
+  "current_title": "Student Assistant Coach (Offense)",
+  "bio_url": "https://norwichathletics.com/sports/football/roster/coaches/blake-kierstead/749",
+  "bio_quality": "none",
+  "alma_mater": null,
+  "stints": [
+   {
+    "org": "Norwich University",
+    "level": "NCAA D-III",
+    "role": "Student Assistant Coach (Offense)",
+    "start_year": null,
+    "end_year": null,
+    "as_player": false,
+    "years_explicit": false,
+    "evidence": "ROW: Student Assistant Coach (Offense)"
+   }
+  ],
+  "notes": "Student assistant. Bio page empty; only staff-table title available."
+ }
+]
