@@ -10,3 +10,8 @@ __pycache__/
 coverage/
 playwright-report/
 test-results/
+
+# agent review screenshots (regenerable)
+design/screens/
+design/foundation/
+design/proposals/**/*-390-*.png
