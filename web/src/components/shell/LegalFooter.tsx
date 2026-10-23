@@ -10,7 +10,7 @@ export const LEGAL_LINKS = [
   { href: "/about#terms", label: "Terms" },
 ];
 
-/** Legal footer (§8.2): 12px --fg-3, 24px line height, then "{BRAND} © year". */
+/** Legal footer (§8.2): 12px --fg-3, 24px line height (each link a 24px tall target), then "{BRAND} © year". */
 export function LegalFooter({ align = "start", className }: { align?: "start" | "center"; className?: string }) {
   return (
     <footer className={cn("px-1 pt-1 text-caption leading-6 text-fg-3 max-md:px-4 max-md:pt-2", align === "center" && "text-center", className)}>
@@ -18,7 +18,8 @@ export function LegalFooter({ align = "start", className }: { align?: "start" | 
         <ul className={cn("flex flex-wrap gap-x-3", align === "center" && "justify-center")}>
           {LEGAL_LINKS.map((l) => (
             <li key={l.href}>
-              <Link href={l.href} className="rounded-xs hover:text-fg-1 hover:underline underline-offset-2">
+              {/* A 24px tall box, not just the glyphs: links outside sentences need a 24px target (§11 rule 7). */}
+              <Link href={l.href} className="inline-flex min-h-6 items-center rounded-xs underline-offset-2 hover:text-fg-1 hover:underline">
                 {l.label}
               </Link>
             </li>

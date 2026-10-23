@@ -50,7 +50,7 @@ P0 must ship tonight; P1 should; P2 if time allows. Every screen works at 390 px
 
 ## Auth (stubbed)
 
-No real auth tonight. A **demo account switcher** in the Me menu lets a viewer act as (a) a seeded coach who has claimed their profile, (b) an athletic director at a seeded program, or (c) signed out. Store the choice in a cookie. Keep the auth boundary in one module (`web/src/lib/session.ts`) so real auth can replace it.
+No real auth tonight. A **demo account switcher** in the Me menu lets a viewer act as (a) a seeded coach, Justin Leatherman · Pacific (OR), whose public record stays Unclaimed (the coach session gets an owner view of the profile labeled Demo; see `docs/ARCHITECTURE.md` "Demo accounts"), (b) an athletic director at a seeded program, or (c) signed out. Store the choice in a cookie. Keep the auth boundary in one module (`web/src/lib/session.ts`) so real auth can replace it.
 
 ## Data
 

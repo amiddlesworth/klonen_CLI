@@ -42,6 +42,11 @@ export type MenuProps = {
    * --overlay scrim) instead of a floating panel. Menu semantics and keys are unchanged.
    */
   sheetOnPhone?: boolean;
+  /**
+   * Open with focus on the checked item instead of the first one. Only for menus that are a single
+   * radio group (a sort or scope picker); mixed menus such as the Me menu start at the top.
+   */
+  focusChecked?: boolean;
 };
 
 /**
@@ -63,6 +68,7 @@ export function Menu({
   open: openProp,
   onOpenChange,
   sheetOnPhone = false,
+  focusChecked = false,
 }: MenuProps) {
   const [openState, setOpenState] = useState(false);
   const open = openProp ?? openState;
@@ -94,8 +100,10 @@ export function Menu({
 
   useEffect(() => {
     if (!open || !pos) return;
+    // Menu pattern: the first item (the last after ArrowUp on the trigger); the checked item only
+    // for single radio-group menus that opt in.
     const list = items();
-    const checked = list.find((el) => el.getAttribute("aria-checked") === "true");
+    const checked = focusChecked ? list.find((el) => el.getAttribute("aria-checked") === "true") : undefined;
     const target = focusOnOpen.current === "last" ? list[list.length - 1] : (checked ?? list[0]);
     target?.focus({ preventScroll: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- focus once when the panel is positioned

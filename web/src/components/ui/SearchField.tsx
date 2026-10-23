@@ -28,7 +28,8 @@ const WRAPPER = {
 
 /**
  * Search field (§8.1): --hover fill, no border at rest, 1px --border on hover,
- * Iris border + 3px --accent-subtle halo on focus; 16px search icon.
+ * Iris border + 3px --accent-subtle halo on focus; 16px search icon. The "/" hint hides while the
+ * field has focus.
  */
 export function SearchField({
   variant = "nav",
@@ -44,7 +45,7 @@ export function SearchField({
     <label
       {...wrapperProps}
       className={cn(
-        "relative flex shrink-0 cursor-text items-center gap-2 rounded-sm border border-transparent bg-hover text-fg-3 transition-colors focus-visible:outline-none",
+        "group relative flex shrink-0 cursor-text items-center gap-2 rounded-sm border border-transparent bg-hover text-fg-3 transition-colors focus-visible:outline-none",
         "hover:border-border focus-within:border-accent focus-within:bg-surface focus-within:shadow-[0_0_0_3px_var(--accent-subtle)]",
         WRAPPER[variant],
         wrapperClassName,
@@ -66,7 +67,8 @@ export function SearchField({
         )}
         {...rest}
       />
-      {shortcutHint && <Kbd className={variant === "nav" ? "lg:max-xl:hidden" : undefined}>/</Kbd>}
+      {/* The "/" shortcut only helps before the field has focus. */}
+      {shortcutHint && <Kbd className={cn("group-focus-within:hidden", variant === "nav" && "lg:max-xl:hidden")}>/</Kbd>}
     </label>
   );
 }

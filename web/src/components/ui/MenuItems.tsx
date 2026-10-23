@@ -5,7 +5,7 @@ import { cn } from "@/lib/cn";
 import { Icon } from "./Icon";
 
 const ITEM =
-  "flex min-h-8 w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-small text-fg-1 transition-colors " +
+  "flex min-h-8 w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-small transition-colors " +
   "hover:bg-hover focus-visible:bg-hover focus-visible:-outline-offset-2 max-md:min-h-11 " +
   "aria-disabled:cursor-not-allowed aria-disabled:bg-transparent! aria-disabled:text-fg-disabled";
 
@@ -14,7 +14,8 @@ type ItemContentProps = { icon?: LucideIcon; description?: ReactNode; trailing?:
 function ItemContent({ icon, description, trailing, destructive, children }: ItemContentProps) {
   return (
     <>
-      {icon && <Icon icon={icon} size={16} className={cn("self-start mt-px", destructive ? "text-danger" : "text-fg-2", !description && "self-center mt-0")} />}
+      {/* Centered on a one-line label; with a description, aligned to the label's first line. */}
+      {icon && <Icon icon={icon} size={16} className={cn(destructive ? "text-danger" : "text-fg-2", description ? "mt-px self-start" : "self-center")} />}
       <span className="min-w-0 flex-1">
         <span className="block">{children}</span>
         {description && <span className="block text-caption text-fg-3">{description}</span>}
@@ -44,7 +45,7 @@ export function MenuItem({ icon, description, trailing, destructive, keepOpen, d
       tabIndex={-1}
       aria-disabled={disabled || undefined}
       data-keep-open={keepOpen || undefined}
-      className={cn(ITEM, destructive && "text-danger", className)}
+      className={cn(ITEM, destructive ? "text-danger" : "text-fg-1", className)}
       {...rest}
       onClick={disabled ? undefined : rest.onClick}
     >
@@ -65,7 +66,7 @@ export type MenuLinkProps = Omit<ComponentProps<typeof Link>, "children" | "role
 /** A menu item that navigates. */
 export function MenuLink({ icon, description, trailing, className, children, ...rest }: MenuLinkProps) {
   return (
-    <Link role="menuitem" tabIndex={-1} className={cn(ITEM, className)} {...rest}>
+    <Link role="menuitem" tabIndex={-1} className={cn(ITEM, "text-fg-1", className)} {...rest}>
       <ItemContent icon={icon} description={description} trailing={trailing}>
         {children}
       </ItemContent>
@@ -90,7 +91,7 @@ export function MenuRadioItem({ checked, description, keepOpen, disabled, classN
       tabIndex={-1}
       aria-disabled={disabled || undefined}
       data-keep-open={keepOpen || undefined}
-      className={cn(ITEM, description && "items-start", className)}
+      className={cn(ITEM, "text-fg-1", description && "items-start", className)}
       {...rest}
       onClick={disabled ? undefined : rest.onClick}
     >

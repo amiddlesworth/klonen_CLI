@@ -185,7 +185,9 @@ export function SeasonStrip({ stints, currentSeason = CURRENT_SEASON, widthHint 
           .map((l) => (
             <span key={l} className="inline-flex items-center gap-1.5">
               <i aria-hidden="true" className={cn("size-3 shrink-0 rounded-[3px]", LEVEL_FILL[l])} />
-              {LEVEL_LABEL[l]} · <b className="num font-semibold text-fg-1">{counts[l]}</b> {counts[l] === 1 ? "season" : "seasons"}
+              <span>
+                {LEVEL_LABEL[l]} · <b className="num font-semibold text-fg-1">{counts[l]}</b> {counts[l] === 1 ? "season" : "seasons"}
+              </span>
             </span>
           ))}
       </figcaption>

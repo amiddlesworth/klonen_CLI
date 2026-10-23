@@ -42,20 +42,23 @@ export type CardHeaderProps = {
 
 /**
  * Card header row: title left, meta and one link right, baseline-aligned. The row wraps instead of
- * squeezing: when title and meta don't fit side by side, the meta drops to its own line (right-
- * aligned on desktop, left-aligned under the title on phone) and wraps there. The title never gets
- * narrower than 12rem (or the full width), and only the link keeps its width.
+ * squeezing: when title and meta don't fit side by side, the meta drops to its own line, left-
+ * aligned under the title at every width, and wraps there with a straight left edge. (The title
+ * grows to fill its line, which is what pushes the meta right while they share one; there is no
+ * auto margin or right alignment to carry over to the wrapped line.) The title is never squeezed
+ * by the meta, and only the link keeps its width. Keep meta short ("7 people"); a sentence belongs
+ * in `subtitle` or a footnote.
  */
 export function CardHeader({ title, as: Tag = "h2", id, meta, action, subtitle, size = "main", className }: CardHeaderProps) {
   return (
     <div className={cn(size === "main" ? "mb-3" : "mb-1", className)}>
-      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-        <Tag id={id} className={cn("min-w-[min(100%,12rem)]", size === "main" ? "text-title" : "text-body font-semibold")}>
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+        <Tag id={id} className={cn("grow", size === "main" ? "text-title" : "text-body font-semibold")}>
           {title}
         </Tag>
         {(meta || action) && (
-          <div className="ml-auto flex min-w-0 items-baseline gap-4 max-md:ml-0">
-            {meta && <span className="min-w-0 text-right text-small text-fg-3 tabular-nums max-md:text-left">{meta}</span>}
+          <div className="flex min-w-0 items-baseline gap-4">
+            {meta && <span className="min-w-0 text-small text-fg-3 tabular-nums">{meta}</span>}
             {action && <span className="shrink-0">{action}</span>}
           </div>
         )}

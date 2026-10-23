@@ -144,17 +144,23 @@ const SWATCHES: [string, string][] = [
   ["accent-hover", "bg-accent-hover"],
   ["accent-pressed", "bg-accent-pressed"],
   ["accent-subtle", "bg-accent-subtle"],
+  ["on-accent", "bg-on-accent"],
   ["link", "bg-link"],
   ["focus", "bg-focus"],
   ["danger", "bg-danger"],
+  ["danger-hover", "bg-danger-hover"],
+  ["danger-pressed", "bg-danger-pressed"],
   ["danger-subtle", "bg-danger-subtle"],
   ["badge-bg", "bg-badge-bg"],
+  ["badge-fg", "bg-badge-fg"],
   ["org-bg", "bg-org-bg"],
+  ["org-fg", "bg-org-fg"],
   ["lvl-head", "bg-lvl-head"],
   ["lvl-coord", "bg-lvl-coord"],
   ["lvl-pos", "bg-lvl-pos"],
   ["bar", "bg-bar"],
   ["track", "bg-track"],
+  ["overlay", "bg-overlay"],
 ];
 
 const TYPE: [string, string, string][] = [
@@ -459,7 +465,8 @@ export function Specimens({ prefix, accounts, viewer: demoViewer }: { prefix: st
             </span>
           </Spec>
           <Spec label="CountBadge">
-            <span className="flex items-center gap-6 pt-2 text-fg-2">
+            {/* The badge sits past the icon's right edge; pr-6 keeps "99+" clear of the next specimen. */}
+            <span className="flex items-center gap-6 pr-6 pt-2 text-fg-2">
               <span className="relative grid">
                 <Icon icon={Bell} size={20} />
                 <CountBadge count={5} className="-top-1.5 left-3" />
@@ -543,7 +550,7 @@ export function Specimens({ prefix, accounts, viewer: demoViewer }: { prefix: st
               </TextLink>
             </div>
           </Card>
-          <SectionCard id={id("sc-loading")} title="Experience" meta="Loading" loading size="rail" />
+          <SectionCard id={id("sc-loading")} title="Experience" loading size="rail" />
           <SectionCard
             id={id("sc-empty")}
             title="Coaching tree"
@@ -553,18 +560,25 @@ export function Specimens({ prefix, accounts, viewer: demoViewer }: { prefix: st
           <Card padding="rail" className="lg:col-span-2">
             <CardHeader
               title="Coaching tree"
-              meta="7 people · Dana Ortiz and Eli Novak are listed twice because they worked alongside Avery first"
+              meta="7 people"
               action={
                 <TextLink href="/feed" arrow>
                   Explore tree
                 </TextLink>
               }
             />
-            <p className="text-caption text-fg-3">Header regression check: a long meta wraps on its own line instead of squeezing the title.</p>
+            <p className="text-caption text-fg-3">
+              7 people. Dana Ortiz and Eli Novak are listed twice because they worked alongside Avery before joining Avery&apos;s staff. Derived from overlapping seasons
+              on the same staff.
+            </p>
           </Card>
           <Card padding="rail" className="md:max-w-[280px]">
-            <CardHeader size="rail" title="Same tree" meta="Two steps from Avery, through his current staff" />
-            <p className="text-caption text-fg-3">The same header in a 280px tablet rail.</p>
+            <CardHeader size="rail" title="Same tree" subtitle="Two steps from Avery, through Avery's current staff" />
+            <p className="text-caption text-fg-3">A rail header in a 280px tablet rail: the explanation is a subtitle, not a meta.</p>
+          </Card>
+          <Card padding="rail" className="md:max-w-[280px]">
+            <CardHeader size="rail" title="Conference peers in the NWC" meta="9 programs" action={<TextLink href="/feed">View all</TextLink>} />
+            <p className="text-caption text-fg-3">Header regression check: when the meta doesn&apos;t fit beside the title it wraps under it, left-aligned.</p>
           </Card>
         </div>
       </CanvasSection>
@@ -620,17 +634,34 @@ export function Specimens({ prefix, accounts, viewer: demoViewer }: { prefix: st
             <Switch label="Off" />
           </div>
         </div>
-        <SpecRow>
+        {/* The top-nav field from 721px; the phone top bar's field (mobile variant) below. flex-none:
+            the mobile field flexes along the top bar's row, not down this column. */}
+        <SpecRow className="max-md:hidden">
           <Spec label="Search rest">
             <SearchField variant="nav" shortcutHint aria-label="Search (rest)" />
           </Spec>
           <Spec label="Search hover">
             <SearchField variant="nav" wrapperProps={{ "data-force": "hover" } as object} aria-label="Search (hover)" />
           </Spec>
-          <Spec label="Search focus">
+          <Spec label="Search focus (no / hint)">
             <SearchField variant="nav" wrapperProps={{ "data-force": "focus" } as object} defaultValue="falconer" aria-label="Search (focus)" />
           </Spec>
         </SpecRow>
+        <div className="flex flex-col gap-4 md:hidden">
+          <Spec label="Search rest (phone)" className="w-full">
+            <SearchField variant="mobile" wrapperClassName="w-full flex-none" placeholder="Search coaches, programs" aria-label="Search (phone, rest)" />
+          </Spec>
+          <Spec label="Search focus (phone)" className="w-full">
+            <SearchField
+              variant="mobile"
+              wrapperClassName="w-full flex-none"
+              wrapperProps={{ "data-force": "focus" } as object}
+              placeholder="Search coaches, programs"
+              defaultValue="falconer"
+              aria-label="Search (phone, focus)"
+            />
+          </Spec>
+        </div>
         <SpecRow>
           <Spec label="FilterChip off / on / hover">
             <span className="flex flex-wrap gap-2">

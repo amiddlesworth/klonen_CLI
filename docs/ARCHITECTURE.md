@@ -41,7 +41,7 @@ Screenshot any page: `node tools/screenshot.mjs http://localhost:3000/in/<slug> 
   - `/messaging`, `/notifications`
   - `/api/typeahead?q=` JSON for the global search box
 - **Components**
-  - `web/src/components/ui/*`: design-system primitives (Button, Card, Avatar, OrgMark, Badge, Tabs, Input, SearchField, Skeleton, EmptyState, Menu). Shared by everyone; change only through the foundation owner.
+  - `web/src/components/ui/*`: design-system primitives (Button, Card, Avatar, OrgMark, Badge, Tabs, Input, SearchField, Skeleton, EmptyState, Menu). Shared by everyone; change only through the foundation owner. Join classes with `cn()` (`lib/cn.ts`, clsx + tailwind-merge configured with the design tokens): when two classes set the same property the later one wins, so a `className` passed to a primitive overrides its defaults (`cn("text-fg-1", "text-danger")` → `text-danger`).
   - `web/src/components/shell/*`: TopNav, BottomTabBar, AppShell, RightRail, DemoSwitcher, GlobalSearch, Layouts (page grids with sticky rails), MeMenuSummary (a page's content for the Me menu at 721–1080px, where the feed's left rail is hidden).
   - `web/src/components/<feature>/*`: feature components (profile, tree, program, search, feed, jobs, claim, employer, messaging). A feature agent owns its folder and its routes only.
 - **Formatting**: always use `lib/format.ts` (`seasonRange`, `initials`, `hueFor`, `levelShort`, `salaryRange`, `timeAgo`). Season ranges render with tabular numerals and an en dash.

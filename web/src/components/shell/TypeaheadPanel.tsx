@@ -9,6 +9,9 @@ import { SkeletonAvatar, SkeletonText } from "@/components/ui/Skeleton";
 import { cn } from "@/lib/cn";
 import type { TypeaheadOption, TypeaheadResponse } from "./typeahead";
 
+/** The ↵ hint on the active row: keyboard only, so not on phones or touch screens. */
+const ENTER_HINT = "max-md:hidden pointer-coarse:hidden";
+
 type TypeaheadPanelProps = {
   term: string;
   /** null while the first results load (3 skeleton rows). */
@@ -24,7 +27,7 @@ type TypeaheadPanelProps = {
 /**
  * Typeahead panel (§8.1): level 2, radius 8, 4px padding. Groups People (avatar 24, name,
  * title · program) and Programs (tile 24, name, division · conference), 44px rows, active row
- * --accent-subtle with a ↵ hint, "See all results for '{q}'" last.
+ * --accent-subtle with a ↵ hint (keyboard screens only), "See all results for '{q}'" last.
  */
 export function TypeaheadPanel({ term, results, options, active, listId, onActivate, onPick, className }: TypeaheadPanelProps) {
   const rowCls = (i: number) =>
@@ -50,7 +53,7 @@ export function TypeaheadPanel({ term, results, options, active, listId, onActiv
           <span className="min-w-0 flex-1 truncate text-small text-fg-1">
             See all results for ‘<span className="font-medium">{term}</span>’
           </span>
-          {active === i && <Kbd>↵</Kbd>}
+          {active === i && <Kbd className={ENTER_HINT}>↵</Kbd>}
         </Link>
       );
     }
@@ -61,7 +64,7 @@ export function TypeaheadPanel({ term, results, options, active, listId, onActiv
           <span className="block truncate text-small font-medium leading-[18px] text-fg-1">{o.name}</span>
           {o.meta && <span className="block truncate text-caption text-fg-3">{o.meta}</span>}
         </span>
-        {active === i && <Kbd>↵</Kbd>}
+        {active === i && <Kbd className={ENTER_HINT}>↵</Kbd>}
       </Link>
     );
   };

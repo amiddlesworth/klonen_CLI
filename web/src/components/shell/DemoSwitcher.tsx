@@ -14,7 +14,9 @@ import type { DemoAccountOption } from "./types";
 
 type Choice = DemoRole | "signed_out";
 
-const ROLE_LABEL: Record<DemoRole, string> = { coach: "Coach demo", employer: "Athletic director demo" };
+// The group already carries the one Demo chip, so the labels don't repeat "demo"; the
+// description names the account ("Justin Leatherman · Pacific (OR)").
+const ROLE_LABEL: Record<DemoRole, string> = { coach: "Coach", employer: "Athletic director" };
 
 function describe(a: DemoAccountOption | undefined, role: DemoRole): string {
   if (!a) return role === "coach" ? "Follows moves and keeps a career record" : "Posts jobs and runs a hiring pipeline";
@@ -26,8 +28,10 @@ export function useDemoSwitch() {
   const pathname = usePathname();
   const toast = useToast();
   const [pending, startTransition] = useTransition();
-  function switchTo(choice: Choice) {
-    toast.show(choice === "signed_out" ? "Signed out of the demo" : `Now viewing as the ${ROLE_LABEL[choice].toLowerCase()}`);
+  /** `account` names the person in the toast ("Now viewing as Justin Leatherman"). */
+  function switchTo(choice: Choice, account?: DemoAccountOption) {
+    const who = account?.org ? account.name : choice === "signed_out" ? "" : `the ${ROLE_LABEL[choice].toLowerCase()} demo account`;
+    toast.show(choice === "signed_out" ? "Signed out of the demo" : `Now viewing as ${who}`);
     startTransition(async () => {
       // Stay on the current page when switching accounts (pages that need a role explain it).
       await switchDemoAccount(choice, choice === "signed_out" ? "/" : pathname === "/" ? "/feed" : pathname);
@@ -37,8 +41,9 @@ export function useDemoSwitch() {
 }
 
 /**
- * Demo account radio group (§8.2 Me menu): Coach demo, Athletic director demo, Signed out.
- * Labeled Demo: these are demo accounts, not real sign-in.
+ * Demo account radio group (§8.2 Me menu): Coach, Athletic director, Signed out, each with the
+ * account as its description. The group label carries the Demo chip: these are demo accounts, not
+ * real sign-in. The coach's public record stays Unclaimed (ARCHITECTURE "Demo accounts").
  */
 export function DemoAccountGroup({ accounts, current }: { accounts: DemoAccountOption[]; current: Choice }) {
   const { switchTo } = useDemoSwitch();
@@ -46,7 +51,7 @@ export function DemoAccountGroup({ accounts, current }: { accounts: DemoAccountO
   return (
     <MenuGroup label="Demo account" adornment={<SampleChip label="Demo" />}>
       {(["coach", "employer"] as DemoRole[]).map((role) => (
-        <MenuRadioItem key={role} checked={current === role} description={describe(byRole.get(role), role)} onClick={() => current !== role && switchTo(role)}>
+        <MenuRadioItem key={role} checked={current === role} description={describe(byRole.get(role), role)} onClick={() => current !== role && switchTo(role, byRole.get(role))}>
           {ROLE_LABEL[role]}
         </MenuRadioItem>
       ))}

@@ -6,7 +6,7 @@ import { StickyAside } from "./StickyAside";
 
 /*
  * Page layouts (§8.2 AppShell grid). Container: max 1200px with 24px side padding (1152 content),
- * centered; page padding top 16–20, bottom 48. Phone: one column, full-bleed cards, no side padding
+ * centered; page padding top 20 in every layout (so the first card never jumps between tabs), bottom 48. Phone: one column, full-bleed cards, no side padding
  * (content that is not a card brings its own 16px gutter) and an 8px canvas gap under the top bar
  * (the phone card gap, §5.1). Each layout renders the page's single <main id="main"> (the skip link
  * target); rails are labelled <aside>s.
@@ -81,8 +81,9 @@ type TwoColumnProps = {
  */
 export function TwoColumnLayout({ breadcrumb, rail, railLabel = "Related", children }: TwoColumnProps) {
   return (
-    <div className="mx-auto grid w-full max-w-page items-start gap-x-6 gap-y-2 pb-4 pt-2 md:gap-y-3 md:px-6 md:pb-12 md:pt-4 min-[961px]:grid-cols-[minmax(0,1fr)_var(--rail-tablet)] lg:grid-cols-[minmax(0,1fr)_var(--rail-profile)]">
-      {breadcrumb && <div className="col-span-full max-md:hidden">{breadcrumb}</div>}
+    <div className="mx-auto grid w-full max-w-page items-start gap-x-6 gap-y-2 pb-4 pt-2 md:gap-y-3 md:px-6 md:pb-12 md:pt-5 min-[961px]:grid-cols-[minmax(0,1fr)_var(--rail-tablet)] lg:grid-cols-[minmax(0,1fr)_var(--rail-profile)]">
+      {/* The page top is 20px in every layout; the breadcrumb sits 16px under the nav (profile.html). */}
+      {breadcrumb && <div className="col-span-full max-md:hidden md:-mt-1">{breadcrumb}</div>}
       <main id="main" tabIndex={-1} className={MAIN}>
         {children}
       </main>
