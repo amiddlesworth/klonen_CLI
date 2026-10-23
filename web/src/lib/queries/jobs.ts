@@ -2,7 +2,9 @@ import "server-only";
 import { and, desc, eq, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import { jobs, organizations } from "@/db/schema";
+import { conferenceShort } from "@/lib/format";
 import { toJobCard, type JobCardData } from "./feed";
+import { conferenceKey } from "./orgs";
 
 export type JobFilters = { roleGroup?: string; state?: string; conference?: string; q?: string };
 
@@ -10,7 +12,8 @@ export async function listJobs(f: JobFilters = {}): Promise<JobCardData[]> {
   const where: SQL[] = [eq(jobs.status, "open")];
   if (f.roleGroup) where.push(sql`${jobs.roleGroup} = ${f.roleGroup}`);
   if (f.state) where.push(eq(organizations.state, f.state));
-  if (f.conference) where.push(eq(organizations.conferenceAbbr, f.conference));
+  // Footnote markers never split a conference: "NACC" (or "NACC[g]") matches every NACC program.
+  if (f.conference) where.push(sql`${conferenceKey} = ${conferenceShort(f.conference) ?? f.conference}`);
   if (f.q?.trim()) where.push(sql`(${jobs.title} ILIKE ${"%" + f.q.trim() + "%"} OR ${organizations.shortName} ILIKE ${"%" + f.q.trim() + "%"})`);
   const rows = await db
     .select({

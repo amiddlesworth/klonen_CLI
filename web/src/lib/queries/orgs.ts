@@ -14,18 +14,26 @@ export const STAFF_UNIT_LABEL: Record<StaffUnit, string> = {
   support: "Support staff",
 };
 
+/**
+ * The conference abbreviation without footnote markers left over from source tables ("NACC[g]" -> "NACC"),
+ * null when empty. Compare, filter and group on this so a marker never splits a conference; the display
+ * equivalent is conferenceShort() in lib/format.ts. The regex is inlined (not a bind parameter) so the
+ * expression is textually identical in SELECT and GROUP BY.
+ */
+export const conferenceKey = sql<string | null>`nullif(btrim(regexp_replace(${organizations.conferenceAbbr}, '\\[[^]]*\\]', '', 'g')), '')`;
+
 export async function getOrg(slug: string) {
   const [org] = await db.select().from(organizations).where(eq(organizations.slug, slug)).limit(1);
   return org ?? null;
 }
 
-/** Current staff grouped by unit, head coach first. */
+/** Current staff grouped by unit, head coach first. Fictional demo people (isDemo) are never listed on a program. */
 export async function getStaff(orgId: string): Promise<{ unit: StaffUnit; people: PersonSummary[] }[]> {
   const rows = await db
     .select({ ...personSummaryCols, unit: people.unit })
     .from(people)
     .leftJoin(organizations, eq(organizations.id, people.currentOrgId))
-    .where(eq(people.currentOrgId, orgId))
+    .where(and(eq(people.currentOrgId, orgId), eq(people.isDemo, false)))
     .orderBy(asc(people.fullName));
   const order: Record<string, number> = { head_coach: 0, coordinator: 1, position_coach: 2, ga_analyst: 3, support: 4, other: 5 };
   rows.sort((a, b) => (order[a.roleGroup ?? "other"] ?? 9) - (order[b.roleGroup ?? "other"] ?? 9));
@@ -42,24 +50,34 @@ export async function getStaff(orgId: string): Promise<{ unit: StaffUnit; people
   return (Object.keys(buckets) as StaffUnit[]).filter((u) => buckets[u].length).map((u) => ({ unit: u, people: buckets[u] }));
 }
 
-/** People who coached at this organization in the past and where they are now. */
+/**
+ * People who coached at this organization in the past and where they are now: each person's most recent
+ * past stint here (latest known season, i.e. end year else start year; undated stints only when nothing
+ * dated exists), most recent first, then by name. The limit applies after that ordering.
+ */
 export async function getAlumni(orgId: string, limit = 60) {
-  const rows = await db
-    .selectDistinctOn([people.id], {
-      ...personSummaryCols,
+  const recency = sql<number | null>`coalesce(${tenures.endYear}, ${tenures.startYear})`;
+  const latest = db
+    .selectDistinctOn([tenures.personId], {
+      personId: tenures.personId,
       role: tenures.role,
       startYear: tenures.startYear,
       endYear: tenures.endYear,
+      recency: recency.as("recency"),
     })
     .from(tenures)
-    .innerJoin(people, eq(people.id, tenures.personId))
+    .where(and(eq(tenures.orgId, orgId), eq(tenures.isCurrent, false), eq(tenures.asPlayer, false)))
+    .orderBy(tenures.personId, sql`${recency} desc nulls last`, asc(tenures.sortOrder), asc(tenures.id))
+    .as("latest");
+  const rows = await db
+    .select({ ...personSummaryCols, role: latest.role, startYear: latest.startYear, endYear: latest.endYear })
+    .from(latest)
+    .innerJoin(people, eq(people.id, latest.personId))
     .leftJoin(organizations, eq(organizations.id, people.currentOrgId))
-    .where(and(eq(tenures.orgId, orgId), eq(tenures.isCurrent, false), eq(tenures.asPlayer, false), or(ne(people.currentOrgId, orgId), sql`${people.currentOrgId} is null`)))
-    .orderBy(people.id, desc(tenures.endYear))
+    .where(and(eq(people.isDemo, false), or(ne(people.currentOrgId, orgId), sql`${people.currentOrgId} is null`)))
+    .orderBy(sql`${latest.recency} desc nulls last`, asc(people.fullName))
     .limit(limit);
-  return rows
-    .map((r) => ({ person: toSummary(r), role: r.role, startYear: r.startYear, endYear: r.endYear }))
-    .sort((a, b) => (b.endYear ?? b.startYear ?? 0) - (a.endYear ?? a.startYear ?? 0));
+  return rows.map((r) => ({ person: toSummary(r), role: r.role, startYear: r.startYear, endYear: r.endYear }));
 }
 
 export async function getOrgJobs(orgId: string) {
@@ -85,7 +103,7 @@ export async function searchOrgs(q: string, limit = 8) {
   const prefix = `${e}%`;
   const wordStart = `% ${e}%`;
   const rank = sql`case
-    when lower(${organizations.shortName}) = ${lower} or lower(${organizations.name}) = ${lower} or lower(${organizations.conferenceAbbr}) = ${lower} then 0
+    when lower(${organizations.shortName}) = ${lower} or lower(${organizations.name}) = ${lower} or lower(${conferenceKey}) = ${lower} then 0
     when ${organizations.name} ilike ${prefix} or ${organizations.shortName} ilike ${prefix} then 1
     when ${organizations.name} ilike ${wordStart} or ${organizations.shortName} ilike ${wordStart} or ${organizations.shortName} ilike ${`%(${e}%`} then 2
     else 3 end`;
@@ -104,18 +122,19 @@ export async function searchOrgs(q: string, limit = 8) {
     .where(
       and(
         eq(organizations.inRegistry, true),
-        or(ilike(organizations.name, like), ilike(organizations.shortName, like), ilike(organizations.nickname, like), sql`lower(${organizations.conferenceAbbr}) = ${lower}`),
+        or(ilike(organizations.name, like), ilike(organizations.shortName, like), ilike(organizations.nickname, like), sql`lower(${conferenceKey}) = ${lower}`),
       ),
     )
     .orderBy(rank, asc(organizations.shortName))
     .limit(limit);
 }
 
+/** Registry conference abbreviations, cleaned of footnote markers and de-duplicated ("NACC[g]" folds into "NACC"). */
 export async function listConferences() {
   const rows = await db
-    .selectDistinct({ abbr: organizations.conferenceAbbr })
+    .selectDistinct({ abbr: conferenceKey })
     .from(organizations)
-    .where(and(eq(organizations.inRegistry, true), sql`${organizations.conferenceAbbr} is not null`))
-    .orderBy(asc(organizations.conferenceAbbr));
+    .where(and(eq(organizations.inRegistry, true), sql`${conferenceKey} is not null`))
+    .orderBy(conferenceKey);
   return rows.map((r) => r.abbr!);
 }

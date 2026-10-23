@@ -3,6 +3,7 @@ import { and, count, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { jobs, organizations, people, tenures, treeEdges } from "@/db/schema";
 import { CURRENT_SEASON } from "@/lib/brand";
+import { conferenceKey } from "./orgs";
 import { personSummaryCols, toSummary, type PersonSummary } from "./people";
 
 export type Move = {
@@ -32,6 +33,7 @@ export async function getMoves(limit = 30, offset = 0): Promise<Move[]> {
     .select({
       ...personSummaryCols,
       role: tenures.role,
+      tOrgId: organizations.id,
       tOrgSlug: organizations.slug,
       tOrgShort: organizations.shortName,
       tOrgNick: organizations.nickname,
@@ -46,19 +48,19 @@ export async function getMoves(limit = 30, offset = 0): Promise<Move[]> {
     .limit(limit)
     .offset(offset);
   if (!rows.length) return [];
-  // Previous stint for each person, to tell a promotion from a hire.
+  // Previous stint for each person, to tell a promotion from a hire: the past stint with the latest known
+  // season (its end year, else its start year), so a recent stint known only by its end year ("?–2025")
+  // beats an old fully dated one. Undated stints come last; ties fall back to the source order.
   const prev = await db.execute<{ person_id: string; role: string; org_id: string; short_name: string }>(sql`
     SELECT DISTINCT ON (t.person_id) t.person_id, t.role, t.org_id, o.short_name
     FROM tenures t JOIN organizations o ON o.id = t.org_id
     WHERE t.is_current = false AND t.as_player = false AND t.person_id IN (${sql.join(rows.map((r) => sql`${r.id}`), sql`, `)})
-    ORDER BY t.person_id, t.start_year DESC NULLS LAST`);
+    ORDER BY t.person_id, coalesce(t.end_year, t.start_year) DESC NULLS LAST, t.sort_order, t.id`);
   const prevBy = new Map(prev.rows.map((p) => [p.person_id, p]));
-  const orgIdBySlug = new Map<string, string>();
   return rows.map((r) => {
     const p = prevBy.get(r.id);
     const summary = toSummary(r);
-    orgIdBySlug.set(r.tOrgSlug, r.tOrgSlug);
-    const promoted = !!p && p.short_name === r.tOrgShort;
+    const promoted = !!p && p.org_id === r.tOrgId;
     return {
       kind: promoted ? "promoted" : "joined",
       person: summary,
@@ -138,21 +140,23 @@ export async function getFeed(limit = 24): Promise<FeedItem[]> {
   return items;
 }
 
-/** Numbers for the right-rail carousel tracker. */
+/** Numbers for the right-rail carousel tracker. Conferences are grouped on the cleaned abbreviation ("NACC[g]" counts as NACC). */
 export async function getCarouselStats() {
+  const newHire = and(eq(tenures.isCurrent, true), eq(tenures.startYear, CURRENT_SEASON), eq(tenures.asPlayer, false), eq(people.isDemo, false));
   const [[{ openJobs }], [{ hires }], byConf] = await Promise.all([
     db.select({ openJobs: count() }).from(jobs).where(eq(jobs.status, "open")),
-    db.select({ hires: count() }).from(tenures).where(and(eq(tenures.isCurrent, true), eq(tenures.startYear, CURRENT_SEASON), eq(tenures.asPlayer, false))),
+    db.select({ hires: count() }).from(tenures).innerJoin(people, eq(people.id, tenures.personId)).where(newHire),
     db
-      .select({ conference: organizations.conferenceAbbr, n: count() })
+      .select({ conference: conferenceKey, n: count() })
       .from(tenures)
+      .innerJoin(people, eq(people.id, tenures.personId))
       .innerJoin(organizations, eq(organizations.id, tenures.orgId))
-      .where(and(eq(tenures.isCurrent, true), eq(tenures.startYear, CURRENT_SEASON), eq(tenures.asPlayer, false)))
-      .groupBy(organizations.conferenceAbbr)
-      .orderBy(desc(count()))
-      .limit(5),
+      .where(newHire)
+      .groupBy(conferenceKey)
+      .orderBy(desc(count()), conferenceKey)
+      .limit(6),
   ]);
-  return { openJobs, hires, byConference: byConf.filter((r) => r.conference) as { conference: string; n: number }[] };
+  return { openJobs, hires, byConference: (byConf.filter((r) => r.conference) as { conference: string; n: number }[]).slice(0, 5) };
 }
 
 /** Dataset-wide numbers for the landing page. */

@@ -1,75 +1,160 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { ChevronRight, House, Lock } from "lucide-react";
-import { PlaceholderPage } from "@/components/shell/PlaceholderPage";
+import { notFound, redirect } from "next/navigation";
+import { Briefcase, Repeat } from "lucide-react";
+import { CarouselTracker, PhoneTrackerSummary } from "@/components/feed/CarouselTracker";
+import { FeedPageNote, FeedToolbar } from "@/components/feed/FeedToolbar";
+import { GroupCard } from "@/components/feed/GroupCard";
+import { JobCard } from "@/components/feed/JobCard";
+import { MeMenuStats, MiniProfile, Shortcuts, shortcutsFor } from "@/components/feed/MiniProfile";
+import { MoveCard } from "@/components/feed/MoveCard";
+import { PeopleYouMayKnow } from "@/components/feed/PeopleYouMayKnow";
+import { TransactionsDigest } from "@/components/feed/TransactionsDigest";
+import { ThreeColumnLayout } from "@/components/shell/Layouts";
+import { MeMenuSummary } from "@/components/shell/MeMenuSummary";
 import { getViewer } from "@/components/shell/viewer";
-import { Avatar } from "@/components/ui/Avatar";
+import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Icon } from "@/components/ui/Icon";
-import { OrgMark } from "@/components/ui/OrgMark";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { CURRENT_SEASON } from "@/lib/brand";
 import { availabilityStatus } from "@/lib/format";
+import {
+  getCarouselTracker,
+  getFeedPage,
+  getFeedViewer,
+  getMiniProfileStats,
+  getPeopleYouMayKnow,
+  parseFilter,
+  parsePage,
+  type FeedEntry,
+  type FeedFilter,
+} from "@/lib/queries/feedx";
 import { getSession } from "@/lib/session";
 
-export const metadata: Metadata = { title: "Home" };
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+const FILTER_TITLE: Record<FeedFilter, string> = { all: "Home", moves: "Staff moves", jobs: "Jobs in your feed" };
+
+export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
+  const sp = await searchParams;
+  const filter = parseFilter(sp.filter);
+  const page = parsePage(sp.page);
+  return {
+    title: page > 1 ? `${FILTER_TITLE[filter]} · Page ${page}` : FILTER_TITLE[filter],
+    description: `Hires, promotions and jobs across Division III football for the ${CURRENT_SEASON} season.`,
+    robots: { index: false, follow: false },
+  };
+}
+
+function feedHref(filter: FeedFilter, page = 1): string {
+  const q = new URLSearchParams();
+  if (filter !== "all") q.set("filter", filter);
+  if (page > 1) q.set("page", String(page));
+  const s = q.toString();
+  return s ? `/feed?${s}` : "/feed";
+}
+
+function entryInferred(e: FeedEntry): boolean {
+  if (e.type === "move") return e.move.recordInferred;
+  if (e.type === "group") return e.moves.slice(0, 5).some((m) => m.previousInferred);
+  return false;
+}
 
 /**
- * Placeholder: the feed feature replaces this page. The feed is for signed-in viewers; visitors go
- * to the landing page. The left rail is a placeholder too, laid out as the §8.5 MiniProfile (avatar
- * 48 above the name, title, program row with OrgMark 24); the feed adds the demo key-values. At 721–1080px the left rail is hidden: the feed puts its MiniProfile
- * key-values into the Me menu with <MeMenuSummary> (components/shell/MeMenuSummary.tsx, §8.2); the
- * Me menu already shows the Open to opportunities status.
+ * Home feed (DESIGN.md §8.5, design/reference/feed.html). Signed-in only: visitors go to the landing
+ * page. Left rail: mini profile and shortcuts (lg; in the Me menu at md). Center: filter, moves with
+ * personal reasons from the session, a sample job, and the "More staff moves" digest, paginated by
+ * ?page=. Right rail: carousel tracker and people you may know.
  */
-export default async function FeedPage() {
+export default async function FeedPage({ searchParams }: { searchParams: SearchParams }) {
   const session = await getSession();
   if (!session) redirect("/");
-  const viewer = await getViewer(session);
-  const status = viewer.availability ? availabilityStatus(viewer.availability.open, viewer.availability.audience, viewer.orgShortName) : null;
+  const sp = await searchParams;
+  const filter = parseFilter(sp.filter);
+  const page = parsePage(sp.page);
 
-  const org = session.org;
-  const profileHref = viewer.profileSlug ? `/in/${viewer.profileSlug}` : null;
-  const left = (
-    <Card padding="rail">
-      <Avatar name={viewer.name} tintKey={viewer.tintKey} size={48} />
-      <p className="mt-3 text-subtitle leading-5 font-semibold">
-        {profileHref ? (
-          <Link href={profileHref} className="target-24 rounded-xs underline-offset-2 hover:underline">
-            {viewer.name}
-          </Link>
-        ) : (
-          viewer.name
-        )}
-      </p>
-      {viewer.title && <p className="mt-0.5 text-small text-fg-2">{viewer.title}</p>}
-      {org && (
-        <p className="mt-2 flex items-center gap-2 text-caption text-fg-2">
-          <OrgMark shortName={org.shortName} name={org.name} size={24} />
-          <span className="min-w-0">{org.name}</span>
-        </p>
-      )}
-      {status && (
-        <Link href="/settings/availability" className="group -mx-4 -mb-4 mt-3 flex items-center gap-2 border-t border-divider px-4 py-3">
-          <span className="min-w-0 flex-1">
-            <span className="block text-small font-medium group-hover:underline underline-offset-2">Open to opportunities</span>
-            <span className="flex items-center gap-1 text-caption text-fg-3">
-              <Icon icon={Lock} size={12} className="text-fg-2" />
-              {status}
-            </span>
-          </span>
-          <Icon icon={ChevronRight} size={16} className="text-fg-3" />
-        </Link>
-      )}
-    </Card>
-  );
+  const viewer = await getFeedViewer(session);
+  const [shellViewer, feed, tracker, pymk, stats] = await Promise.all([
+    getViewer(session),
+    getFeedPage(viewer, filter, page),
+    getCarouselTracker(viewer),
+    getPeopleYouMayKnow(viewer),
+    getMiniProfileStats(viewer),
+  ]);
+  if (page > feed.totalPages) notFound();
+
+  const status = shellViewer.availability ? availabilityStatus(shellViewer.availability.open, shellViewer.availability.audience, shellViewer.orgShortName) : null;
+  const shortcuts = shortcutsFor(viewer, stats);
+  const lite = { name: viewer.name, tintKey: viewer.tintKey };
+  const nextHref = page < feed.totalPages ? feedHref(filter, page + 1) : null;
+
+  // The dotted-year footnote goes in the first card on the page that shows an inferred year (§6.2).
+  const noteIndex = feed.entries.findIndex(entryInferred);
+  const digestNote = noteIndex < 0 && feed.digest.some((m) => m.previousInferred);
+
+  const empty = filter === "jobs" ? feed.totalJobs === 0 : filter === "moves" ? feed.totalMoves === 0 : feed.totalMoves + feed.totalJobs === 0;
+  const noun = filter === "jobs" ? "jobs" : filter === "moves" ? "moves" : "moves or jobs";
 
   return (
-    <PlaceholderPage
-      layout="three"
-      left={left}
-      title="Home"
-      icon={House}
-      message="Your feed is on its way."
-      description="Hires, promotions, jobs and milestones across Division III will show up here."
-    />
+    <ThreeColumnLayout
+      left={
+        <>
+          <MiniProfile viewer={viewer} stats={stats} status={status} />
+          <Shortcuts items={shortcuts} />
+        </>
+      }
+      leftLabel="Your profile"
+      right={
+        <>
+          <CarouselTracker tracker={tracker} />
+          <PeopleYouMayKnow rows={pymk} />
+        </>
+      }
+      rightLabel="Carousel and suggestions"
+    >
+      <MeMenuSummary>
+        <MeMenuStats viewer={viewer} stats={stats} shortcuts={shortcuts} />
+      </MeMenuSummary>
+      <h1 className="sr-only">Home feed</h1>
+      <FeedToolbar filter={filter} />
+      {page > 1 && <FeedPageNote page={page} totalPages={feed.totalPages} topHref={feedHref(filter)} />}
+      {page === 1 && filter !== "jobs" && !empty && <PhoneTrackerSummary tracker={tracker} />}
+
+      {empty ? (
+        <Card padding="main">
+          <EmptyState
+            icon={filter === "jobs" ? Briefcase : Repeat}
+            title={`No ${noun} in Division III for ${CURRENT_SEASON} yet.`}
+            description={`New ${noun} show up here first.`}
+            action={
+              filter !== "all" ? (
+                <ButtonLink href="/feed" phone="large">
+                  Clear filter
+                </ButtonLink>
+              ) : undefined
+            }
+            spacing="lg"
+          />
+        </Card>
+      ) : (
+        <>
+          {feed.entries.map((e, i) => {
+            const note = i === noteIndex;
+            if (e.type === "job") return <JobCard key={e.key} job={e.job} />;
+            if (e.type === "group")
+              return <GroupCard key={e.key} org={e.org} moves={e.moves} reason={e.reason} sourceUrl={e.sourceUrl} viewer={lite} showInferredNote={note} />;
+            return <MoveCard key={e.key} move={e.move} reason={e.reason} viewer={lite} showInferredNote={note} />;
+          })}
+          <TransactionsDigest moves={feed.digest} moreHref={nextHref} showInferredNote={digestNote} />
+          {nextHref && (filter === "jobs" || feed.digest.length === 0) && (
+            <div className="max-md:px-4">
+              <ButtonLink href={nextHref} fullWidth phone="large">
+                {filter === "jobs" ? "Show more jobs" : "Show more moves"}
+              </ButtonLink>
+            </div>
+          )}
+          {!nextHref && <p className="py-4 text-center text-caption text-fg-3">You&apos;re up to date</p>}
+        </>
+      )}
+    </ThreeColumnLayout>
   );
 }

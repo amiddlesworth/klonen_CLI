@@ -1,6 +1,7 @@
 /**
  * Load the committed dataset in ../data into Postgres, then add clearly
- * labeled demo records (demo accounts, sample job listings, demo messages).
+ * labeled demo records (demo accounts, sample job listings, fictional pipeline
+ * candidates, demo messages).
  *
  * Usage: npm run db:seed
  */
@@ -44,6 +45,54 @@ const SAMPLE_ROLES: { title: string; roleGroup: Tenure["roleGroup"]; unit: Tenur
   { title: "Director of Football Operations", roleGroup: "support", unit: "staff", min: 45000, max: 55000 },
   { title: "Assistant Strength & Conditioning Coach", roleGroup: "support", unit: "staff", min: 36000, max: 44000 },
 ];
+
+type Stage = (typeof schema.pipelineStage.enumValues)[number];
+type DemoStint = { role: string; roleGroup: Tenure["roleGroup"]; start: number; end: number | null };
+
+/**
+ * Fictional candidates for the demo AD's hiring pipeline. The people are invented (isDemo, "demo-" slugs,
+ * made-up names) and so are their modest careers, newest stint first, the first one current. The programs
+ * are real D-III schools assigned at seed time, and every tenure says it is a demo record. Queries keep
+ * isDemo people off program pages, search and the feed, and they get no tree edges, so no real coach is
+ * ever linked to them or put into this search.
+ */
+const DEMO_CANDIDATES: { first: string; last: string; stage: Stage; note: string | null; career: DemoStint[] }[] = [
+  { first: "Avery", last: "Fieldstone", stage: "sourced", note: null, career: [
+    { role: "Defensive Graduate Assistant", roleGroup: "ga_analyst", start: 2025, end: null },
+    { role: "Student Assistant Coach", roleGroup: "ga_analyst", start: 2023, end: 2024 },
+  ] },
+  { first: "Jordan", last: "Larkspur", stage: "sourced", note: null, career: [
+    { role: "Linebackers Coach", roleGroup: "position_coach", start: 2024, end: null },
+    { role: "Graduate Assistant (Defense)", roleGroup: "ga_analyst", start: 2022, end: 2023 },
+  ] },
+  { first: "Casey", last: "Thornbury", stage: "sourced", note: null, career: [
+    { role: "Defensive Quality Control", roleGroup: "ga_analyst", start: 2025, end: null },
+    { role: "Volunteer Assistant Coach", roleGroup: "ga_analyst", start: 2024, end: 2024 },
+  ] },
+  { first: "Riley", last: "Ashgrove", stage: "contacted", note: "Demo note: left a voicemail, follow up next week.", career: [
+    { role: "Defensive Backs Coach", roleGroup: "position_coach", start: 2023, end: null },
+    { role: "Graduate Assistant (Secondary)", roleGroup: "ga_analyst", start: 2021, end: 2022 },
+  ] },
+  { first: "Taylor", last: "Brightwater", stage: "contacted", note: null, career: [
+    { role: "Defensive Line Coach", roleGroup: "position_coach", start: 2022, end: null },
+    { role: "Assistant Defensive Line Coach", roleGroup: "position_coach", start: 2020, end: 2021 },
+  ] },
+  { first: "Devon", last: "Oakhurst", stage: "interview", note: "Demo note: phone screen done, set up a campus visit.", career: [
+    { role: "Safeties Coach / Video Coordinator", roleGroup: "position_coach", start: 2024, end: null },
+    { role: "Student Assistant Coach", roleGroup: "ga_analyst", start: 2022, end: 2023 },
+  ] },
+  { first: "Parker", last: "Wrenfield", stage: "interview", note: null, career: [
+    { role: "Defensive Analyst", roleGroup: "ga_analyst", start: 2024, end: null },
+    { role: "Graduate Assistant (Linebackers)", roleGroup: "ga_analyst", start: 2022, end: 2023 },
+  ] },
+  { first: "Emerson", last: "Hollowell", stage: "offer", note: "Demo note: verbal offer made, waiting on an answer.", career: [
+    { role: "Outside Linebackers Coach", roleGroup: "position_coach", start: 2021, end: null },
+    { role: "Graduate Assistant (Defense)", roleGroup: "ga_analyst", start: 2019, end: 2020 },
+  ] },
+];
+const DEMO_ABOUT =
+  "Demo candidate. A fictional coach created for the hiring pipeline demo: the name and career are invented, and the programs are real schools used only as a setting.";
+const DEMO_TENURE_EVIDENCE = "Demo tenure: invented for the hiring pipeline demo, not taken from any source.";
 
 function jobDescription(title: string, org: Org) {
   return [
@@ -100,11 +149,22 @@ async function main() {
   // Private and off by default, as in the reference ("Off · only you see this").
   await db.insert(schema.availability).values({ personId: DEMO_COACH_ID, open: false, audience: "all_except_current", roles: [], regions: [] });
 
-  // Sample job listings at real programs, labeled as samples in the UI.
+  // Programs with staff on the network (anyone currently there) vs. registry D-III programs without:
+  // the ~48 whose staff pages we could not read.
+  const staffed = new Set<string>([
+    ...people.map((p) => p.currentOrgId).filter((id): id is string => !!id),
+    ...tenures.filter((t) => t.isCurrent && !t.asPlayer).map((t) => t.orgId),
+  ]);
+  const d3 = registry.filter((o) => o.level === "NCAA D-III");
+  const unreadPrograms = d3.filter((o) => !staffed.has(o.id!));
+  if (!unreadPrograms.length) throw new Error("sample jobs: no registry program without staff on the network");
+
+  // Sample job listings, labeled "Sample listing" in the UI. They go only to programs with no staff on
+  // the network, so no listing reads as a real coach's job coming open.
   const now = Date.now();
   const jobRows: (typeof schema.jobs.$inferInsert)[] = [];
   for (let i = 0; i < 28; i++) {
-    const org = pick(registry);
+    const org = pick(unreadPrograms);
     const role = pick(SAMPLE_ROLES);
     jobRows.push({
       orgId: org.id!,
@@ -124,12 +184,54 @@ async function main() {
   }
   await db.insert(schema.jobs).values(jobRows);
 
-  // Hiring pipeline for the demo AD.
-  const [list] = await db.insert(schema.shortlists).values({ ownerUserId: "u-demo-ad", name: "Defensive Coordinator search" }).returning();
-  const candidates = people.filter((p) => (p.roleGroup === "coordinator" || p.roleGroup === "position_coach") && p.currentOrgId !== employerOrg.id).slice(0, 9);
-  const stages = ["sourced", "sourced", "sourced", "contacted", "contacted", "interview", "interview", "offer", "sourced"] as const;
+  // Hiring pipeline for the demo AD: fictional candidates only (DEMO_CANDIDATES), never real coaches.
+  // An analyst search, because a coordinator search at Pacific (OR) would imply its real coordinator is leaving.
+  // Each demo stint goes to a different staffed D-III program (not Pacific, not the unread ones that hold the
+  // sample jobs), and a current demo title never repeats one a real coach holds at that program.
+  const titlesAt = new Map<string, Set<string>>();
+  const holdTitle = (orgId: string | null | undefined, title: string | null | undefined) => {
+    if (!orgId || !title) return;
+    if (!titlesAt.has(orgId)) titlesAt.set(orgId, new Set());
+    titlesAt.get(orgId)!.add(title.trim().toLowerCase());
+  };
+  for (const p of people) holdTitle(p.currentOrgId, p.currentTitle);
+  for (const t of tenures) if (t.isCurrent) holdTitle(t.orgId, t.role);
+  const demoPool = d3.filter((o) => staffed.has(o.id!) && o.id !== employerOrg.id).sort((a, b) => a.id!.localeCompare(b.id!));
+  const demoRand = rng(8);
+  const usedDemoOrgs = new Set<string>();
+  const demoOrgFor = (currentTitle: string | null) => {
+    const free = demoPool.filter((o) => !usedDemoOrgs.has(o.id!) && !(currentTitle && titlesAt.get(o.id!)?.has(currentTitle.toLowerCase())));
+    if (!free.length) throw new Error("demo candidates: ran out of staffed D-III programs");
+    const org = free[Math.floor(demoRand() * free.length)];
+    usedDemoOrgs.add(org.id!);
+    return org.id!;
+  };
+  const realSlugs = new Set(people.map((p) => p.slug));
+  const demoPeople: Person[] = [];
+  const demoTenures: Tenure[] = [];
+  for (const c of DEMO_CANDIDATES) {
+    const slug = `demo-${c.first}-${c.last}`.toLowerCase();
+    if (realSlugs.has(slug)) throw new Error(`demo candidates: slug ${slug} collides with a real person`);
+    const id = `p-${slug}`;
+    const orgIds = c.career.map((s) => demoOrgFor(s.end === null ? s.role : null));
+    const current = c.career[0];
+    demoPeople.push({
+      id, slug, fullName: `${c.first} ${c.last}`, firstName: c.first, lastName: c.last,
+      currentOrgId: orgIds[0], currentTitle: current.role, roleGroup: current.roleGroup, unit: "defense",
+      about: DEMO_ABOUT, bioExcerpt: null, bioQuality: "none", sourceUrl: null, claimed: false, isDemo: true,
+    });
+    c.career.forEach((s, j) =>
+      demoTenures.push({
+        personId: id, orgId: orgIds[j], role: s.role, roleGroup: s.roleGroup, unit: "defense", startYear: s.start, endYear: s.end,
+        isCurrent: s.end === null, asPlayer: false, yearsExplicit: true, evidence: DEMO_TENURE_EVIDENCE, sourceUrl: null, verified: false, sortOrder: j,
+      }),
+    );
+  }
+  await db.insert(schema.people).values(demoPeople);
+  await db.insert(schema.tenures).values(demoTenures);
+  const [list] = await db.insert(schema.shortlists).values({ ownerUserId: "u-demo-ad", name: "Defensive analyst search (demo)" }).returning();
   await db.insert(schema.shortlistEntries).values(
-    candidates.map((c, i) => ({ shortlistId: list.id, personId: c.id!, stage: stages[i], position: i, note: i === 5 ? "Strong references from the head coach." : null })),
+    DEMO_CANDIDATES.map((c, i) => ({ shortlistId: list.id, personId: demoPeople[i].id!, stage: c.stage, position: i, note: c.note })),
   );
 
   // Notifications for the demo coach.
@@ -138,6 +240,57 @@ async function main() {
     { userId: "u-demo-coach", kind: "job_match", payload: { jobTitle: jobRows[0].title } },
     { userId: "u-demo-coach", kind: "tree", payload: { text: "A coach from your tree changed jobs" } },
   ]);
+
+  // demo messages ---------------------------------------------------------------------------------
+  // A few short, labeled demo conversations for /messaging, all with the demo coach. The other people
+  // are fictional: a new demo athletic director (at the program holding the "Defensive Coordinator"
+  // sample listing, so no real coach's job reads as coming open), two of the fictional pipeline
+  // candidates above, and the demo AD Morgan Ellis. Words from the demo coach stay mundane and make no
+  // claim about the real person's career or plans.
+  {
+    const dcJob = jobRows.find((j) => j.title === "Defensive Coordinator") ?? jobRows[0];
+    const dcOrg = orgs.find((o) => o.id === dcJob.orgId)!;
+    const orgName = (id: string | null | undefined) => orgs.find((o) => o.id === id)?.name ?? "my school";
+    const riley = demoPeople.find((p) => p.slug === "demo-riley-ashgrove")!;
+    const avery = demoPeople.find((p) => p.slug === "demo-avery-fieldstone")!;
+    await db.insert(schema.users).values([
+      { id: "u-demo-dana", email: "demo-dana@example.com", name: "Dana Whitcombe", kind: "employer", orgId: dcOrg.id!, isDemo: true },
+      { id: "u-demo-riley", email: "demo-riley@example.com", name: riley.fullName, kind: "coach", personId: riley.id!, isDemo: true },
+      { id: "u-demo-avery", email: "demo-avery@example.com", name: avery.fullName, kind: "coach", personId: avery.id!, isDemo: true },
+    ]);
+    const COACH = "u-demo-coach";
+    const thread = (other: string) => [COACH, other].sort().join(":");
+    const ago = (minutes: number) => new Date(now - minutes * 60_000);
+    type Msg = typeof schema.messages.$inferInsert;
+    const msg = (from: string, to: string, minutesAgo: number, body: string, readAfter: number | null): Msg => ({
+      threadId: thread(from === COACH ? to : from),
+      fromUserId: from,
+      toUserId: to,
+      body,
+      sentAt: ago(minutesAgo),
+      readAt: readAfter === null ? null : ago(minutesAgo - readAfter),
+      isDemo: true,
+    });
+    await db.insert(schema.messages).values([
+      // A fictional AD about the coordinator opening (the sample listing). Unread.
+      msg("u-demo-dana", COACH, 125,
+        `Hi Justin, I'm the athletic director at ${dcOrg.name}. We've opened a search for a defensive coordinator, and your special teams and secondary background stood out. Would you be open to a short call in the next week or two? Happy to work around your schedule.`,
+        null),
+      // A fictional fellow DB coach proposing a film swap. Unread.
+      msg("u-demo-riley", COACH, 60 * 26,
+        `Hey Justin, ${riley.firstName} here. I coach the defensive backs at ${orgName(riley.currentOrgId)}. I'm putting together an offseason film swap with a few other DB coaches. Interested? I can send our press coverage teaching tape first.`,
+        null),
+      // The demo AD at Pacific (OR), grouped messages and a reply. The reply is still unread for Morgan.
+      msg("u-demo-ad", COACH, 60 * 74, "Hi Justin, quick reminder that updated staff bios for the athletics site are due Friday.", 30),
+      msg("u-demo-ad", COACH, 60 * 74 - 2, "If anything in your coaching history has changed, send it my way and I'll pass it along.", 28),
+      msg(COACH, "u-demo-ad", 60 * 74 - 40, "Will do. Thanks, Morgan.", null),
+      // A fictional graduate assistant asking for advice. Read.
+      msg("u-demo-avery", COACH, 60 * 24 * 9 + 300,
+        `Coach Leatherman, I'm a defensive graduate assistant at ${orgName(avery.currentOrgId)} and hoping to coach defensive backs full time after this season. If you ever have 15 minutes, I'd value your advice on what to focus on.`,
+        90),
+    ]);
+  }
+  // end demo messages -----------------------------------------------------------------------------
 
   const counts = await db.execute(sql`SELECT
     (SELECT count(*) FROM organizations) AS orgs, (SELECT count(*) FROM people) AS people,

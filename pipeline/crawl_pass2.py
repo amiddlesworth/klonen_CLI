@@ -5,7 +5,12 @@ to a separate athletics domain, the site uses a non-standard staff path, or bio
 links use a different pattern. Sites that answer 403 or disallow us in
 robots.txt are left alone on purpose: we do not work around a site's wishes.
 
-Usage: python3 -I pipeline/crawl_pass2.py   (then rerun bios for new staff)
+parse_staff tests every <a href> against crawl.COACH_LINK, so widening the
+pattern here does take effect; directory links are kept only for rows in the
+Football section of the directory (or whose title mentions football), so the
+whole athletics department is not imported.
+
+Usage: python3 -I pipeline/crawl_pass2.py [--cache-only]   (then rerun bios for new staff)
 """
 import json
 import re
@@ -73,6 +78,7 @@ def retry(p: dict, prev: dict) -> dict:
 
 
 if __name__ == "__main__":
+    crawl.CACHE_ONLY = "--cache-only" in sys.argv[1:]
     reg = {p["id"]: p for p in json.loads((WORK / "registry.json").read_text())}
     staff = json.loads((WORK / "staff.json").read_text())
     fixed = 0
@@ -80,6 +86,8 @@ if __name__ == "__main__":
         if s["staff"]:
             continue
         new = retry(reg[s["program_id"]], s)
+        if crawl.CACHE_ONLY and not new["staff"]:
+            new["status"] = s["status"]  # nothing new in the cache: keep what the last network crawl saw
         if new["staff"]:
             fixed += 1
             print("fixed", reg[s["program_id"]]["short_name"], len(new["staff"]), new["url"])

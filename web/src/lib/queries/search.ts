@@ -1,10 +1,10 @@
 import "server-only";
 import { and, asc, eq, exists, ilike, or, sql, type SQL } from "drizzle-orm";
-import { aliasedTable } from "drizzle-orm";
 import { db } from "@/db";
 import { organizations, people, tenures, treeEdges } from "@/db/schema";
+import { conferenceShort } from "@/lib/format";
 import { personSummaryCols, toSummary, type PersonSummary } from "./people";
-import { escapeLike, searchOrgs } from "./orgs";
+import { conferenceKey, escapeLike, searchOrgs } from "./orgs";
 
 export type PeopleFilters = {
   q?: string;
@@ -32,25 +32,22 @@ export async function searchPeople(f: PeopleFilters): Promise<{ results: (Person
     }
   }
   if (f.division) where.push(eq(organizations.level, f.division));
-  if (f.conference) where.push(eq(organizations.conferenceAbbr, f.conference));
+  // Footnote markers never split a conference: "NACC" (or "NACC[g]") matches every NACC program.
+  if (f.conference) where.push(sql`${conferenceKey} = ${conferenceShort(f.conference) ?? f.conference}`);
   if (f.state) where.push(eq(organizations.state, f.state));
   if (f.roleGroup) where.push(sql`${people.roleGroup} = ${f.roleGroup}`);
   let contextOrg: string | null = null;
+  // An unknown workedAt/workedUnder slug (stale or mistyped link) matches nobody; it must not drop the filter.
   if (f.workedAt) {
-    const at = aliasedTable(organizations, "worked_at_org");
     const [org] = await db.select({ id: organizations.id, shortName: organizations.shortName }).from(organizations).where(eq(organizations.slug, f.workedAt)).limit(1);
-    if (org) {
-      contextOrg = org.shortName;
-      where.push(
-        exists(db.select({ one: sql`1` }).from(tenures).innerJoin(at, eq(at.id, tenures.orgId)).where(and(eq(tenures.personId, people.id), eq(tenures.orgId, org.id), eq(tenures.asPlayer, false)))),
-      );
-    }
+    if (!org) return { results: [], total: 0 };
+    contextOrg = org.shortName;
+    where.push(exists(db.select({ one: sql`1` }).from(tenures).where(and(eq(tenures.personId, people.id), eq(tenures.orgId, org.id), eq(tenures.asPlayer, false)))));
   }
   if (f.workedUnder) {
     const [mentor] = await db.select({ id: people.id }).from(people).where(eq(people.slug, f.workedUnder)).limit(1);
-    if (mentor) {
-      where.push(exists(db.select({ one: sql`1` }).from(treeEdges).where(and(eq(treeEdges.kind, "worked_under"), eq(treeEdges.mentorId, mentor.id), eq(treeEdges.menteeId, people.id)))));
-    }
+    if (!mentor) return { results: [], total: 0 };
+    where.push(exists(db.select({ one: sql`1` }).from(treeEdges).where(and(eq(treeEdges.kind, "worked_under"), eq(treeEdges.mentorId, mentor.id), eq(treeEdges.menteeId, people.id)))));
   }
   const page = Math.max(1, f.page ?? 1);
   const base = db.select(personSummaryCols).from(people).leftJoin(organizations, eq(organizations.id, people.currentOrgId)).where(and(...where));
@@ -92,11 +89,12 @@ export async function typeahead(q: string) {
   return { people: ppl.map(toSummary), orgs };
 }
 
+/** Filter values present among current staff. Conferences are cleaned of footnote markers ("NACC[g]" folds into "NACC"). */
 export async function facetOptions() {
   const [conferences, states, divisions] = await Promise.all([
-    db.selectDistinct({ v: organizations.conferenceAbbr }).from(organizations).innerJoin(people, eq(people.currentOrgId, organizations.id)).orderBy(asc(organizations.conferenceAbbr)),
-    db.selectDistinct({ v: organizations.state }).from(organizations).innerJoin(people, eq(people.currentOrgId, organizations.id)).orderBy(asc(organizations.state)),
-    db.selectDistinct({ v: organizations.level }).from(organizations).innerJoin(people, eq(people.currentOrgId, organizations.id)).orderBy(asc(organizations.level)),
+    db.selectDistinct({ v: conferenceKey }).from(organizations).innerJoin(people, eq(people.currentOrgId, organizations.id)).where(eq(people.isDemo, false)).orderBy(conferenceKey),
+    db.selectDistinct({ v: organizations.state }).from(organizations).innerJoin(people, eq(people.currentOrgId, organizations.id)).where(eq(people.isDemo, false)).orderBy(asc(organizations.state)),
+    db.selectDistinct({ v: organizations.level }).from(organizations).innerJoin(people, eq(people.currentOrgId, organizations.id)).where(eq(people.isDemo, false)).orderBy(asc(organizations.level)),
   ]);
   const clean = (rows: { v: string | null }[]) => rows.map((r) => r.v).filter((v): v is string => !!v);
   return { conferences: clean(conferences), states: clean(states), divisions: clean(divisions) };

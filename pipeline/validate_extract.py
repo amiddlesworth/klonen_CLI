@@ -1,8 +1,9 @@
 """Validate one extraction output file against its bundle.
 
-Checks the schema, that every bio in the bundle has exactly one coach object,
-and that every evidence quote appears in that bio's text. Prints problems and
-exits non-zero if any are found.
+Checks the schema (every stint carries a sport), that every bio in the bundle
+has exactly one coach object (a missing object and a second object for the same
+bio_url are both problems), and that every evidence quote appears in that bio's
+text. Prints problems and exits non-zero if any are found.
 
 Usage: python3 -I pipeline/validate_extract.py work/extract/<program_id>.json
 """
@@ -50,10 +51,12 @@ def main(path: Path) -> int:
         if url not in bios:
             problems.append(f"{where}: bio_url not in bundle")
             continue
+        if url in seen:
+            problems.append(f"{where}: duplicate coach object for bio {url}")
         seen.add(url)
         for j, s in enumerate(c.get("stints", [])):
             sw = f"{where} stint {j} ({s.get('org')})"
-            for k in ("org", "level", "role", "start_year", "end_year", "as_player", "years_explicit", "evidence"):
+            for k in ("org", "level", "role", "sport", "start_year", "end_year", "as_player", "years_explicit", "evidence"):
                 if k not in s:
                     problems.append(f"{sw}: missing {k}")
             if s.get("level") not in LEVELS:

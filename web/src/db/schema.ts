@@ -94,6 +94,7 @@ export const tenures = pgTable(
     role: text("role").notNull(),
     roleGroup: roleGroup("role_group").notNull().default("other"),
     unit: unit("unit"),
+    sport: text("sport").notNull().default("football"), // non-football stints are kept but never form tree edges
     startYear: integer("start_year"), // fall season year
     endYear: integer("end_year"), // null = current or unknown
     isCurrent: boolean("is_current").notNull().default(false),

@@ -1,7 +1,9 @@
 """Bundle each program's crawled bios into one trimmed text file for extraction.
 
 Writes work/bundles/<program_id>.txt. Each bio is introduced by a header line
-`=== BIO <n> | <name> | <title> | <url>` so the extractor can cite it.
+`=== BIO <n> | <name> | <title> | <url>` so the extractor can cite it. The title
+comes from work/staff.json (re-parsed with the header-aware parse_staff), falling
+back to the title recorded when the bio was fetched.
 
 Usage: python3 -I pipeline/bundle.py
 """
@@ -33,6 +35,8 @@ def clean(text: str) -> str:
 def main() -> None:
     bios = json.loads((WORK / "bios_index.json").read_text())
     reg = {p["id"]: p for p in json.loads((WORK / "registry.json").read_text())}
+    staff_path = WORK / "staff.json"
+    titles = {s["url"]: s["title"] for r in json.loads(staff_path.read_text()) for s in r["staff"]} if staff_path.exists() else {}
     by_prog = defaultdict(list)
     for b in bios:
         if b["status"] == 200:
@@ -43,7 +47,7 @@ def main() -> None:
         parts = [f"PROGRAM_ID: {pid}\nPROGRAM: {p['name']} ({p['short_name']} {p['nickname'] or ''}), {p['state']}, NCAA Division III\n"]
         for i, b in enumerate(rows, 1):
             txt = clean((ROOT / b["file"]).read_text())
-            parts.append(f"=== BIO {i} | {b['name']} | {b['title']} | {b['url']}\n{txt or '(no bio text on page)'}\n")
+            parts.append(f"=== BIO {i} | {b['name']} | {titles.get(b['url']) or b['title']} | {b['url']}\n{txt or '(no bio text on page)'}\n")
         body = "\n".join(parts)
         (OUT / f"{pid}.txt").write_text(body)
         sizes.append((len(body), pid, len(rows)))

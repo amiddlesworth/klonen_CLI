@@ -31,9 +31,30 @@ export function seasonRange(start: number | null, end: number | null, isCurrent:
   return { range, count: `${n} ${n === 1 ? "season" : "seasons"}` };
 }
 
+/** Leading honorifics and military ranks: "Dr. Karl Liedtka", "LCDR Paul Puddington", "Lt. Col William Atwell". */
+const NAME_PREFIX = /^(?:dr|mr|mrs|ms|rev|prof|coach|lt|ltc|lcdr|cdr|capt|cpt|col|maj|gen|sgt)\.?$/i;
+/**
+ * Trailing tokens that are not a surname: generational suffixes (Jr., III), class years ("'87", "'23M",
+ * "'10/'16") and degrees or credentials ("DPT", "MS").
+ */
+const NAME_SUFFIX = /^(?:jr|sr|ii|iii|iv|v|phd|ph\.d|md|ms|ma|mba|med|m\.ed|edd|dpt|atc|cscs)\.?$|^['’‘]\d{2}[a-z]*(?:\/['’‘]?\d{2}[a-z]*)*$/i;
+
+/**
+ * Avatar initials: first letter of the first and last name ("Gerald Harrison Jr." -> "GH",
+ * "Dan Galante '87" -> "DG", "Dr. Karl Liedtka '91" -> "KL"). Ignores parenthesized or quoted
+ * nicknames, anything after a comma ("Chris Rutledge, Jr."), honorifics and suffixes.
+ */
 export function initials(name: string): string {
-  const parts = name.replace(/\(.*?\)/g, "").trim().split(/\s+/);
-  return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
+  const base = name
+    .replace(/\(.*?\)/g, " ")
+    .replace(/"[^"]*"|“[^”]*”/g, " ")
+    .split(",")[0];
+  const parts = base.trim().split(/\s+/).filter(Boolean);
+  while (parts.length > 1 && NAME_PREFIX.test(parts[0])) parts.shift();
+  while (parts.length > 1 && NAME_SUFFIX.test(parts[parts.length - 1])) parts.pop();
+  // First letter or digit (Latin, with accents), skipping leading apostrophes or periods.
+  const first = (s: string | undefined) => s?.match(/[A-Za-z0-9À-ɏ]/)?.[0] ?? "";
+  return (first(parts[0]) + (parts.length > 1 ? first(parts[parts.length - 1]) : "")).toUpperCase();
 }
 
 /** @deprecated Use tintFor(): avatars use the six people tints (DESIGN.md §2.3). */
@@ -102,29 +123,66 @@ export function seasonRangeLabel(start: number | null, end: number | null, isCur
 export type StintSpan = { startYear: number | null; endYear: number | null; isCurrent: boolean };
 
 /**
- * Several stints at one program: "2003, 2006–2009" / "5 seasons · 2 stints" (DESIGN.md §6.1).
- * Overlapping or adjacent stints merge into one span; undated stints are ignored.
+ * A run of consecutive seasons covered by one or more stints. `undatedCurrent` marks a span made only
+ * of current roles whose start the source doesn't give: it stands for this season alone and must not
+ * be shown as a start year.
  */
-export function seasonRangeMulti(stints: StintSpan[]): { range: string; count: string | null } {
-  const spans = stints
-    .filter((s) => s.startYear)
-    .map((s) => ({ a: s.startYear!, b: s.isCurrent ? CURRENT_SEASON : (s.endYear ?? s.startYear!), cur: s.isCurrent }))
-    .sort((x, y) => x.a - y.a);
-  if (!spans.length) return { range: YEARS_NOT_IN_SOURCE, count: null };
-  const merged: { a: number; b: number; cur: boolean }[] = [];
+export type SeasonSpan = { start: number; end: number; isCurrent: boolean; undatedCurrent: boolean };
+
+/**
+ * The seasons a set of stints accounts for, merged into runs, oldest first. Never claims more than the
+ * source: a dated stint covers its start through its end (through CURRENT_SEASON when current, its start
+ * alone when the end is missing); a stint with only an end year covers that season; an undated current
+ * role covers CURRENT_SEASON only (one season, not a span back to some earlier year); an undated past
+ * stint covers nothing. Overlapping or adjacent stints merge, so roles that connect read as one run.
+ */
+export function seasonSpans(stints: StintSpan[]): SeasonSpan[] {
+  const spans: SeasonSpan[] = [];
+  for (const s of stints) {
+    if (s.startYear) spans.push({ start: s.startYear, end: s.isCurrent ? CURRENT_SEASON : Math.max(s.startYear, s.endYear ?? s.startYear), isCurrent: s.isCurrent, undatedCurrent: false });
+    else if (s.isCurrent) spans.push({ start: CURRENT_SEASON, end: CURRENT_SEASON, isCurrent: true, undatedCurrent: true });
+    else if (s.endYear) spans.push({ start: s.endYear, end: s.endYear, isCurrent: false, undatedCurrent: false });
+  }
+  // Dated spans first on ties, so a dated role starting this season keeps its start year.
+  spans.sort((x, y) => x.start - y.start || Number(x.undatedCurrent) - Number(y.undatedCurrent));
+  const merged: SeasonSpan[] = [];
   for (const s of spans) {
     const last = merged[merged.length - 1];
-    if (last && s.a <= last.b + 1) {
-      last.b = Math.max(last.b, s.b);
-      last.cur = last.cur || s.cur;
+    if (last && s.start <= last.end + 1) {
+      last.end = Math.max(last.end, s.end);
+      last.isCurrent = last.isCurrent || s.isCurrent;
+      last.undatedCurrent = last.undatedCurrent && s.undatedCurrent;
     } else merged.push({ ...s });
   }
+  return merged;
+}
+
+/**
+ * Distinct seasons the stints cover (see seasonSpans): gaps are not counted, concurrent roles count once,
+ * an undated current role adds one season. Null when no stint has a start year (nothing to count from).
+ */
+export function seasonsCovered(stints: StintSpan[]): number | null {
+  if (!stints.some((s) => s.startYear)) return null;
+  return seasonSpans(stints).reduce((n, m) => n + (m.end - m.start + 1), 0);
+}
+
+/**
+ * Several stints at one program: "2003, 2006–2009" / "5 seasons · 2 stints" (DESIGN.md §6.1).
+ * Overlapping or adjacent stints merge into one span (seasonSpans). An undated current role that doesn't
+ * connect to a dated one reads "Present" ("1984, 1993–1995, Present" / "5 seasons · 3 stints"), never an
+ * old start year stretched to Present. "Years not in source" when no stint has a start year.
+ */
+export function seasonRangeMulti(stints: StintSpan[]): { range: string; count: string | null } {
+  if (!stints.some((s) => s.startYear)) return { range: YEARS_NOT_IN_SOURCE, count: null };
+  const merged = seasonSpans(stints);
   if (merged.length === 1) {
     const m = merged[0];
-    return seasonRange(m.a, m.cur ? null : m.b, m.cur);
+    return seasonRange(m.start, m.isCurrent ? null : m.end, m.isCurrent);
   }
-  const range = merged.map((m) => (m.cur ? `${m.a}–Present` : m.a === m.b ? String(m.a) : `${m.a}–${m.b}`)).join(", ");
-  const n = merged.reduce((sum, m) => sum + (m.b - m.a + 1), 0);
+  const range = merged
+    .map((m) => (m.undatedCurrent ? "Present" : m.isCurrent ? `${m.start}–Present` : m.start === m.end ? String(m.start) : `${m.start}–${m.end}`))
+    .join(", ");
+  const n = merged.reduce((sum, m) => sum + (m.end - m.start + 1), 0);
   return { range, count: `${n} ${n === 1 ? "season" : "seasons"} · ${merged.length} stints` };
 }
 

@@ -1,18 +1,57 @@
 import type { Metadata } from "next";
 import { Briefcase } from "lucide-react";
-import { PlaceholderPage } from "@/components/shell/PlaceholderPage";
+import { PageContainer, SingleColumnLayout } from "@/components/shell/Layouts";
+import { Card, CardHeader } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { PostJobForm } from "@/components/jobs/PostJobForm";
+import { SwitchToEmployer } from "@/components/jobs/SwitchToEmployer";
+import { BRAND } from "@/lib/brand";
+import { getEmployerOrg } from "@/lib/queries/jobsx";
+import { getDemoAccounts } from "@/lib/queries/shell";
+import { getSession } from "@/lib/session";
 
-export const metadata: Metadata = { title: "Post a job" };
+export const metadata: Metadata = {
+  title: "Post a job",
+  description: `Post a coaching job to ${BRAND.name}: a listing on Jobs and in the feed.`,
+  robots: { index: false },
+};
 
-/** Placeholder: the jobs feature replaces this page. */
-export default function PostJobPage() {
+/**
+ * Post a job (§8.13). Requires the athletic director demo session; anyone else gets an
+ * explanation and a one-click switch to that account (it stays on this page).
+ */
+export default async function PostJobPage() {
+  const session = await getSession().catch(() => null);
+  const org = session?.user.kind === "employer" && session.user.orgId ? await getEmployerOrg(session.user.orgId) : null;
+
+  if (!session || session.user.kind !== "employer" || !org) {
+    const accounts = await getDemoAccounts().catch(() => []);
+    const ad = accounts.find((a) => a.role === "employer");
+    const who = session ? `You're viewing as ${session.user.name}, the coach demo account.` : "You're browsing signed out.";
+    return (
+      <SingleColumnLayout>
+        <Card padding="main" aria-labelledby="post-job-gate">
+          <CardHeader as="h1" id="post-job-gate" title="Post a job" />
+          <EmptyState
+            icon={Briefcase}
+            title="Posting jobs uses the athletic director demo account."
+            description={
+              <>
+                {who} Switch to {ad ? `${ad.name}${ad.org ? `, athletic director at ${ad.org}` : ""}` : "the athletic director account"} to fill in a listing, preview it and
+                publish it to the demo.
+              </>
+            }
+            action={<SwitchToEmployer account={ad} />}
+            spacing="lg"
+          />
+        </Card>
+      </SingleColumnLayout>
+    );
+  }
+
   return (
-    <PlaceholderPage
-      layout="single"
-      title="Post a job"
-      icon={Briefcase}
-      message="Job posting is on its way."
-      description="Athletic directors will post openings here, with a preview of the listing."
-    />
+    <PageContainer>
+      <PostJobForm org={org} posterName={session.user.name} />
+    </PageContainer>
   );
 }

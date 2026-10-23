@@ -1,26 +1,68 @@
 {
  "programs_in_registry": 244,
  "programs_with_staff": 196,
- "people": 2178,
+ "people": 2177,
  "excluded_non_coaches": 118,
- "people_with_prior_stop": 1255,
- "tenures": 8397,
- "coaching_tenures": 6822,
- "coaching_tenures_with_start_year": 4593,
- "organizations": 2097,
+ "people_with_prior_stop": 1258,
+ "tenures": 8461,
+ "coaching_tenures": 6885,
+ "coaching_tenures_with_start_year": 4651,
+ "football_tenures": 8098,
+ "non_football_tenures": 363,
+ "organizations": 2065,
  "org_match": {
-  "exact": 6260,
-  "new": 1464,
-  "new-reused": 614,
-  "fuzzy": 59,
-  "ambiguous": 5
+  "exact": 6361,
+  "state-mismatch": 12,
+  "none": 1966,
+  "variant": 31,
+  "unconfirmed": 25,
+  "ambiguous": 5,
+  "fuzzy": 1,
+  "new": 1423,
+  "placeholder": 54
  },
- "edges_worked_under": 1393,
- "edges_worked_alongside": 4633,
+ "orgs_without_edges": {
+  "placeholder": 4,
+  "ambiguous": 40,
+  "non_football": 14
+ },
+ "edges_worked_under": 2367,
+ "edges_worked_alongside": 11723,
+ "people_without_edges": 2,
+ "role_groups_people": {
+  "head_coach": 197,
+  "coordinator": 527,
+  "ga_analyst": 157,
+  "position_coach": 1240,
+  "support": 54,
+  "other": 2
+ },
+ "programs_with_one_current_head_coach": 195,
+ "head_coach_exceptions": [
+  {
+   "programId": "ncaa-548",
+   "program": "Plymouth State University",
+   "headCoaches": [
+    "p-paul-castonia",
+    "p-devin-zeman"
+   ],
+   "count": 2,
+   "reason": "co-head coaches: Paul Castonia (Head Coach (Off. Coordinator)); Devin Zeman (Co-Head Coach (Def. Coordinator / Defensive Backs))"
+  }
+ ],
+ "staff_title_vs_bio_head_coach_conflicts": [],
+ "duplicate_bio_objects_skipped": 0,
+ "people_merged_same_program": 1,
+ "stints_split_from_semicolon_roles": 119,
+ "years_explicit_downgraded": 572,
+ "current_from_staff_page_only": 6,
+ "verified_by_other_bio": 9,
+ "verified_tenures": 2180,
  "bio_quality": {
-  "full": 1113,
+  "full": 1112,
   "thin": 363,
   "none": 702
  },
+ "people_with_bio_excerpt": 1472,
  "current_season": 2026
 }

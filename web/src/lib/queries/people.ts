@@ -1,8 +1,8 @@
 import "server-only";
-import { aliasedTable, and, asc, desc, eq, inArray, or, sql } from "drizzle-orm";
+import { aliasedTable, and, asc, desc, eq, inArray, isNotNull, or, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { organizations, people, tenures, treeEdges } from "@/db/schema";
-import { seasonCount } from "@/lib/format";
+import { organizations, people, tenures, treeEdges, users } from "@/db/schema";
+import { seasonSpans, seasonsCovered } from "@/lib/format";
 
 export type OrgSummary = {
   id: string;
@@ -45,7 +45,17 @@ export type TenureRow = {
   org: OrgSummary;
 };
 
-/** Consecutive roles at one organization, newest first, like LinkedIn's grouped positions. */
+/**
+ * Consecutive roles at one organization, newest first, like LinkedIn's grouped positions.
+ *
+ * Render the group's range with seasonRangeMulti(g.roles) (or <SeasonRange stints={g.roles}>): it shows
+ * gaps ("1995–1996, 2014–Present") and never stretches an old start year to Present.
+ * - startYear/endYear: the most recent continuous run of seasons only (seasonSpans), so even a plain
+ *   seasonRange(startYear, endYear, isCurrent) never implies unbroken tenure across a gap. startYear is
+ *   null when that run is an undated current role.
+ * - isCurrent: any role here is current.
+ * - seasons: distinct seasons covered by all the roles here (seasonsCovered), null when none is dated.
+ */
 export type ExperienceGroup = {
   org: OrgSummary;
   roles: TenureRow[];
@@ -133,12 +143,19 @@ export function groupExperience(rows: TenureRow[]): ExperienceGroup[] {
     else groups.push({ org: r.org, roles: [r], startYear: null, endYear: null, isCurrent: false, seasons: null });
   }
   for (const g of groups) {
-    const starts = g.roles.map((r) => r.startYear).filter((y): y is number => !!y);
-    const ends = g.roles.map((r) => (r.isCurrent ? null : (r.endYear ?? r.startYear))).filter((y): y is number => !!y);
     g.isCurrent = g.roles.some((r) => r.isCurrent);
-    g.startYear = starts.length ? Math.min(...starts) : null;
-    g.endYear = g.isCurrent ? null : ends.length ? Math.max(...ends) : null;
-    g.seasons = seasonCount(g.startYear, g.endYear, g.isCurrent);
+    g.seasons = seasonsCovered(g.roles);
+    if (g.seasons === null) {
+      // No start year anywhere: keep only a known last season, never invent a start.
+      const ends = g.roles.map((r) => (r.isCurrent ? null : r.endYear)).filter((y): y is number => !!y);
+      g.startYear = null;
+      g.endYear = g.isCurrent || !ends.length ? null : Math.max(...ends);
+      continue;
+    }
+    const spans = seasonSpans(g.roles);
+    const latest = spans[spans.length - 1];
+    g.startYear = latest.undatedCurrent ? null : latest.start;
+    g.endYear = latest.isCurrent ? null : latest.end;
   }
   return groups;
 }
@@ -148,7 +165,12 @@ export type Profile = {
   currentOrg: OrgSummary | null;
   experience: ExperienceGroup[];
   playing: TenureRow[];
-  stats: { stops: number; seasonsCoached: number | null; treeSize: number };
+  /**
+   * seasonsCoached: distinct seasons the coaching stints cover (seasonsCovered): gaps aren't counted and an
+   * undated current role adds one season, so it never claims more than the source; null when nothing is dated.
+   * firstSeason: earliest coaching start year in the source.
+   */
+  stats: { stops: number; seasonsCoached: number | null; treeSize: number; firstSeason: number | null };
   sources: string[];
 };
 
@@ -180,7 +202,8 @@ export async function getProfile(slug: string): Promise<Profile | null> {
     : null;
   const experience = groupExperience(rows as TenureRow[]);
   const playing = (rows as TenureRow[]).filter((r) => r.asPlayer);
-  const firstSeason = Math.min(...rows.filter((r) => !r.asPlayer && r.startYear).map((r) => r.startYear!));
+  const coaching = (rows as TenureRow[]).filter((r) => !r.asPlayer);
+  const firstSeason = Math.min(...coaching.filter((r) => r.startYear).map((r) => r.startYear!));
   const [{ n: treeSize }] = await db
     .select({ n: sql<number>`count(distinct case when ${treeEdges.mentorId} = ${person.id} then ${treeEdges.menteeId} else ${treeEdges.mentorId} end)::int` })
     .from(treeEdges)
@@ -192,8 +215,9 @@ export async function getProfile(slug: string): Promise<Profile | null> {
     playing,
     stats: {
       stops: new Set(experience.map((g) => g.org.id)).size,
-      seasonsCoached: Number.isFinite(firstSeason) ? seasonCount(firstSeason, null, true) : null,
+      seasonsCoached: seasonsCovered(coaching),
       treeSize,
+      firstSeason: Number.isFinite(firstSeason) ? firstSeason : null,
     },
     sources: [...new Set(rows.map((r) => r.sourceUrl).filter((u): u is string => !!u))],
   };
@@ -244,7 +268,16 @@ export async function getRelated(personId: string, limit = 5): Promise<PersonSum
   return unique.map((id) => map.get(id)!).filter(Boolean);
 }
 
+/**
+ * The person the coach demo account views the product as (a real, unclaimed record; see scripts/seed.ts).
+ * Not "the first isDemo person": the isDemo people are the fictional pipeline candidates.
+ */
 export async function getDemoPersonId(): Promise<string | null> {
-  const [row] = await db.select({ id: people.id }).from(people).where(and(eq(people.isDemo, true))).limit(1);
+  const [row] = await db
+    .select({ id: users.personId })
+    .from(users)
+    .where(and(eq(users.isDemo, true), eq(users.kind, "coach"), isNotNull(users.personId)))
+    .orderBy(asc(users.id))
+    .limit(1);
   return row?.id ?? null;
 }
