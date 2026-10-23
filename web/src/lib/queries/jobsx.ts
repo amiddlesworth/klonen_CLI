@@ -3,11 +3,13 @@ import { cache } from "react";
 import { and, asc, count, eq, inArray, ne, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import { jobs, organizations, people, tenures, treeEdges } from "@/db/schema";
-import type { StintSpan } from "@/lib/format";
 import { JOB_ROLE_GROUPS, type JobRoleGroup } from "@/components/jobs/labels";
 import { escapeLike } from "./orgs";
 import { personSummaryCols, toSummary, type PersonSummary } from "./people";
 import { getProgramAlumni, getProgramPlayers, type AlumniEntry } from "./program";
+
+/** Header and tab counts of the program page, reused for the job rail so both show the same numbers. */
+export { getProgramCounts, type ProgramCounts } from "./program";
 
 /*
  * Jobs feature queries (/jobs, /jobs/[id], /employers/jobs/new). Server-only and typed; pages
@@ -365,33 +367,25 @@ export async function getNetworkProof(viewerPersonId: string, orgId: string, lim
     .leftJoin(organizations, eq(organizations.id, people.currentOrgId))
     .where(and(eq(tenures.orgId, orgId), ne(tenures.personId, viewerPersonId), eq(people.isDemo, false)));
 
-  const byPerson = new Map<string, NetworkProofPerson & { rank: number; last: number }>();
+  const byPerson = new Map<string, { person: NetworkProofPerson; rank: number; last: number }>();
   for (const r of rows) {
     const rank = RELATION_RANK[r.relation];
     const last = r.lastYear ?? -1;
     const cur = byPerson.get(r.id);
     if (!cur) {
-      byPerson.set(r.id, {
-        ...toSummary(r),
-        asPlayer: r.asPlayer,
-        relation: r.relation,
-        headCoachHere: r.roleGroup === "head_coach" && r.currentOrgId === orgId,
-        rank,
-        last,
-      });
+      const person = { ...toSummary(r), asPlayer: r.asPlayer, relation: r.relation, headCoachHere: r.roleGroup === "head_coach" && r.currentOrgId === orgId };
+      byPerson.set(r.id, { person, rank, last });
       continue;
     }
-    cur.asPlayer = cur.asPlayer && r.asPlayer;
+    cur.person.asPlayer = cur.person.asPlayer && r.asPlayer;
     if (rank < cur.rank) {
       cur.rank = rank;
-      cur.relation = r.relation;
+      cur.person.relation = r.relation;
     }
     cur.last = Math.max(cur.last, last);
   }
-  const ordered = [...byPerson.values()].sort((a, b) => a.rank - b.rank || b.last - a.last || a.fullName.localeCompare(b.fullName));
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const people_ = ordered.slice(0, limit).map(({ rank, last, ...p }) => p);
-  return { people: people_, total: ordered.length };
+  const ordered = [...byPerson.values()].sort((a, b) => a.rank - b.rank || b.last - a.last || a.person.fullName.localeCompare(b.person.fullName));
+  return { people: ordered.slice(0, limit).map((o) => o.person), total: ordered.length };
 }
 
 /** The organization a demo employer posts for (the program card in the post-job form). */
