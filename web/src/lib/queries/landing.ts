@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { asc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { organizations, people, tenures, treeEdges } from "@/db/schema";
+import { jobs, organizations, people, tenures, treeEdges } from "@/db/schema";
 import { seasonsCovered } from "@/lib/format";
 import { conferenceKey } from "./orgs";
 
@@ -19,6 +19,13 @@ export type LandingStats = {
    */
   coaches: number;
   /**
+   * Of `coaches`, those whose sourced coaching stints span two or more programs. Many records list
+   * only the current job, so the employer pitch says how many go deeper.
+   */
+  multiProgram: number;
+  /** Open jobs that are not sample listings (seeded or posted through the demo). */
+  realOpenJobs: number;
+  /**
    * Distinct pairs of real people joined by a derived tree edge. tree_edges holds one row per pair,
    * program, overlap and kind, so a pair that overlapped at two programs, or both worked under and
    * alongside each other, is still one connection.
@@ -33,6 +40,15 @@ export async function getLandingStats(): Promise<LandingStats> {
     (SELECT count(*) FROM ${organizations} WHERE in_registry = true)::int AS "registryPrograms",
     (SELECT count(*) FROM ${people} WHERE is_demo = false)::int AS "coaches",
     (SELECT count(*) FROM (
+      SELECT t.person_id
+      FROM ${tenures} t
+      JOIN ${people} p ON p.id = t.person_id
+      WHERE p.is_demo = false AND t.as_player = false
+      GROUP BY t.person_id
+      HAVING count(DISTINCT t.org_id) > 1
+    ) multi)::int AS "multiProgram",
+    (SELECT count(*) FROM ${jobs} WHERE status = 'open' AND is_demo = false AND source <> 'sample')::int AS "realOpenJobs",
+    (SELECT count(*) FROM (
       SELECT DISTINCT least(e.mentor_id, e.mentee_id), greatest(e.mentor_id, e.mentee_id)
       FROM ${treeEdges} e
       JOIN ${people} a ON a.id = e.mentor_id
@@ -44,6 +60,8 @@ export async function getLandingStats(): Promise<LandingStats> {
     programs: row?.programs ?? 0,
     registryPrograms: row?.registryPrograms ?? 0,
     coaches: row?.coaches ?? 0,
+    multiProgram: row?.multiProgram ?? 0,
+    realOpenJobs: row?.realOpenJobs ?? 0,
     connections: row?.connections ?? 0,
   };
 }

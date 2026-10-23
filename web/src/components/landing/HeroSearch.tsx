@@ -1,12 +1,11 @@
 "use client";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { startCoachDemo } from "@/lib/actions/landing";
 import { DemoStartButton } from "./DemoStartButton";
 import { LandingSearch } from "./LandingSearch";
 
 type HeroSearchProps = {
-  /** switchDemoAccount bound to ("coach", "/feed"). */
-  demoAction: (formData: FormData) => void | Promise<void>;
   /** The coach demo account ("Justin Leatherman", "Pacific (OR)"), named under the buttons. */
   demoAccount: { name: string; org: string | null } | null;
 };
@@ -16,7 +15,7 @@ type HeroSearchProps = {
  * focuses the field above and asks for a name ("Search your name"). "Try the demo" signs in as the
  * coach demo account, named in the caption. The Search button stays the view's one primary.
  */
-export function HeroSearch({ demoAction, demoAccount }: HeroSearchProps) {
+export function HeroSearch({ demoAccount }: HeroSearchProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [findingProfile, setFindingProfile] = useState(false);
 
@@ -37,7 +36,7 @@ export function HeroSearch({ demoAction, demoAccount }: HeroSearchProps) {
         >
           Find your profile
         </Button>
-        <DemoStartButton action={demoAction} viewAs={demoAccount?.name ?? "the coach demo account"} phone="large" formClassName="contents">
+        <DemoStartButton action={startCoachDemo} viewAs={demoAccount?.name ?? "the coach demo account"} phone="large" formClassName="contents">
           Try the demo
         </DemoStartButton>
       </div>

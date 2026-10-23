@@ -9,8 +9,8 @@ import { fmtCount } from "./copy";
 /**
  * Proof points (§8.10): three StatBand columns of real dataset numbers at every width (values
  * text-stat tabular, phone stat-sm, over 13px --fg-2 labels), then a --surface-2 band saying where
- * the numbers come from: tree connections are derived, and counted once per pair. Null stats render
- * the inline error state in the same card.
+ * the numbers come from: many records hold only the current job, tree connections are derived and
+ * counted once per pair. Null stats render the inline error state in the same card.
  */
 export function ProofPoints({ stats }: { stats: LandingStats | null }) {
   const items = stats
@@ -51,8 +51,8 @@ export function ProofPoints({ stats }: { stats: LandingStats | null }) {
           <Icon icon={Info} size={16} className="mt-px" />
           <span className="min-w-0 max-w-prose">
             {stats && stats.registryPrograms > 0
-              ? `From public staff pages and coach bios at ${fmtCount(stats.programs)} of the ${fmtCount(stats.registryPrograms)} Division III football programs; counts update as pages are added. `
-              : "From public staff pages and coach bios; counts update as pages are added. "}
+              ? `From public staff pages and coach bios at ${fmtCount(stats.programs)} of the ${fmtCount(stats.registryPrograms)} Division III football programs; many records list only the current job, and counts update as pages are added. `
+              : "From public staff pages and coach bios; many records list only the current job, and counts update as pages are added. "}
             Tree connections are derived from overlapping seasons on the same staff, each pair counted once.{" "}
             <TextLink href="/about#data-sources" variant="inline">
               Data sources

@@ -11,7 +11,7 @@ const STEPS = [
   {
     title: "Coaches claim and correct",
     body: "A coach finds their profile, confirms a school email and reviews each stint before publishing. Until then the profile says it is unclaimed.",
-    link: { href: "/search", label: "Find your profile" },
+    link: { href: "/search", label: "Search for your profile" },
   },
   {
     title: "Programs hire",
@@ -20,12 +20,17 @@ const STEPS = [
   },
 ];
 
+/** Until a real opening is posted, every listing on Jobs is a sample, and the link says so. */
+const SAMPLE_JOBS_LABEL = "Browse sample jobs";
+
 /**
  * How it works: three numbered steps in one card, split by dividers (columns from lg, stacked
  * below). The list is an <ol>; the ink number discs are decorative. Each step's link sits at the
  * bottom of its column, so a step whose text wraps longer doesn't push its link off the row's line.
+ * Step 2's link goes to search; it is not the hero's "Find your profile" button, so it reads
+ * differently.
  */
-export function HowItWorks() {
+export function HowItWorks({ onlySampleJobs = false }: { onlySampleJobs?: boolean }) {
   return (
     <section aria-labelledby="how-title">
       <SectionHeader id="how-title" title="How it works" />
@@ -46,7 +51,7 @@ export function HowItWorks() {
                 <p className="mt-1 max-w-prose text-small text-fg-2">{s.body}</p>
                 <div className="mt-auto pt-3">
                   <TextLink href={s.link.href} arrow target24 className="text-small">
-                    {s.link.label}
+                    {onlySampleJobs && s.link.href === "/jobs" ? SAMPLE_JOBS_LABEL : s.link.label}
                   </TextLink>
                 </div>
               </div>

@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = `${BRAND.name} · ${BRAND.tagline}`;
   const description =
     stats && stats.coaches > 0
-      ? `Career records and coaching trees for ${fmt(stats.coaches)} coaches and staff at ${fmt(stats.programs)} NCAA Division III football programs, built from public athletics staff pages. Coaches can claim and correct their profiles; programs can post jobs and search by coaching tree.`
+      ? `Sourced staff records and coaching trees for ${fmt(stats.coaches)} coaches and staff at ${fmt(stats.programs)} NCAA Division III football programs${stats.multiProgram > 0 ? `, ${fmt(stats.multiProgram)} of them with stops at two or more programs` : ""}, built from public athletics staff pages. Coaches can claim and correct their profiles; programs can post jobs and search by coaching tree.`
       : LANDING_SUB;
   return {
     title: { absolute: title },
@@ -48,8 +48,12 @@ export default async function LandingPage() {
       <LandingHero demoAccount={account("coach")} />
       <ProofPoints stats={stats} />
       <SampleProfiles profiles={profiles} />
-      <HowItWorks />
-      <ForEmployers example={example} coaches={stats && stats.coaches > 0 ? stats.coaches : null} demoAccount={account("employer")} />
+      <HowItWorks onlySampleJobs={stats ? stats.realOpenJobs === 0 : false} />
+      <ForEmployers
+        example={example}
+        depth={stats && stats.coaches > 0 ? { coaches: stats.coaches, multiProgram: stats.multiProgram } : null}
+        demoAccount={account("employer")}
+      />
     </LandingFrame>
   );
 }

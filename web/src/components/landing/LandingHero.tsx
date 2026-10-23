@@ -1,10 +1,6 @@
-import { switchDemoAccount } from "@/lib/actions/session";
 import { BRAND } from "@/lib/brand";
 import { LANDING_SUB } from "./copy";
 import { HeroSearch } from "./HeroSearch";
-
-// Bound with both arguments: the form's FormData arrives third and is ignored.
-const startCoachDemo = switchDemoAccount.bind(null, "coach", "/feed");
 
 type LandingHeroProps = {
   /** The coach demo account ("Justin Leatherman", "Pacific (OR)"), named under the demo button. */
@@ -23,7 +19,7 @@ export function LandingHero({ demoAccount = null }: LandingHeroProps) {
         {BRAND.tagline}
       </h1>
       <p className="mx-auto mt-3 max-w-[560px] text-subtitle text-fg-2">{LANDING_SUB}</p>
-      <HeroSearch demoAction={startCoachDemo} demoAccount={demoAccount} />
+      <HeroSearch demoAccount={demoAccount} />
     </section>
   );
 }
