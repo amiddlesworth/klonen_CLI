@@ -38,6 +38,7 @@ export function FeedJobCard({ job }: { job: FeedJob }) {
           employmentType: job.employmentType,
           source: job.source,
           isDemo: job.isDemo,
+          location: job.location,
           org: job.org,
         }}
         href={`/jobs/${job.id}`}

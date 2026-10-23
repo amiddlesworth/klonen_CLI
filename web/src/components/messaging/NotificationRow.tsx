@@ -24,7 +24,7 @@ type NotificationRowProps = {
   context?: ReactNode;
   /** Chips on the time line (Sample listing). */
   chips?: ReactNode;
-  /** The time line ("5h", or "2026 season" and the source for a move). */
+  /** The time line ("2026 season" and the source for a move, the season for a job, "5h" for a message); null for none. */
   time: ReactNode;
 };
 
@@ -34,9 +34,11 @@ const STRETCH =
 const FAILED = "We couldn't update this notification.";
 
 /**
- * Notification row (§8.16): 16px padding, avatar or tile 40, one sentence 13/20, an optional
- * ContextLine, the time 12 --fg-3 and More. Unread rows sit on --surface-2 with an 8px ink dot in the left gutter (and say "Unread" to
- * screen readers). The whole row is one link; following it marks the notification read first, with
+ * Notification row (§8.16): avatar or tile 40, one sentence 13/20, an optional ContextLine, the time
+ * 12 --fg-3 and More. Unread rows sit on --surface-2 with an 8px ink dot centred in a 24px left gutter
+ * (rows start at 24px at every width, so the dot never sits at the screen edge) and a second cue that
+ * doesn't depend on the dot or the faint band (audit m4): the unread sentence is 500 --fg-1, a read
+ * one 400 --fg-2. Screen readers hear "Unread". The whole row is one link; following it marks the notification read first, with
  * the row dimmed and busy meanwhile, and navigates even when marking read fails.
  */
 export function NotificationRow({ id, read, href, visual, sentence, context, chips, time }: NotificationRowProps) {
@@ -90,16 +92,16 @@ export function NotificationRow({ id, read, href, visual, sentence, context, chi
     <li
       aria-busy={following || undefined}
       className={cn(
-        "relative flex items-start gap-3 px-4 py-4 transition-colors hover:bg-hover md:px-6",
+        "relative flex items-start gap-3 py-4 pl-6 pr-4 transition-colors hover:bg-hover md:px-6",
         !read && "bg-surface-2",
         following && "cursor-progress bg-hover [&>*]:opacity-60",
       )}
     >
-      {/* Centered in the 16px gutter on phone (x 4–12), in the 24px gutter on md and up (x 8–16). */}
-      {!read && <span aria-hidden="true" className="absolute left-1 top-9 size-2 -translate-y-1/2 rounded-full bg-fg-1 md:left-2" />}
+      {/* Centred in the 24px gutter at every width (x 8–16), level with the avatar's centre. */}
+      {!read && <span aria-hidden="true" className="absolute left-2 top-9 size-2 -translate-y-1/2 rounded-full bg-fg-1" />}
       {visual}
       <div className="min-w-0 flex-1">
-        <p id={sentenceId} className="text-small leading-5 text-fg-1">
+        <p id={sentenceId} className={cn("text-small leading-5", read ? "text-fg-2" : "font-medium text-fg-1")}>
           {href ? (
             <Link href={href} onClick={follow} className={STRETCH}>
               {content}
@@ -111,10 +113,12 @@ export function NotificationRow({ id, read, href, visual, sentence, context, chi
           )}
         </p>
         {context}
-        <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-caption text-fg-3">
-          {time}
-          {chips}
-        </p>
+        {(time || chips) && (
+          <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-caption text-fg-3">
+            {time}
+            {chips}
+          </p>
+        )}
       </div>
       <div className="relative z-10 -my-1 -mr-1 shrink-0">
         <Menu

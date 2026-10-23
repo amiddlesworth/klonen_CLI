@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Building2, Briefcase, ChevronRight, Lock, Network, Users, type LucideIcon } from "lucide-react";
 import { DemoFootnote, DemoLabel } from "@/components/data/Badges";
+import { keepParen } from "@/components/data/TitleOrg";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { Divider } from "@/components/ui/Divider";
@@ -82,10 +83,10 @@ export function MiniProfile({ viewer, stats, status }: MiniProfileProps) {
           <OrgMark shortName={org.shortName} name={org.name} size={24} />
           {org.inRegistry ? (
             <Link href={`/programs/${org.slug}`} className="inline-flex min-h-6 min-w-0 items-center underline-offset-2 hover:text-fg-1 hover:underline">
-              {org.name}
+              {keepParen(org.name)}
             </Link>
           ) : (
-            <span className="min-w-0">{org.name}</span>
+            <span className="min-w-0">{keepParen(org.name)}</span>
           )}
         </p>
       )}

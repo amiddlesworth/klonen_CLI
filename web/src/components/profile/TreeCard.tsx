@@ -1,15 +1,16 @@
 import Link from "next/link";
-import { Building2, ChevronRight, Flag, Network } from "lucide-react";
+import { ArrowRight, Building2, Flag, Network } from "lucide-react";
 import { ContextLine } from "@/components/data/ContextLine";
-import { InferredYear } from "@/components/data/InferredYear";
+import { InferredKey, InferredYear } from "@/components/data/InferredYear";
 import { SectionCard } from "@/components/data/SectionCard";
+import { keepParen, TitleOrg } from "@/components/data/TitleOrg";
 import { Avatar } from "@/components/ui/Avatar";
 import { Icon } from "@/components/ui/Icon";
 import { TextLink } from "@/components/ui/TextLink";
 import { cn } from "@/lib/cn";
 import { titleShort } from "@/lib/format";
 import type { TreeContext, TreeModel, TreeRowModel } from "./model";
-import { InlineYears, TreeRange } from "./TreeYears";
+import { InlineYears, TreeRuns } from "./TreeYears";
 
 type TreeCardProps = {
   model: TreeModel;
@@ -27,7 +28,7 @@ const PHONE_ROWS = 3;
 /**
  * Coaching tree card (§8.4, id="tree"): Worked under and Worked alongside on the left, Coached under
  * {first} on the right in a two-column grid (lg); stacked below lg with 3 rows per long group and
- * "Show all {n}". When the left groups outnumber the mentees (or there are only one or two mentees),
+ * "All {n} →". When the left groups outnumber the mentees (or there are only one or two mentees),
  * the narrow left column would crowd, so every group stacks full width in the two-column grid.
  * Counts are unique people; the footnote names anyone listed twice. Empty groups are hidden; a tree
  * with no one in it shows a quiet empty state.
@@ -78,7 +79,13 @@ export function TreeCard({ model, slug, firstName, personName, explainInferred, 
       </div>
       <p className="mt-2 border-t border-divider pt-3 text-caption text-fg-3">
         {model.footnote}
-        {explainInferred && model.inferred && " Dotted years are inferred from a bio, not stated in it."}
+        {/* The card explains its own dotted years (audit C03): the Experience legend covers Experience and Playing career only. */}
+        {explainInferred && model.inferred && (
+          <>
+            {" "}
+            <InferredKey />
+          </>
+        )}
       </p>
     </SectionCard>
   );
@@ -111,8 +118,9 @@ function TreeGroup({ id, label, rows, columns, capLg, slug }: { id: string; labe
             n <= capLg && "lg:hidden",
           )}
         >
-          Show all {n}
-          <Icon icon={ChevronRight} size={14} />
+          {/* It opens the tree page: an arrow, as every link to another page (audit X23); chevrons mean disclosure. */}
+          All {n}
+          <Icon icon={ArrowRight} size={14} />
         </Link>
       )}
     </section>
@@ -121,16 +129,22 @@ function TreeGroup({ id, label, rows, columns, capLg, slug }: { id: string; labe
 
 function TreeRow({ row, className }: { row: TreeRowModel; className?: string }) {
   const p = row.person;
-  const sub = [p.currentTitle && titleShort(p.currentTitle), p.org?.shortName].filter(Boolean).join(" · ");
+  const title = p.currentTitle ? titleShort(p.currentTitle) : null;
+  const program = p.org?.shortName ? keepParen(p.org.shortName) : null;
   return (
     <Link href={`/in/${p.slug}`} className={cn("group/row flex min-h-11 items-start gap-2.5 border-b border-divider py-2.5", className)}>
       <Avatar name={p.fullName} tintKey={p.slug} size={32} />
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-baseline justify-between gap-2">
           <span className="truncate text-small font-semibold text-fg-1 underline-offset-2 group-hover/row:underline">{p.fullName}</span>
-          <TreeRange view={row.range} className="shrink-0 leading-[18px]" />
+          {/* Every period the two shared (TreeLink.periods), oldest first: "2010–12, 2020–". */}
+          <TreeRuns runs={row.runs} className="shrink-0 leading-[18px]" />
         </div>
-        {sub && <p className="truncate text-caption text-fg-2">{sub}</p>}
+        {(title || program) && (
+          <p className="min-w-0 text-caption text-fg-2">
+            <TitleOrg title={title} org={program} />
+          </p>
+        )}
         {row.context && <TreeContextLine context={row.context} />}
       </div>
     </Link>

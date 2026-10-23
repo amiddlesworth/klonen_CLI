@@ -1,21 +1,27 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { PageContainer } from "@/components/shell/Layouts";
 import { MeMenuSummary } from "@/components/shell/MeMenuSummary";
-import { getViewer } from "@/components/shell/viewer";
 import { getDemoAccounts } from "@/lib/queries/shell";
-import { loadDemoSession } from "@/lib/session";
 import { Specimens } from "./Specimens";
 
 export const metadata: Metadata = { title: "Components", robots: { index: false, follow: false } };
 
-async function demoCoachViewer() {
-  const session = await loadDemoSession("coach").catch(() => null);
-  return session ? getViewer(session).catch(() => null) : null;
+/** The gallery is a development tool: production builds answer 404. */
+function devOnly() {
+  if (process.env.NODE_ENV === "production") notFound();
 }
 
-/** Gallery of every primitive, data component and shell piece, in light and dark (for builders and reviewers). */
+/**
+ * Gallery of every primitive, data component and shell piece, in light and dark (for builders and
+ * reviewers). Development only. The shell previews use a fictional sample viewer, never a live demo
+ * session: the coach demo is a real coach, and the Me menu would show that account's private
+ * "Open to opportunities" setting to anyone who opened this page.
+ */
 export default async function ComponentsPage() {
-  const [accounts, viewer] = await Promise.all([getDemoAccounts().catch(() => []), demoCoachViewer()]);
+  devOnly();
+  const accounts = await getDemoAccounts().catch(() => []);
+  const viewer = null;
   return (
     <PageContainer>
       {/* Sample for the tablet Me menu slot (§8.2): open "Me" at 721–1080px to see it. */}
@@ -36,7 +42,7 @@ export default async function ComponentsPage() {
         <h1 className="text-display max-md:text-display-sm">Components</h1>
         <p className="mt-1 max-w-prose text-small text-fg-2">
           The UI foundation from docs/DESIGN.md: tokens, primitives (components/ui), data display (components/data) and the shell (components/shell). Forced states
-          use <code className="text-caption">data-force</code>. People in samples are fictional, except the demo account in the shell previews.
+          use <code className="text-caption">data-force</code>. People in samples are fictional, including the viewer in the shell previews.
         </p>
       </header>
       <div data-theme="light" className="bg-transparent">

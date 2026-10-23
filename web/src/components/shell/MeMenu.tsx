@@ -6,11 +6,10 @@ import { Icon } from "@/components/ui/Icon";
 import { Menu, MenuSurface } from "@/components/ui/Menu";
 import { MenuDivider, MenuGroup, MenuHeader, MenuItem, MenuLink, MenuRadioItem } from "@/components/ui/MenuItems";
 import type { Placement } from "@/components/ui/floating";
-import { cn } from "@/lib/cn";
 import { availabilityStatus } from "@/lib/format";
 import { DemoAccountGroup, useDemoSwitch } from "./DemoSwitcher";
 import { useMeMenuSummary } from "./MeMenuSummary";
-import { NAV_ITEM, NavIcon } from "./NavItem";
+import { NAV_ITEM, NavIcon, TAB_CELL } from "./NavItem";
 import { applyThemePref, readThemePref, type ThemePref } from "./theme";
 import type { DemoAccountOption, Viewer } from "./types";
 
@@ -159,10 +158,7 @@ export function MeMenu({ viewer, accounts, variant, active }: MeMenuProps) {
       ? NAV_ITEM
       : variant === "mobile"
         ? "grid size-11 shrink-0 place-items-center rounded-sm"
-        : cn(
-            "relative flex min-w-0 flex-col items-center justify-center gap-[3px] whitespace-nowrap text-caption font-medium tracking-[-0.01em] text-fg-2 focus-visible:-outline-offset-2",
-            active && "font-semibold text-fg-1",
-          );
+        : TAB_CELL;
 
   return (
     <Menu

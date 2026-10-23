@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Info, Send } from "lucide-react";
+import { Info } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { Icon } from "@/components/ui/Icon";
@@ -26,14 +26,14 @@ export function ApplyButton({ jobTitle, programName, sample, large, preview, cla
   const [open, setOpen] = useState(false);
   if (preview) {
     return (
-      <Button variant="primary" icon={Send} aria-disabled="true" tabIndex={-1} phone={large ? "large" : "default"} className={className}>
+      <Button variant="primary" aria-disabled="true" tabIndex={-1} phone={large ? "large" : "default"} className={className}>
         Apply
       </Button>
     );
   }
   return (
     <>
-      <Button variant="primary" icon={Send} phone={large ? "large" : "default"} onClick={() => setOpen(true)} className={className} aria-haspopup="dialog">
+      <Button variant="primary" phone={large ? "large" : "default"} onClick={() => setOpen(true)} className={className} aria-haspopup="dialog">
         Apply
       </Button>
       <Dialog

@@ -38,6 +38,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
+import { PageSearchField } from "@/components/ui/PageSearchField";
 import { Pagination } from "@/components/ui/Pagination";
 import { Tabs } from "@/components/ui/Tabs";
 import { TextLink } from "@/components/ui/TextLink";
@@ -244,7 +245,10 @@ async function Results({ s, at, under, unmatched, unknown }: { s: SearchState; a
     : at
       ? `Coaches with a stint at ${at.shortName}, current or past.`
       : null;
-  const facetProps = { state: s, counts, total, allValues, conferenceNames: confNames, workedAt: picked.workedAt, workedUnder: picked.workedUnder, unmatched };
+  const facetProps = { state: s, counts, total, allValues, conferenceNames: confNames, workedAt: picked.workedAt, workedUnder: picked.workedUnder, unmatched, keywords: false };
+  // The header's search field submits a new query with the current tab and facets (audit X20: one
+  // in-page search style; the query lives in the header, not in a Keywords facet).
+  const keep = [...new URLSearchParams(searchHref(s, { q: "" }).split("?")[1] ?? "").entries()];
   const emptyLabel = s.q && !applied ? `No ${noun[1]} match ‘${s.q}’.` : `No ${noun[1]} match these filters.`;
 
   // A value that matches nothing is dropped, and says so at every width; Remove takes it out of the URL
@@ -274,10 +278,16 @@ async function Results({ s, at, under, unmatched, unknown }: { s: SearchState; a
     <SidebarLayout sidebarLabel="Search filters" sidebar={<FacetPanel variant="rail" formId="facets-rail" {...facetProps} />}>
       <Card padding="none" aria-labelledby="search-heading">
         <div className="px-4 pt-4">
-          <h1 id="search-heading" className="text-title" aria-live="polite">
+          <h1 id="search-heading" className="text-display-sm" aria-live="polite">
             {heading}
           </h1>
           {note && <p className="mt-0.5 text-small text-fg-2">{note}</p>}
+          <form method="get" action="/search" role="search" aria-label="Search coaches and programs" className="mt-3">
+            {keep.map(([k, v]) => (
+              <input key={`${k}=${v}`} type="hidden" name={k} value={v} />
+            ))}
+            <PageSearchField key={s.q} name="q" defaultValue={s.q} placeholder={s.type === "people" ? "Name, title or program" : "Name or conference"} aria-label="Search coaches and programs" />
+          </form>
           {notes.map((n) => (
             <p key={n.key} role="note" className="mt-2 flex items-start gap-1.5 text-small text-fg-2">
               <Icon icon={Info} size={16} className="mt-px shrink-0 text-fg-2" />
@@ -336,7 +346,7 @@ async function Results({ s, at, under, unmatched, unknown }: { s: SearchState; a
                 ))}
                 {programRes?.results.map((o) => <ProgramResultRow key={o.id} program={o} conferenceNames={confNames} />)}
               </ul>
-              {anyInferred && <InferredFootnote className="border-t border-divider px-4 py-3">Dotted years are inferred from a staff bio, not stated in it.</InferredFootnote>}
+              {anyInferred && <InferredFootnote className="border-t border-divider px-4 py-3" />}
               {totalPages > 1 && (
                 <Pagination
                   className="border-t border-divider px-4 py-3"

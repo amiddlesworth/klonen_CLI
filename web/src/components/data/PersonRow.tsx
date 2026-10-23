@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Avatar, type AvatarSize } from "@/components/ui/Avatar";
 import { cn } from "@/lib/cn";
+import { TitleOrg } from "./TitleOrg";
 
 export type PersonRowProps = {
   name: string;
@@ -78,18 +79,24 @@ export function PersonRow({
           </div>
           {aside && <span className="shrink-0">{aside}</span>}
         </div>
-        {sub.length > 0 && (
-          <p className={cn(size === "md" ? "text-small" : "text-caption", "text-fg-2", truncate && "truncate")}>
-            {sub.map((s, i) => (
-              <span key={i}>
-                {i > 0 && " · "}
-                {s}
-              </span>
-            ))}
-          </p>
-        )}
+        {sub.length > 0 &&
+          (truncate ? (
+            // One line: the title truncates, the program stays readable (TitleOrg, audit M2).
+            <p className={cn(size === "md" ? "text-small" : "text-caption", "min-w-0 text-fg-2")}>
+              <TitleOrg title={title} org={org} />
+            </p>
+          ) : (
+            <p className={cn(size === "md" ? "text-small" : "text-caption", "text-fg-2")}>
+              {sub.map((s, i) => (
+                <span key={i}>
+                  {i > 0 && " · "}
+                  {s}
+                </span>
+              ))}
+            </p>
+          ))}
         {context}
-        {footer && <div className="mt-2">{footer}</div>}
+        {footer && <div className="mt-2 empty:hidden">{footer}</div>}
       </div>
       {action && !linkRow && <div className="shrink-0">{action}</div>}
     </>

@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { ChoiceGroup, Radio, Switch } from "@/components/ui/Checkbox";
 import { FilterChip } from "@/components/ui/FilterChip";
 import { Icon } from "@/components/ui/Icon";
+import { PAGE_TITLE } from "@/components/ui/PageHeader";
 import { saveAvailability } from "@/lib/actions/availability";
 import { BRAND } from "@/lib/brand";
 import { availabilityStatus, type AvailabilityAudience } from "@/lib/format";
@@ -125,7 +126,7 @@ export function AvailabilityForm({ initial, programs, currentProgram, regionCoun
     <form onSubmit={submit} noValidate>
       <Card padding="none" aria-labelledby="availability-title">
         <div className="px-4 pb-4 pt-4 md:px-6 md:pt-5">
-          <h1 id="availability-title" className="text-title">
+          <h1 id="availability-title" className={PAGE_TITLE}>
             Open to opportunities
           </h1>
           <p className="mt-1 max-w-prose text-small text-fg-2">

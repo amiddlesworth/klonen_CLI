@@ -151,7 +151,14 @@ function parseHtml(html) {
 
 function setChildren(parent, start, deleteCount, nodes) {
   for (const n of nodes) n.parent = parent;
-  parent.children.splice(start, deleteCount, ...nodes);
+  // Nodes taken out (a replaced Suspense fallback) lose their parent, so a boundary or placeholder that
+  // sat inside them reads as detached, like the DOM node React's runtime would no longer find.
+  for (const n of parent.children.splice(start, deleteCount, ...nodes)) n.parent = null;
+}
+/** Still in the document (not inside a subtree an earlier instruction removed)? */
+function attached(node) {
+  for (let n = node; n; n = n.parent) if (n.tag === '#root') return true;
+  return false;
 }
 function detach(node) {
   const p = node.parent;
@@ -160,8 +167,8 @@ function detach(node) {
   if (i >= 0) p.children.splice(i, 1);
   node.parent = null;
 }
-const isOpen = (n) => n.type === 'comment' && (n.text === '$' || n.text === '$?' || n.text === '$!');
-const isClose = (n) => n.type === 'comment' && n.text === '/$';
+const isOpen = (n) => n.type === 'comment' && (n.text === '$' || n.text === '$?' || n.text === '$!' || n.text === '$~' || n.text === '&');
+const isClose = (n) => n.type === 'comment' && (n.text === '/$' || n.text === '/&');
 
 /** Applies React Fizz streaming instructions so the tree matches the DOM after the inline scripts ran. */
 function resolveStreaming(doc) {
@@ -198,6 +205,13 @@ function resolveStreaming(doc) {
       const [bid, sid] = args;
       const b = doc.byId.get(bid);
       const s = doc.byId.get(sid);
+      // A boundary that sat inside a fallback an earlier $RC already replaced (e.g. a Suspense inside a
+      // loading.tsx skeleton) is gone from the DOM: React's runtime just drops the segment ($RC / $RV
+      // `if (parentNode)`), so do the same instead of splicing the stale content back in.
+      if (b && s && !attached(b)) {
+        detach(s);
+        continue;
+      }
       if (!b || !s || !b.parent) {
         issues.push(`unresolved boundary ${bid}->${sid}`);
         continue;
@@ -224,6 +238,8 @@ function resolveStreaming(doc) {
       setChildren(par, i, end - i, kids);
     } else if (op === 'X') {
       const [bid, dgst, msg] = args;
+      const b = doc.byId.get(bid);
+      if (b && !attached(b)) continue; // inside an already-replaced fallback: React ignores it too
       issues.push(`client-render boundary ${bid}: ${msg || dgst || '(no message)'}`);
     }
   }

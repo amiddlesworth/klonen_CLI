@@ -76,7 +76,7 @@ export function JobsListSkeleton() {
 export function JobsHeaderSkeleton() {
   return (
     <Card padding="main">
-      <h1 className="text-display-sm md:text-display">Jobs</h1>
+      <h1 className="text-display-sm">Jobs</h1>
       <SkeletonLine width="50%" lineHeight={18} className="mt-0.5" />
       <Skeleton className="mt-4 h-9 w-full max-md:h-11" />
       <div className="mt-3 flex gap-2">

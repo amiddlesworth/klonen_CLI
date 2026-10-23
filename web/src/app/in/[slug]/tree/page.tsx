@@ -8,6 +8,7 @@ import { TreeBreadcrumb, TreeHeader } from "@/components/tree/TreeHeader";
 import { BRAND } from "@/lib/brand";
 import { getTreeExplorer } from "@/lib/queries/tree";
 import { getSession } from "@/lib/session";
+import { absoluteUrl } from "@/lib/site";
 
 type Params = Promise<{ slug: string }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -45,11 +46,12 @@ export async function generateMetadata({ params, searchParams }: { params: Param
   };
 }
 
-/** An "Invite a colleague" email that links to the coach's profile (no backend: a mailto link). */
-function inviteHref(h: Headers, slug: string, name: string): string {
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  const url = host ? `${proto}://${host}/in/${slug}` : `/in/${slug}`;
+/**
+ * An "Invite a colleague" email that links to the coach's profile (no backend: a mailto link). The
+ * link uses the configured site origin (lib/site.ts), never the request's Host headers.
+ */
+function inviteHref(slug: string, name: string): string {
+  const url = absoluteUrl(`/in/${slug}`);
   const subject = `${name} on ${BRAND.name}`;
   const body = `Have you worked on a staff with ${name}? Coaching trees on ${BRAND.name} are built from overlapping seasons on the same staff. See the profile: ${url}`;
   return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -71,11 +73,10 @@ export default async function TreePage({ params, searchParams }: { params: Param
   const view = options.view ?? (mode === "phone" ? "list" : "diagram");
 
   return (
-    <PageContainer>
-      <TreeBreadcrumb data={data} />
+    <PageContainer breadcrumb={<TreeBreadcrumb data={data} />}>
       <TreeHeader data={data} view={view} depth={options.depth} mode={mode} />
       {empty ? (
-        <TreeEmptyCard data={data} inviteHref={inviteHref(h, slug, data.focal.fullName)} />
+        <TreeEmptyCard data={data} inviteHref={inviteHref(slug, data.focal.fullName)} />
       ) : (
         <>
           {view === "diagram" && <TreeDiagramCard data={data} depth={options.depth} viewerId={viewerId} className={mode === "default" ? "max-md:hidden" : undefined} />}

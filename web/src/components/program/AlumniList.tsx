@@ -84,7 +84,7 @@ export function AlumniList({ id, title, subtitle, entries, kind, empty, page = 1
               );
             })}
           </ul>
-          {hasInferred && <InferredFootnote className="mt-3">Dotted years are inferred from the coach&apos;s bio, not stated in it.</InferredFootnote>}
+          {hasInferred && <InferredFootnote className="mt-3" />}
           {hrefForPage && totalPages > 1 && (
             <Pagination
               className="mt-4 border-t border-divider pt-4"

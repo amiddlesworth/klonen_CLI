@@ -1,4 +1,5 @@
 import { Network, Send } from "lucide-react";
+import { InferredKey } from "@/components/data/InferredYear";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -12,18 +13,6 @@ import { buildDiagram } from "./diagramInput";
 import { layoutTree, toClientLayout } from "./layout";
 import { TreeDiagram } from "./TreeDiagram";
 import { TreeList } from "./TreeList";
-
-/** The visible explanation of a dotted year (DESIGN.md §6.2), once per view that shows one. */
-function InferredNote() {
-  return (
-    <span className="inline-flex items-center gap-1.5">
-      <span className="num inf font-medium text-fg-2" aria-hidden="true">
-        2004
-      </span>
-      Year inferred from a bio, not stated in it
-    </span>
-  );
-}
 
 /**
  * Diagram card: the SVG in two layouts (rows of 4 below lg, where a phone scrolls it sideways; rows of 6
@@ -79,9 +68,10 @@ export function TreeDiagramCard({ data, depth, viewerId, className }: { data: Tr
               Smaller circles are two steps away
             </li>
           )}
+          {/* The shared key without a sample year (audit C03): the diagram trims rows, so no one year is sure to be on it. */}
           {inferred && (
             <li>
-              <InferredNote />
+              <InferredKey />
             </li>
           )}
           {wide.nodes.some((n) => n.you) && (
@@ -137,7 +127,7 @@ export function TreeListCard({
       <div className="mt-2 border-t border-divider pt-3 text-caption text-fg-3">
         {inferred && (
           <p className="mb-1 text-fg-2">
-            <InferredNote />
+            <InferredKey />
           </p>
         )}
         <p>{treeFootnote(data)}</p>

@@ -65,6 +65,36 @@ export function TreeRange({ view, className }: { view: TreeYearsView; className?
   );
 }
 
+/**
+ * Every period of a tree link on the right of its row (TreeLink.periods), oldest first: "2010–12, 2020–",
+ * each inferred year dotted on its own, "Current" last for a period whose start the source doesn't give.
+ * A pair with one period reads exactly as TreeRange. Nothing when the source pins no years.
+ */
+export function TreeRuns({ runs, className }: { runs: TreeYearsView[]; className?: string }) {
+  if (!runs.length) return null;
+  if (runs.length === 1) return <TreeRange view={runs[0]} className={className} />;
+  const words = runs.map((v) => (v.kind === "range" ? spoken(v) : "current, start year not in source")).join("; ");
+  return (
+    <span className={cn("num whitespace-nowrap text-caption font-medium", className)}>
+      <span aria-hidden="true">
+        {runs.map((v, i) => (
+          <span key={i}>
+            {i > 0 && ", "}
+            {v.kind === "range" ? (
+              <CompactParts view={v} />
+            ) : (
+              <span className="text-fg-2" title="On the same staff now. The start year is not in the source.">
+                Current
+              </span>
+            )}
+          </span>
+        ))}
+      </span>
+      <span className="sr-only">{words}</span>
+    </span>
+  );
+}
+
 /** The same years inside a sentence ("Played for Ian 2024–25", "both at George Fox · 2015–24"). */
 export function InlineYears({ view }: { view: TreeYearsView }) {
   if (view.kind !== "range") return null;

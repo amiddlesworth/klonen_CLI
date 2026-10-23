@@ -20,4 +20,4 @@ export const FRAME_PAGE_THREAD_CLASS = "max-md:pb-0";
 export const PANE_HEADER_CLASS = "flex h-14 shrink-0 items-center border-b border-divider md:h-16";
 
 /** On the phone thread page, the thread column fills the screen so the composer sits on the tab bar. */
-export const PHONE_FILL_CLASS = "max-md:min-h-[calc(100dvh-var(--mtop-h)-var(--tabbar-h)-env(safe-area-inset-bottom)-10px)]";
+export const PHONE_FILL_CLASS = "max-md:min-h-[calc(100dvh-var(--mtop-h)-var(--tabbar-offset)-10px)]";

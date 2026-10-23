@@ -13,7 +13,7 @@ export default function JobsError({ error, reset }: { error: Error & { digest?: 
   return (
     <PageContainer>
       <Card padding="main" aria-labelledby="jobs-error-title">
-        <h1 id="jobs-error-title" className="mb-3 text-display-sm md:text-display">
+        <h1 id="jobs-error-title" className="mb-3 text-display-sm">
           Jobs
         </h1>
         <ErrorState

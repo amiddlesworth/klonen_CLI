@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AboutCard } from "@/components/profile/AboutCard";
-import { EducationCard, PlayingCard } from "@/components/profile/CareerEntries";
-import { ExperienceCard } from "@/components/profile/ExperienceCard";
+import { EducationCard, PlayingCard, playingDottedYear } from "@/components/profile/CareerEntries";
+import { ExperienceCard, ledgerDottedYear } from "@/components/profile/ExperienceCard";
 import {
   buildLedger,
   buildTree,
@@ -94,28 +94,25 @@ export default async function ProfilePage({ params }: Props) {
   // sport: every coaching number and the strip count football coaching only (model.ts isFootballCoaching);
   // roles in other sports are listed under their sport.
   const rows = [...profile.experience.flatMap((g) => g.roles), ...playing];
-  const ledger = buildLedger(rows);
+  // The current role shows the header's title (the staff directory's); the bio's wording stays in its Source.
+  const ledger = buildLedger(rows, { orgId: currentOrg?.id ?? null, directoryTitle: person.currentTitle });
+  const shownTitle = new Map(ledger.flatMap((g) => g.items.flatMap((i) => (i.kind === "role" ? [[i.role.id, i.title] as const] : []))));
   const seasons = coachingSeasons(rows);
   const first = firstSeason(rows);
   const treeModel = buildTree(tree, firstName, currentOrg?.slug ?? null, { id: person.id, fullName: person.fullName });
   const headline = currentHeadline(rows, currentOrg?.id ?? null, person.currentTitle);
   const undatedRoles = undatedRoleCount(rows);
-  const strip = stripStints(rows);
-  const ledgerInferred = ledger.some((g) => g.inferred || g.items.some((i) => i.kind === "role" && i.inferred && g.roleCount > 1));
-  const playingInferred = playing.some((r) => !r.yearsExplicit && (r.startYear || r.endYear));
-  const sameInferred = sameTreeInferred(sameTree);
-  // Every page that shows an inferred year explains the mark once (§6.2): the Experience legend, or,
-  // without an Experience list, the first card below that shows one.
-  const anyInferred = ledgerInferred || playingInferred || treeModel.inferred || sameInferred;
-  const explainIn = !anyInferred
-    ? null
-    : ledger.length
-      ? "experience"
-      : playing.length
-        ? "playing"
-        : treeModel.groups.length && treeModel.inferred
-          ? "tree"
-          : "same-tree";
+  const strip = stripStints(rows, (r) => shownTitle.get(r.id) ?? r.role);
+  // Each card explains the dotted years it shows (§6.2, audit C03). The Experience legend covers Experience
+  // and Playing career, with a year it actually dots as its sample; Playing career explains its own only when
+  // there is no Experience list; the tree card explains its own in its footnote; Same tree (rail) explains
+  // its own only when no card in the main column explains the mark.
+  const ledgerYear = ledgerDottedYear(ledger);
+  const playingYear = playingDottedYear(playing);
+  const experienceKeyYear = ledger.length ? (ledgerYear ?? playingYear) : null;
+  const playingExplains = !ledger.length && playingYear != null;
+  const treeExplains = treeModel.groups.length > 0 && treeModel.inferred;
+  const sameExplains = sameTreeInferred(sameTree) && experienceKeyYear == null && !playingExplains && !treeExplains;
   const sources = [...new Set([person.sourceUrl, ...profile.sources].filter((u): u is string => !!u))];
 
   const profilePerson = { id: person.id, slug: person.slug, fullName: person.fullName, firstName, claimed: person.claimed };
@@ -143,9 +140,7 @@ export default async function ProfilePage({ params }: Props) {
               links={sameTree}
               firstName={firstName}
               programShortName={currentOrg.shortName}
-              signedIn={!!session}
-              accounts={accounts}
-              explainInferred={explainIn === "same-tree"}
+              explainInferred={sameExplains}
             />
           )}
           {conference && <AlsoViewedCard people={alsoViewed} conferenceAbbr={conference} />}
@@ -176,13 +171,13 @@ export default async function ProfilePage({ params }: Props) {
         firstName={firstName}
         slug={slug}
         owner={isOwner}
-        showInferredKey={explainIn === "experience"}
+        inferredKeyYear={experienceKeyYear}
         otherSportRoles={otherSportRoleCount(rows)}
         staffOnlyRoles={staffOnlyRoleCount(rows)}
         isDemo={person.isDemo}
       />
-      <PlayingCard rows={playing} personName={person.fullName} explainInferred={explainIn === "playing"} />
-      <TreeCard model={treeModel} slug={slug} firstName={firstName} personName={person.fullName} explainInferred={explainIn === "tree"} isDemo={person.isDemo} />
+      <PlayingCard rows={playing} personName={person.fullName} explainInferred={playingExplains} />
+      <TreeCard model={treeModel} slug={slug} firstName={firstName} personName={person.fullName} explainInferred={treeExplains} isDemo={person.isDemo} />
       <EducationCard almaMater={person.almaMater} org={almaOrg} />
     </TwoColumnLayout>
   );

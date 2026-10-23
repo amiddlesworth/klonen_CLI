@@ -7,19 +7,27 @@ import { treeEdgeYears } from "@/components/tree/years";
 import { possessive } from "@/components/search/params";
 import { CURRENT_SEASON } from "@/lib/brand";
 import { levelShort, seasonSpans } from "@/lib/format";
-import { escapeLike } from "./orgs";
+import { getLandingStatsCached } from "./landing";
+import { conferenceKey, escapeLike } from "./orgs";
+import { getProgramListCounts } from "./program";
 
 /*
  * Search page queries (DESIGN.md §8.7). Extends lib/queries/search.ts (searchPeople, searchOrgs)
  * with what the page needs: multi-value checkbox facets with disjunctive counts, conference
  * abbreviations cleaned of source footnote markers ("SAA[m]" is the SAA), relevance ranking for the
  * query, programs with staff counts, and one line of structured tree context per person.
+ *
+ * Fictional demo people (people.is_demo, the pipeline's sample candidates) are never listed or
+ * counted here: every people query goes through peopleWhere() or REAL, and program counts come from
+ * the program page's own getProgramListCounts().
  */
 
 export const SEARCH_PAGE_SIZE = 20;
 
-/** Conference abbreviation without footnote markers left over from source tables ("NACC[g]" → "NACC"). */
-const CONF = sql<string>`btrim(regexp_replace(${organizations.conferenceAbbr}, '\\[[^\\]]*\\]', '', 'g'))`;
+/** Conference abbreviation without footnote markers ("NACC[g]" → "NACC"): the one cleaned expression (orgs.ts conferenceKey). */
+const CONF = conferenceKey;
+/** Real people only: demo candidates never appear in search. */
+const REAL = eq(people.isDemo, false);
 /** Division as shown in chips and the URL: "NCAA D-III" → "D-III". */
 const DIV = sql<string>`replace(${organizations.level}, 'NCAA ', '')`;
 /** Head coaches first, then coordinators, position coaches, everyone else. */
@@ -66,7 +74,7 @@ function facetWhere(c: ProgramCriteria & { role?: string[] }, omit?: Facet): SQL
 }
 
 function peopleWhere(c: PeopleCriteria, omit?: Facet): SQL[] {
-  const w = facetWhere(c, omit);
+  const w = [REAL, ...facetWhere(c, omit)];
   const ts = terms(c.q);
   if (ts.length) {
     const perTerm = ts.map((t) => {
@@ -156,6 +164,35 @@ function firstNameOf(first: string | null, full: string): string {
   return first?.trim() || full.split(/\s+/)[0] || full;
 }
 
+/*
+ * A query that names a role ("coordinator", "head coach", "linebackers", "analyst") maps to the role
+ * group whose people it means, so that group leads the results (audit C01: the head coaches whose titles
+ * happen to say "coordinator" filled page 1 ahead of the coordinators). Checked in order: staff words
+ * first ("recruiting coordinator" and "video coordinator" are staff roles, not coordinators), then GA and
+ * analyst words, head coach (not "assistant head coach"), coordinator, and position words.
+ */
+const ROLE_WORDS: [group: string, pattern: RegExp][] = [
+  ["support", /\b(strength|conditioning|operations|ops|equipment|trainers?|recruiting|personnel|scouting|video|film|chaplain|directors?)\b/],
+  ["ga_analyst", /\b(graduate assistants?|grad assistants?|g\.?a\.?s?|analysts?|quality control|qc|volunteers?|interns?)(?=\W|$)/],
+  ["head_coach", /(?<!\b(assistant|associate|asst\.?|assoc\.?) )\bhead (football )?coach(es)?\b/],
+  ["coordinator", /\b(coordinators?|coord\.?)(?=\W|$)/],
+  [
+    "position_coach",
+    /\b(quarterbacks?|qbs?|running ?backs?|wide receivers?|receivers?|tight ends?|offensive line(men)?|defensive line(men)?|linebackers?|defensive backs?|cornerbacks?|corners|safeties|secondary|defensive ends?|kickers?|punters?|specialists?|position coach(es)?)\b/,
+  ],
+];
+
+/** The role group a search query names, or null when it names none (a person, a program, a place). */
+export function queryRoleGroup(q: string | undefined): string | null {
+  const text = normalizeQuery(q).toLowerCase().replace(/\s+/g, " ");
+  if (!text) return null;
+  for (const [group, pattern] of ROLE_WORDS) if (pattern.test(text)) return group;
+  return null;
+}
+
+/** The current title up to its first separator: "Offensive Coordinator / Quarterbacks" → "Offensive Coordinator". */
+const TITLE_HEAD = sql`regexp_replace(coalesce(${people.currentTitle}, ''), '\\s*[/(,;].*$', '')`;
+
 export async function searchPeopleX(c: PeopleCriteria, page = 1): Promise<{ results: PersonResult[]; total: number }> {
   const where = and(...peopleWhere(c));
   const q = normalizeQuery(c.q);
@@ -168,7 +205,25 @@ export async function searchPeopleX(c: PeopleCriteria, page = 1): Promise<{ resu
         when ${people.fullName} ilike ${`% ${e}%`} or ${people.fullName} ilike ${`%-${e}%`} then 2
         else 3 end`
     : null;
-  const order = [...(nameRank ? [nameRank] : []), ROLE_ORDER, asc(people.lastName), asc(people.fullName)];
+  // A query that isn't a name ranks by the title (audit C01): the role group the query names, then titles
+  // that start with it, titles that have it before the first " / " or "(", titles that have it anywhere.
+  const group = q ? queryRoleGroup(q) : null;
+  const groupRank = group ? sql`case when ${people.roleGroup}::text = ${group} then 0 else 1 end` : null;
+  const titleRank = q
+    ? sql`case
+        when ${people.currentTitle} ilike ${`${e}%`} then 0
+        when ${TITLE_HEAD} ilike ${`%${e}%`} then 1
+        when ${people.currentTitle} ilike ${`%${e}%`} then 2
+        else 3 end`
+    : null;
+  const order = [
+    ...(nameRank ? [nameRank] : []),
+    ...(groupRank ? [groupRank] : []),
+    ...(titleRank ? [titleRank] : []),
+    ROLE_ORDER,
+    asc(people.lastName),
+    asc(people.fullName),
+  ];
   const [rows, [{ total }]] = await Promise.all([
     db
       .select({
@@ -305,34 +360,11 @@ export async function searchProgramsX(c: ProgramCriteria, page = 1): Promise<{ r
       .offset((Math.max(1, page) - 1) * SEARCH_PAGE_SIZE),
     db.select({ total: sql<number>`count(*)::int` }).from(organizations).where(where),
   ]);
-  const ids = rows.map((r) => r.id);
-  const [staff, alumni] = ids.length
-    ? await Promise.all([
-        db
-          .select({ orgId: people.currentOrgId, n: sql<number>`count(*)::int` })
-          .from(people)
-          .where(inArray(people.currentOrgId, ids))
-          .groupBy(people.currentOrgId),
-        db
-          .select({ orgId: tenures.orgId, n: sql<number>`count(distinct ${tenures.personId})::int` })
-          .from(tenures)
-          .innerJoin(people, eq(people.id, tenures.personId))
-          .where(
-            and(
-              inArray(tenures.orgId, ids),
-              eq(tenures.asPlayer, false),
-              eq(tenures.isCurrent, false),
-              or(sql`${people.currentOrgId} is null`, ne(people.currentOrgId, tenures.orgId)),
-            ),
-          )
-          .groupBy(tenures.orgId),
-      ])
-    : [[], []];
-  const staffBy = new Map(staff.map((s) => [s.orgId, s.n]));
-  const alumniBy = new Map(alumni.map((a) => [a.orgId, a.n]));
+  // The program page's own counts (demo people excluded, football stints only), so a card equals its page.
+  const counts = await getProgramListCounts(rows.map((r) => r.id));
   return {
     total,
-    results: rows.map((r) => ({ ...r, conference: r.conference || null, staff: staffBy.get(r.id) ?? 0, alumni: alumniBy.get(r.id) ?? 0 })),
+    results: rows.map((r) => ({ ...r, conference: r.conference || null, staff: counts.get(r.id)?.staff ?? 0, alumni: counts.get(r.id)?.coached ?? 0 })),
   };
 }
 
@@ -462,7 +494,7 @@ export async function getPersonRef(slug: string): Promise<PersonRef | null> {
     .select(personRefCols)
     .from(people)
     .leftJoin(organizations, eq(organizations.id, people.currentOrgId))
-    .where(or(eq(people.slug, slug), eq(people.id, slug)))
+    .where(and(REAL, or(eq(people.slug, slug), eq(people.id, slug))))
     .orderBy(sql`case when ${people.slug} = ${slug} then 0 else 1 end`)
     .limit(1);
   return row ? { ...row, firstName: firstNameOf(row.firstName, row.fullName) } : null;
@@ -479,7 +511,7 @@ function personNameRank(t: string): SQL {
 }
 
 function personTextWhere(t: string): SQL {
-  return and(...terms(t).map((w) => or(ilike(people.fullName, `%${escapeLike(w)}%`), looseLike(people.fullName, w))!))!;
+  return and(REAL, ...terms(t).map((w) => or(ilike(people.fullName, `%${escapeLike(w)}%`), looseLike(people.fullName, w))!))!;
 }
 
 /** Free text from the no-JS "Worked under" field: exact name, then prefix, then coaches with the biggest trees. */
@@ -864,10 +896,11 @@ export async function treeContexts(
 /* ---------- No-query state ---------- */
 
 export type SearchTotals = {
-  /** Everyone search lists (the unfiltered People count), demo profiles included. */
+  /** Everyone search lists (the unfiltered People count): real coaches only. */
   people: number;
-  /** Coaches read from public staff pages (people minus demo profiles). */
+  /** Coaches read from public staff pages (equal to `people`; demo profiles are never listed). */
   sourced: number;
+  /** Demo profiles listed (none: demo candidates stay out of search). */
   demo: number;
   /** Division III programs in the registry. */
   programs: number;
@@ -875,19 +908,13 @@ export type SearchTotals = {
   programsRead: number;
 };
 
+/**
+ * The start page's totals from the landing page's own query (getLandingStats), so the two pages show
+ * the same numbers ("2,177 coaches at 196 of the 244 programs", audit X06).
+ */
 export async function searchTotals(): Promise<SearchTotals> {
-  const [[p], [o]] = await Promise.all([
-    db.select({ all: sql<number>`count(*)::int`, demo: sql<number>`count(*) filter (where ${people.isDemo})::int` }).from(people),
-    db
-      .select({
-        all: sql<number>`count(*)::int`,
-        // Qualified by hand: drizzle drops table names in a single-table select, and "id" would bind to people.
-        read: sql<number>`count(*) filter (where exists (select 1 from people p where p.current_org_id = "organizations"."id" and not p.is_demo))::int`,
-      })
-      .from(organizations)
-      .where(eq(organizations.inRegistry, true)),
-  ]);
-  return { people: p.all, sourced: p.all - p.demo, demo: p.demo, programs: o.all, programsRead: o.read };
+  const s = await getLandingStatsCached();
+  return { people: s.coaches, sourced: s.coaches, demo: 0, programs: s.registryPrograms, programsRead: s.programs };
 }
 
 export type PickerOrg = { slug: string; name: string; shortName: string; meta: string | null };
@@ -903,7 +930,7 @@ export async function pickerOrgs(text: string, limit = 8): Promise<PickerOrg[]> 
   const q = text.trim();
   const e = escapeLike(q);
   // Qualified by hand: drizzle drops table names in a single-table select ("id" would bind to tenures).
-  const coaches = sql<number>`(select count(distinct t.person_id)::int from tenures t where t.org_id = "organizations"."id" and t.as_player = false)`;
+  const coaches = sql<number>`(select count(distinct t.person_id)::int from tenures t join people p on p.id = t.person_id where t.org_id = "organizations"."id" and t.as_player = false and not p.is_demo)`;
   const rows = await db
     .select({ ...orgRefCols, coaches })
     .from(organizations)
@@ -942,7 +969,7 @@ export async function biggestTree(): Promise<(PersonRef & { mentees: number }) |
     .from(treeEdges)
     .innerJoin(people, eq(people.id, treeEdges.mentorId))
     .leftJoin(organizations, eq(organizations.id, people.currentOrgId))
-    .where(and(eq(treeEdges.kind, "worked_under"), eq(people.roleGroup, "head_coach")))
+    .where(and(eq(treeEdges.kind, "worked_under"), eq(people.roleGroup, "head_coach"), REAL))
     .groupBy(people.id, organizations.shortName)
     .orderBy(desc(sql`count(distinct ${treeEdges.menteeId})`), asc(people.fullName))
     .limit(1);
@@ -957,7 +984,7 @@ export async function viewerContext(orgId: string, viewerPersonId: string | null
     .select(personRefCols)
     .from(people)
     .leftJoin(organizations, eq(organizations.id, people.currentOrgId))
-    .where(and(eq(people.currentOrgId, orgId), eq(people.roleGroup, "head_coach"), viewerPersonId ? ne(people.id, viewerPersonId) : undefined))
+    .where(and(eq(people.currentOrgId, orgId), eq(people.roleGroup, "head_coach"), REAL, viewerPersonId ? ne(people.id, viewerPersonId) : undefined))
     .orderBy(asc(people.fullName))
     .limit(1);
   return {

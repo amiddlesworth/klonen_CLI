@@ -34,7 +34,7 @@ export type Participant = {
   tintKey: string;
   /** Profile slug when the account belongs to a coach with a profile. */
   profileSlug: string | null;
-  /** "Defensive Backs Coach", "Athletic Director" (Title Case, as published). */
+  /** "Defensive Backs Coach", "Athletic Director", "Search consultant" (Title Case, as published). */
   title: string | null;
   /** Full program name ("U.S. Merchant Marine Academy"). */
   orgName: string | null;
@@ -107,7 +107,8 @@ async function loadParticipants(userIds: string[]): Promise<Map<string, Particip
         firstName: r.personFirst ?? r.name.split(/\s+/)[0],
         tintKey: r.personSlug ?? r.userId,
         profileSlug: r.personSlug ?? null,
-        title: r.kind === "employer" ? "Athletic Director" : (r.personTitle ?? null),
+        // An employer account with a program is its athletic director; one without (a search firm) is a consultant.
+        title: r.kind === "employer" ? (r.orgName ? "Athletic Director" : "Search consultant") : (r.personTitle ?? null),
         orgName: r.orgName ?? null,
         orgShortName: r.orgShortName ?? null,
         orgSlug: r.orgSlug ?? null,

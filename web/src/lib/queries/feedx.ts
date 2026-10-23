@@ -161,6 +161,8 @@ export type FeedJob = {
   /** For the record's own chip: "sample" seeded listings read "Sample listing", demo posts "Demo listing". */
   source: string;
   isDemo: boolean;
+  /** Posted "City, ST" (demo posts), so the meta line reads as on /jobs. */
+  location: string | null;
   org: FeedOrg;
   matchesPosition: boolean;
   atViewerProgram: boolean;
@@ -763,7 +765,7 @@ export const getFeedJobs = cache(async (viewer: FeedViewer): Promise<FeedJob[]> 
   if (!base.length) return [];
   const ids = base.map((j) => j.id);
   const details = await db
-    .select({ id: jobs.id, isDemo: jobs.isDemo, org: orgCols })
+    .select({ id: jobs.id, isDemo: jobs.isDemo, location: jobs.location, org: orgCols })
     .from(jobs)
     .innerJoin(organizations, eq(organizations.id, jobs.orgId))
     .where(inArray(jobs.id, ids));
@@ -812,6 +814,7 @@ export const getFeedJobs = cache(async (viewer: FeedViewer): Promise<FeedJob[]> 
       isSample: j.source === "sample" || !!d?.isDemo,
       source: j.source,
       isDemo: !!d?.isDemo,
+      location: d?.location ?? null,
       org,
       matchesPosition: positionKeys(j.title).some((k) => viewerKeys.has(k)),
       atViewerProgram: !!viewer.org && org.id === viewer.org.id,

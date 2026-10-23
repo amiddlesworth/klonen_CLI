@@ -1,18 +1,19 @@
 import { Building2, GraduationCap, Info, Network, Users, type LucideIcon } from "lucide-react";
 import { ContextLine } from "@/components/data/ContextLine";
 import { PersonRow } from "@/components/data/PersonRow";
+import { InviteToClaimButton, PersonRowAction } from "@/components/data/PersonRowAction";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { titleShort } from "@/lib/format";
 import type { PymkRow } from "@/lib/queries/feedx";
-import { ConnectButton, InviteButton } from "./PersonActions";
 import { firstNameOf } from "./text";
 
 const CONTEXT_ICON: Record<PymkRow["contextKind"], LucideIcon> = { tree: Network, school: GraduationCap, info: Info, conference: Building2 };
 
 /**
  * People you may know (§8.5): up to 3 rows (avatar 36, name, title · program, a context line with
- * the reason, Connect). An unclaimed coach the viewer already knows gets "Invite to claim" instead.
+ * the reason, Connect). An unclaimed coach the viewer already knows gets "Invite to claim" instead; any
+ * other unclaimed coach's Connect opens the same invite dialog (PersonRowAction).
  */
 export function PeopleYouMayKnow({ rows }: { rows: PymkRow[] }) {
   return (
@@ -26,7 +27,9 @@ export function PeopleYouMayKnow({ rows }: { rows: PymkRow[] }) {
       ) : (
         <ul className="mt-1">
           {rows.map((r) => {
+            // The labelled invite only where the reason line says the profile hasn't been claimed (§8.5).
             const invite = r.known && !r.claimed;
+            const person = { id: r.id, slug: r.slug, fullName: r.fullName, firstName: firstNameOf(r.fullName), claimed: r.claimed };
             return (
               <li key={r.id} className="border-t border-divider py-3 first:border-t-0 last:pb-0">
                 <PersonRow
@@ -40,8 +43,8 @@ export function PeopleYouMayKnow({ rows }: { rows: PymkRow[] }) {
                   avatarSize={36}
                   size="sm"
                   context={<ContextLine icon={CONTEXT_ICON[r.contextKind]}>{r.context}</ContextLine>}
-                  action={invite ? undefined : <ConnectButton name={r.fullName} />}
-                  footer={invite ? <InviteButton slug={r.slug} first={firstNameOf(r.fullName)} /> : undefined}
+                  action={invite ? undefined : <PersonRowAction person={person} />}
+                  footer={invite ? <InviteToClaimButton person={person} /> : undefined}
                 />
               </li>
             );

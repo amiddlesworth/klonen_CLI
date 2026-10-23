@@ -9,7 +9,7 @@ import { OrgMark } from "@/components/ui/OrgMark";
 import { TextLink } from "@/components/ui/TextLink";
 import { Avatar } from "@/components/ui/Avatar";
 import { BRAND } from "@/lib/brand";
-import { conferenceShort } from "@/lib/format";
+import { conferenceShort, placeShort } from "@/lib/format";
 import { compactSpan, type AlumniEntry, type PeerProgram } from "@/lib/queries/program";
 import { CompactRange, rangeHasInferred } from "./LedgerRange";
 import { displayTitle, jobsCount, peopleCount } from "./text";
@@ -36,7 +36,7 @@ export function ConferencePeersCard({ peers, conferenceAbbr, conferenceName }: {
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-small font-semibold text-fg-1 underline-offset-2 group-hover/row:underline">{p.shortName}</span>
                 <span className="block truncate text-caption text-fg-3">
-                  {[p.nickname, p.state].filter(Boolean).join(" · ")}
+                  {[p.nickname, placeShort(p.state)].filter(Boolean).join(" · ")}
                 </span>
               </span>
               <span className="num shrink-0 text-right text-caption text-fg-3">{p.staff ? `${p.staff} staff` : STAFF_NOT_READ}</span>
@@ -55,11 +55,11 @@ export function ConferencePeersCard({ peers, conferenceAbbr, conferenceName }: {
   );
 }
 
-/** Rows the Coaches from here card shows (the page decides from the same slice who explains a dotted year). */
+/** Rows the Played here card shows (the page decides from the same slice who explains a dotted year). */
 export const COACHES_FROM_HERE_LIMIT = 4;
 
 /**
- * Rail: Coaches from here (§8.6). Former players who now coach, with "Played here {range}" as the
+ * Rail: Played here (§8.6; "Coaches from here" before audit X18, now the same words as the stat and the tab). Former players who now coach, with "Played here {range}" as the
  * context line. Up to 4; links to the full "Played here" list on the Alumni coaches tab. The current
  * program leads the second line and the title truncates after it. When the main column doesn't
  * explain dotted years (`explainInferred`), the card does, under its rows.
@@ -80,7 +80,7 @@ export function CoachesFromHereCard({
   const showFootnote = explainInferred && shown.some((e) => rangeHasInferred(e.stints, "compact"));
   return (
     <Card padding="rail" aria-labelledby="from-here-title">
-      <CardHeader id="from-here-title" size="rail" title="Coaches from here" meta={peopleCount(players.length)} subtitle={`Played at ${shortName}, now coaching`} />
+      <CardHeader id="from-here-title" size="rail" title="Played here" meta={peopleCount(players.length)} subtitle={`Played at ${shortName}, now coaching`} />
       <ul className="mt-2 divide-y divide-divider">
         {shown.map((e) => {
           const dated = !!compactSpan(e.stints);
@@ -119,7 +119,7 @@ export function CoachesFromHereCard({
           );
         })}
       </ul>
-      {showFootnote && <InferredFootnote className="mt-3">Dotted years are inferred from the coach&apos;s bio, not stated in it.</InferredFootnote>}
+      {showFootnote && <InferredFootnote className="mt-3" />}
       {players.length > shown.length && (
         <CardFooter>
           <TextLink href={allHref} arrow target24 className="text-small">
@@ -160,7 +160,7 @@ export function YourHiringCard({ jobs, sampleJobs, jobsHref }: { jobs: number; s
         <Link href={jobsHref} className="target-24 rounded-xs font-medium text-fg-1 underline-offset-2 hover:underline">
           <span className="num">{jobsCount(jobs)}</span>
         </Link>
-        {jobs > 0 && sampleJobs === jobs && <SampleChip label="Sample" />}
+        {sampleJobs > 0 && <SampleChip label="Sample" />}
       </p>
       <p className="mt-1 text-small text-fg-2">Shortlists, candidate notes and stages live in your hiring pipeline.</p>
       <CardFooter>

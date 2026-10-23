@@ -4,7 +4,7 @@ import { and, asc, count, eq, gte, inArray, ne, or, sql, type SQL } from "drizzl
 import { db } from "@/db";
 import { jobs, organizations, people, shortlists, tenures, treeEdges } from "@/db/schema";
 import { JOB_ROLE_GROUPS, type JobRoleGroup } from "@/components/jobs/labels";
-import { escapeLike } from "./orgs";
+import { conferenceKey, escapeLike } from "./orgs";
 import { personSummaryCols, toSummary, type PersonSummary } from "./people";
 import { getProgramAlumni, getProgramPlayers, type AlumniEntry } from "./program";
 import { visibleJobs, visibleShortlists } from "@/lib/demo-scope";
@@ -72,12 +72,16 @@ export type JobsFilter = {
  * The conference's full name, from one source: the abbreviation. Registry rows carry the football
  * conference as the abbreviation but sometimes the school's all-sports conference as the name
  * (Rochester: "Liberty" next to "University Athletic Association"), so the name is the one most
- * registry programs with that abbreviation use, as search does (lib/queries/searchx.ts).
+ * registry programs with that abbreviation use, as search does (lib/queries/searchx.ts). Abbreviations
+ * compare cleaned of footnote markers (orgs.ts conferenceKey). The outer column is qualified by hand
+ * inside the subquery: drizzle drops table names in a single-table select (getEmployerOrg), and an
+ * unqualified "conference_abbr" would bind to the subquery's own row.
  */
 const conferenceName = sql<string | null>`case
-  when ${organizations.conferenceAbbr} is null then ${organizations.conference}
-  when ${organizations.conferenceAbbr} = 'Independent' then 'Independent'
-  else coalesce((select mode() within group (order by c.conference) from organizations c where c.in_registry and c.conference_abbr = ${organizations.conferenceAbbr}), ${organizations.conference})
+  when ${conferenceKey} is null then ${organizations.conference}
+  when lower(${conferenceKey}) = 'independent' then 'Independent'
+  else coalesce((select mode() within group (order by c.conference) from organizations c where c.in_registry
+    and nullif(btrim(regexp_replace(c.conference_abbr, '\\[[^]]*\\]', '', 'g')), '') = nullif(btrim(regexp_replace("organizations"."conference_abbr", '\\[[^]]*\\]', '', 'g')), '')), ${organizations.conference})
 end`;
 
 const orgCols = {
@@ -111,8 +115,8 @@ const listCols = {
   org: orgCols,
 };
 
-/** Conference abbreviation without the footnote markers left over from source tables ("NJAC[r]" -> "NJAC"). */
-const confClean = sql<string>`nullif(trim(regexp_replace(coalesce(${organizations.conferenceAbbr}, ''), '\\[[^\\]]*\\]', '', 'g')), '')`;
+/** Conference abbreviation without footnote markers ("NJAC[r]" -> "NJAC"): the one cleaned expression (orgs.ts conferenceKey). */
+const confClean = conferenceKey;
 
 function whereFor(f: JobsFilter, skip?: "roles" | "states" | "conferences"): SQL | undefined {
   const where: SQL[] = [eq(jobs.status, "open")];
@@ -150,11 +154,19 @@ const listOrder = [
   asc(jobs.id),
 ];
 
-/** One page of open jobs matching the filters (posted listings newest first, then samples), with the total and the sample count. */
-export async function searchJobs(f: JobsFilter, page = 1): Promise<{ jobs: JobListItem[]; total: number; samples: number; page: number; totalPages: number }> {
+/**
+ * One page of open jobs matching the filters (posted listings newest first, then samples), with the
+ * total, the seeded sample listings and the listings posted from the demo accounts (each labeled on
+ * its record: "Sample listing" / "Demo listing").
+ */
+export async function searchJobs(f: JobsFilter, page = 1): Promise<{ jobs: JobListItem[]; total: number; samples: number; demos: number; page: number; totalPages: number }> {
   const where = and(whereFor(f), await visibleJobs());
   const [totals] = await db
-    .select({ total: count(), samples: sql<number>`count(*) filter (where ${jobs.isDemo} or ${jobs.source} = 'sample')::int` })
+    .select({
+      total: count(),
+      samples: sql<number>`count(*) filter (where ${jobs.source} = 'sample')::int`,
+      demos: sql<number>`count(*) filter (where ${jobs.isDemo} and ${jobs.source} <> 'sample')::int`,
+    })
     .from(jobs)
     .innerJoin(organizations, eq(organizations.id, jobs.orgId))
     .where(where);
@@ -169,7 +181,7 @@ export async function searchJobs(f: JobsFilter, page = 1): Promise<{ jobs: JobLi
     .orderBy(...listOrder)
     .limit(JOBS_PAGE_SIZE)
     .offset((p - 1) * JOBS_PAGE_SIZE);
-  return { jobs: rows, total, samples: totals?.samples ?? 0, page: p, totalPages };
+  return { jobs: rows, total, samples: totals?.samples ?? 0, demos: totals?.demos ?? 0, page: p, totalPages };
 }
 
 export type FacetOption = { value: string; label: string; count: number };
@@ -208,7 +220,7 @@ export async function getJobFacets(f: JobsFilter, roleLabel: (v: string) => stri
   return {
     roles: JOB_ROLE_GROUPS.map((v) => ({ value: v, label: roleLabel(v), count: roleCounts.get(v) ?? 0 })),
     states: states.filter((s) => s.value).map((s) => ({ value: s.value!, label: s.value!, count: s.n })),
-    conferences: confs.filter((c) => c.value).map((c) => ({ value: c.value, label: c.value, count: c.n })),
+    conferences: confs.flatMap((c) => (c.value ? [{ value: c.value, label: c.value, count: c.n }] : [])),
   };
 }
 

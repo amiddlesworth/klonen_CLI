@@ -1,19 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronRight, FileText } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import { CurrentProgramCard } from "@/components/data/CurrentProgramCard";
 import { TwoColumnLayout } from "@/components/shell/Layouts";
-import { Card, CardHeader } from "@/components/ui/Card";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
-import { closeApplySections, descriptionSummary, jobSections } from "@/components/jobs/description";
-import { DescriptionBlocks } from "@/components/jobs/JobDescription";
-import { JobHeader } from "@/components/jobs/JobHeader";
-import { JobNotes } from "@/components/jobs/JobNotes";
-import { ProgramCard } from "@/components/jobs/ProgramCard";
-import { ProgramPeople, proofFor } from "@/components/jobs/ProgramPeople";
+import { descriptionSummary } from "@/components/jobs/description";
+import { JobDetailBody } from "@/components/jobs/JobDetailBody";
+import { proofFor } from "@/components/jobs/ProgramPeople";
 import { SimilarJobs } from "@/components/jobs/SimilarJobs";
-import { isOpenJob } from "@/components/jobs/labels";
+import { LISTING_LABEL, listingKind } from "@/components/jobs/labels";
 import { isJobOwner, viewerContext } from "@/components/jobs/viewer";
 import { BRAND } from "@/lib/brand";
 import { getJobDetail, getListingPipelineId, getNetworkProof, getProgramCounts, getProgramNetwork, getSimilarJobs } from "@/lib/queries/jobsx";
@@ -29,22 +25,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const id = parseId((await params).id);
   const job = id ? await getJobDetail(id) : null;
   if (!job) return { title: "Job not found" };
-  const sample = job.isDemo || job.source === "sample";
+  const kind = listingKind(job);
   return {
     title: `${job.title} at ${job.org.shortName}`,
-    description: `${sample ? "Sample listing. " : ""}${descriptionSummary(job.description) || `${job.title} at ${job.org.name}.`}`,
-    // Sample listings are demo data: keep them out of search engines.
-    robots: sample ? { index: false, follow: true } : undefined,
+    description: `${kind ? `${LISTING_LABEL[kind]}. ` : ""}${descriptionSummary(job.description) || `${job.title} at ${job.org.name}.`}`,
+    // Sample and demo listings are not real openings: keep them out of search engines.
+    robots: kind ? { index: false, follow: true } : undefined,
     openGraph: { title: `${job.title} at ${job.org.shortName} · ${BRAND.name}` },
   };
 }
 
 /**
- * Job page (§8.9): header card (OrgMark 56, title, program, chips, Apply + Save, facts, then note
- * bands: closed, sample, or "Your listing"), one card per description section (About the role,
- * Responsibilities, Qualifications…) and the people from this program on the network. Rail: the
- * program card and similar jobs. The athletic director who posted the listing gets the owner view.
- * A closed listing keeps its page: no Apply, and How to apply says it is closed instead of linking.
+ * Job page (§8.9): the shared job detail (JobDetailBody, also the /jobs pane) as one card per part.
+ * Rail: the program card (the same Current program card as the profile rail) and similar jobs. The
+ * athletic director who posted the listing gets the owner view. A closed listing keeps its page.
  */
 export default async function JobPage({ params }: PageProps) {
   const id = parseId((await params).id);
@@ -62,9 +56,6 @@ export default async function JobPage({ params }: PageProps) {
     viewerPersonId ? getNetworkProof(viewerPersonId, job.org.id) : Promise.resolve(null),
     owner && session ? getListingPipelineId(session.user.id, job) : Promise.resolve(null),
   ]);
-  const parsed = jobSections(job.description);
-  const sections = isOpenJob(job) ? parsed : closeApplySections(parsed, job.org.shortName);
-
   return (
     <TwoColumnLayout
       railLabel="Program and similar jobs"
@@ -88,32 +79,20 @@ export default async function JobPage({ params }: PageProps) {
       }
       rail={
         <>
-          <ProgramCard org={job.org} counts={counts} />
+          <CurrentProgramCard org={job.org} counts={counts} title="Program" />
           <SimilarJobs jobs={similar} roleGroup={job.roleGroup} />
         </>
       }
     >
-      <Card padding="none" aria-labelledby="job-title" className="overflow-hidden">
-        <div className="px-4 pt-4 md:px-6 md:pt-6">
-          <JobHeader job={job} titleId="job-title" owner={owner} employer={session?.user.kind === "employer"} pipelineListId={pipelineListId} />
-        </div>
-        <JobNotes job={job} owner={owner} />
-      </Card>
-
-      {sections.length === 0 && (
-        <Card padding="main" aria-labelledby="job-section-empty">
-          <CardHeader id="job-section-empty" title="About the role" />
-          <EmptyState icon={FileText} title="No description yet." description={`${job.org.shortName} hasn't added details for this role.`} spacing="sm" />
-        </Card>
-      )}
-      {sections.map((s, i) => (
-        <Card key={i} padding="main" aria-labelledby={`job-section-${i}`}>
-          <CardHeader id={`job-section-${i}`} title={s.heading ?? "About the role"} />
-          <DescriptionBlocks blocks={s.blocks} />
-        </Card>
-      ))}
-
-      <ProgramPeople org={job.org} network={network} proof={proofFor(proof, job.org.shortName, { ownProgram })} />
+      <JobDetailBody
+        frame="page"
+        job={job}
+        network={network}
+        proof={proofFor(proof, job.org.shortName, { ownProgram })}
+        owner={owner}
+        employer={session?.user.kind === "employer"}
+        pipelineListId={pipelineListId}
+      />
     </TwoColumnLayout>
   );
 }

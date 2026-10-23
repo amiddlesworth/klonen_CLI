@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/Card";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { Skeleton, SkeletonAvatar, SkeletonRegion, SkeletonText } from "@/components/ui/Skeleton";
 
 /** Notifications skeleton (§8.0): real card chrome and h1, the filter track and three rows. */
@@ -7,9 +8,7 @@ export function NotificationsSkeleton() {
     <SkeletonRegion label="Loading notifications">
       <Card>
         <div className="px-4 pt-4 md:px-6 md:pt-5">
-          <div className="mb-3 flex min-h-8 items-center">
-            <h1 className="text-title">Notifications</h1>
-          </div>
+          <PageHeader title="Notifications" className="mb-3" />
           <Skeleton className="h-8 w-[268px] rounded-sm max-md:h-11 max-md:w-full" />
         </div>
         <div className="mt-1">

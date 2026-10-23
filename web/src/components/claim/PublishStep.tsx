@@ -1,6 +1,7 @@
 "use client";
 import type { RefObject } from "react";
 import { CircleAlert, ShieldCheck } from "lucide-react";
+import { InferredKey } from "@/components/data/InferredYear";
 import { Button } from "@/components/ui/Button";
 import { Card, CardFooter } from "@/components/ui/Card";
 import { SampleChip } from "@/components/ui/Chip";
@@ -49,11 +50,9 @@ export function PublishStep({ headingRef, subject, email, reviews, notes, missin
         {/* Explains the dotted First season (§6.2): tooltips don't exist on touch, and the step 2 legend is gone.
             Phone hides First season, as the profile does, so the legend goes with it. */}
         {subject.stats.firstSeason?.inferred && (
-          <p className="flex items-center gap-1.5 border-t border-divider py-2.5 text-caption text-fg-3 max-md:hidden">
-            <span aria-hidden="true" className="inf num cursor-default text-fg-2">
-              2004
-            </span>
-            Year inferred from the bio, not stated in it
+          <p className="border-t border-divider py-2.5 text-caption text-fg-3 max-md:hidden">
+            {/* The sample is the dotted First season itself (audit C03). */}
+            <InferredKey year={subject.stats.firstSeason.year} />
           </p>
         )}
       </div>

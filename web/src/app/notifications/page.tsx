@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
+import { CarouselTracker } from "@/components/feed/CarouselTracker";
+import { MiniProfile } from "@/components/feed/MiniProfile";
+import { PeopleYouMayKnow } from "@/components/feed/PeopleYouMayKnow";
+import { MarkNotificationsSeen } from "@/components/messaging/MarkNotificationsSeen";
 import { NotificationsCard } from "@/components/messaging/NotificationsCard";
 import { SignInNotice } from "@/components/messaging/SignInNotice";
-import { SingleColumnLayout } from "@/components/shell/Layouts";
+import { SingleColumnLayout, ThreeColumnLayout } from "@/components/shell/Layouts";
+import { getViewer } from "@/components/shell/viewer";
+import { availabilityStatus } from "@/lib/format";
+import { readNotificationsSeenAt } from "@/lib/notifications-seen";
+import { getCarouselTracker, getFeedViewer, getMiniProfileStats, getPeopleYouMayKnow } from "@/lib/queries/feedx";
 import { listNotifications, type NotificationFilter } from "@/lib/queries/messaging";
 import { getDemoAccounts } from "@/lib/queries/shell";
 import { getSession } from "@/lib/session";
@@ -24,7 +32,13 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   };
 }
 
-/** /notifications (§8.16): the session user's notifications, grouped Today and Earlier. Needs a demo session. */
+/**
+ * /notifications (§8.16): the session user's notifications, grouped Today and Earlier. Needs a demo
+ * session. A nav destination, so it sits on the feed's grid (audit X21): the mini profile on the left
+ * (lg), the notifications card in the centre column, and the carousel tracker and people you may know
+ * on the right (md and up; phone shows the card alone). Opening the page clears the Notifications
+ * badge for this browser (MarkNotificationsSeen); rows stay unread-styled until clicked.
+ */
 export default async function NotificationsPage({ searchParams }: Props) {
   const session = await getSession();
   if (!session) {
@@ -42,9 +56,30 @@ export default async function NotificationsPage({ searchParams }: Props) {
     );
   }
   const filter = parseFilter((await searchParams).filter);
-  const items = await listNotifications(session.user.id, session.person?.id ?? null);
+  const feedViewer = await getFeedViewer(session);
+  const [items, seenAt, shellViewer, stats, pymk, tracker] = await Promise.all([
+    listNotifications(session.user.id, session.person?.id ?? null),
+    readNotificationsSeenAt(),
+    getViewer(session),
+    getMiniProfileStats(feedViewer).catch(() => null),
+    getPeopleYouMayKnow(feedViewer).catch(() => []),
+    getCarouselTracker(feedViewer).catch(() => null),
+  ]);
+  const hasNew = items.some((n) => !n.read && (!seenAt || n.createdAt > seenAt));
+  const status = shellViewer.availability ? availabilityStatus(shellViewer.availability.open, shellViewer.availability.audience, shellViewer.orgShortName) : null;
   return (
-    <SingleColumnLayout>
+    <ThreeColumnLayout
+      left={<MiniProfile viewer={feedViewer} stats={stats} status={status} />}
+      right={
+        <>
+          {tracker && <CarouselTracker tracker={tracker} />}
+          <PeopleYouMayKnow rows={pymk} />
+        </>
+      }
+      rightLabel="Carousel and suggestions"
+      hideRightOnPhone
+    >
+      <MarkNotificationsSeen hasNew={hasNew} />
       <NotificationsCard
         items={items}
         filter={filter}
@@ -53,6 +88,6 @@ export default async function NotificationsPage({ searchParams }: Props) {
         viewerOrg={session.org ? { id: session.org.id, shortName: session.org.shortName } : null}
         isDemo={session.user.isDemo}
       />
-    </SingleColumnLayout>
+    </ThreeColumnLayout>
   );
 }

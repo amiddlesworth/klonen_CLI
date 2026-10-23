@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
 import { AvailabilityForm } from "@/components/claim/AvailabilityForm";
 import { CoachOnlyNotice } from "@/components/claim/CoachOnlyNotice";
 import { regionForState } from "@/components/claim/options";
 import { SingleColumnLayout } from "@/components/shell/Layouts";
-import { Icon } from "@/components/ui/Icon";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { getAvailabilitySettings, getRegistryPrograms } from "@/lib/queries/claim";
 import { getDemoAccounts } from "@/lib/queries/shell";
 import { getSession } from "@/lib/session";
@@ -51,16 +49,7 @@ export default async function AvailabilityPage() {
   }
 
   return (
-    <SingleColumnLayout>
-      <nav aria-label="Breadcrumb" className="max-md:px-4 max-md:pt-1">
-        <Link
-          href="/settings"
-          className="target-24 inline-flex items-center gap-0.5 rounded-xs text-small text-fg-2 underline-offset-2 hover:text-fg-1 hover:underline max-md:min-h-11 max-md:py-0"
-        >
-          <Icon icon={ChevronLeft} size={14} className="text-fg-3" />
-          Settings
-        </Link>
-      </nav>
+    <SingleColumnLayout breadcrumb={<Breadcrumb items={[{ label: "Settings", href: "/settings" }]} current="Open to opportunities" phone="back" />}>
       <AvailabilityForm
         initial={settings}
         programs={programs.filter((p) => p.id !== currentOrgId)}

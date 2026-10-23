@@ -137,7 +137,8 @@ function Group({
   const H = heading;
   return (
     <section aria-labelledby={id} className="min-w-0">
-      <H id={id} className="text-small font-semibold text-fg-1">
+      {/* Group head 13/600 with its count right-aligned in --fg-3, as the profile tree card (audit X14). */}
+      <H id={id} className="flex items-baseline justify-between gap-3 text-small font-semibold text-fg-1">
         {title} <span className="num font-normal text-fg-3">{count}</span>
       </H>
       {note && <p className="text-caption text-fg-3">{note}</p>}
@@ -225,7 +226,7 @@ export function ProgramPeople({ org, network, proof, as = "card" }: ProgramPeopl
                 programHref && staffTotal > staff.length ? (
                   <TextLink href={`${programHref}?tab=staff`} arrow target24 className="text-small">
                     {/* The staff tab lists the viewer too, so no count here when the viewer is left out. */}
-                    {viewerOnStaff ? "View the full staff" : `View all ${staffTotal} staff`}
+                    {viewerOnStaff ? "All staff" : `All ${staffTotal} staff`}
                   </TextLink>
                 ) : undefined
               }
@@ -257,7 +258,7 @@ export function ProgramPeople({ org, network, proof, as = "card" }: ProgramPeopl
               footer={
                 programHref && alumniTotal > alumni.length ? (
                   <TextLink href={`${programHref}?tab=alumni`} arrow target24 className="text-small">
-                    View all {alumniTotal} alumni coaches
+                    All {alumniTotal} alumni coaches
                   </TextLink>
                 ) : undefined
               }
@@ -279,7 +280,7 @@ export function ProgramPeople({ org, network, proof, as = "card" }: ProgramPeopl
               footer={
                 programHref && playersTotal > players.length ? (
                   <TextLink href={`${programHref}?tab=alumni#played`} arrow target24 className="text-small">
-                    View all {playersTotal} who played here
+                    All {playersTotal} former players
                   </TextLink>
                 ) : undefined
               }
@@ -293,7 +294,7 @@ export function ProgramPeople({ org, network, proof, as = "card" }: ProgramPeopl
           )}
         </div>
       )}
-      {showFootnote && <InferredFootnote className="mt-4">Dotted years are inferred from the coach&apos;s bio, not stated in it.</InferredFootnote>}
+      {showFootnote && <InferredFootnote className="mt-4" />}
     </>
   );
 

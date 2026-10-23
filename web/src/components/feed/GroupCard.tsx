@@ -2,6 +2,7 @@ import Link from "next/link";
 import { LogIn } from "lucide-react";
 import { ContextLine } from "@/components/data/ContextLine";
 import { InferredFootnote } from "@/components/data/InferredYear";
+import { PersonRowAction } from "@/components/data/PersonRowAction";
 import { Avatar } from "@/components/ui/Avatar";
 import { OrgMark } from "@/components/ui/OrgMark";
 import { TextLink } from "@/components/ui/TextLink";
@@ -12,7 +13,6 @@ import { FeedArticle } from "./FeedArticle";
 import { ContextStrip, ItemHeader, ItemMeta } from "./ItemParts";
 import { ItemMenu } from "./ItemMenu";
 import { OrgName, type FeedViewerLite } from "./MoveCard";
-import { ConnectButton } from "./PersonActions";
 import { PreviouslyLine } from "./Sentences";
 import { apNumber } from "./text";
 
@@ -78,14 +78,14 @@ export function GroupCard({ org, moves, reason, sourceUrl, viewer, showInferredN
                     </ContextLine>
                   )}
                 </div>
-                <ConnectButton name={m.person.fullName} />
+                <PersonRowAction person={m.person} />
               </li>
             ))}
           </ul>
           {shown.length < n && (
             <div className="border-t border-divider pt-2.5">
               <TextLink href={`${programHref}?tab=staff`} arrow className="inline-flex min-h-6 items-center text-small max-md:min-h-11">
-                See all {n} on the {org.shortName} staff
+                All {n} on the {org.shortName} staff
               </TextLink>
             </div>
           )}

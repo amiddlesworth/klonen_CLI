@@ -16,6 +16,7 @@
   --link: #4352D1; --focus: #4352D1; --danger: #B42318; --danger-hover: #A22218; --danger-pressed: #922118; --danger-subtle: #FDECEA;
   --badge-bg: #1A1A18; --badge-fg: #FFFFFF; --org-bg: #F0F0EE; --org-fg: #45443F;
   --lvl-head: #1A1A18; --lvl-coord: #62615C; --lvl-pos: #AEABA5; --bar: #5C5B57; --track: #EFEFEC;
+  --bar-you: #4352D1; /* the viewer's bar in a chart: Iris (5.41:1 on --track) */
   --av1-bg: #E5E9F0; --av1-fg: #3B4A63; --av2-bg: #E3EDE6; --av2-fg: #2F5A3F; --av3-bg: #F1EADF; --av3-fg: #6A4C1F;
   --av4-bg: #F3E5E3; --av4-fg: #7A3A33; --av5-bg: #EDE6F0; --av5-fg: #5A3D6B; --av6-bg: #DFEDEE; --av6-fg: #1F5A5F;
   --overlay: rgba(14, 14, 13, .48);
@@ -35,6 +36,7 @@
     --link: #8F9AFF; --focus: #8F9AFF; --danger: #F97066; --danger-hover: #F87F76; --danger-pressed: #F68C83; --danger-subtle: #3A1D1B;
     --badge-bg: #EDEDEA; --badge-fg: #161615; --org-bg: #1F1F1D; --org-fg: #C9C8C2;
     --lvl-head: #EDEDEA; --lvl-coord: #9C9B95; --lvl-pos: #55544F; --bar: #A9A8A2; --track: #292926;
+    --bar-you: #8F9AFF; /* --accent is 2.72:1 on the dark --track; the dark --link/--focus Iris is 5.72:1 (audit m8) */
     --av1-bg: #222833; --av1-fg: #AFC0DA; --av2-bg: #1D2A22; --av2-fg: #A3CCAF; --av3-bg: #2E2719; --av3-fg: #DDC59A;
     --av4-bg: #33201E; --av4-fg: #E3AFA7; --av5-bg: #2B2131; --av5-fg: #CDB3DC; --av6-bg: #172A2C; --av6-fg: #9ACED2;
     --overlay: rgba(0, 0, 0, .64);
@@ -52,6 +54,7 @@
   --link: #8F9AFF; --focus: #8F9AFF; --danger: #F97066; --danger-hover: #F87F76; --danger-pressed: #F68C83; --danger-subtle: #3A1D1B;
   --badge-bg: #EDEDEA; --badge-fg: #161615; --org-bg: #1F1F1D; --org-fg: #C9C8C2;
   --lvl-head: #EDEDEA; --lvl-coord: #9C9B95; --lvl-pos: #55544F; --bar: #A9A8A2; --track: #292926;
+  --bar-you: #8F9AFF;
   --av1-bg: #222833; --av1-fg: #AFC0DA; --av2-bg: #1D2A22; --av2-fg: #A3CCAF; --av3-bg: #2E2719; --av3-fg: #DDC59A;
   --av4-bg: #33201E; --av4-fg: #E3AFA7; --av5-bg: #2B2131; --av5-fg: #CDB3DC; --av6-bg: #172A2C; --av6-fg: #9ACED2;
   --overlay: rgba(0, 0, 0, .64);
@@ -122,7 +125,7 @@
   --color-danger-pressed: var(--danger-pressed); --color-danger-subtle: var(--danger-subtle);
   --color-badge-bg: var(--badge-bg); --color-badge-fg: var(--badge-fg); --color-org-bg: var(--org-bg); --color-org-fg: var(--org-fg);
   --color-lvl-head: var(--lvl-head); --color-lvl-coord: var(--lvl-coord); --color-lvl-pos: var(--lvl-pos);
-  --color-bar: var(--bar); --color-track: var(--track); --color-overlay: var(--overlay);
+  --color-bar: var(--bar); --color-bar-you: var(--bar-you); --color-track: var(--track); --color-overlay: var(--overlay);
   --color-av1-bg: var(--av1-bg); --color-av1-fg: var(--av1-fg); --color-av2-bg: var(--av2-bg); --color-av2-fg: var(--av2-fg);
   --color-av3-bg: var(--av3-bg); --color-av3-fg: var(--av3-fg); --color-av4-bg: var(--av4-bg); --color-av4-fg: var(--av4-fg);
   --color-av5-bg: var(--av5-bg); --color-av5-fg: var(--av5-fg); --color-av6-bg: var(--av6-bg); --color-av6-fg: var(--av6-fg);
@@ -173,14 +176,32 @@
 @utility num { font-variant-numeric: tabular-nums; white-space: nowrap; }
 /* Inferred year (§6.2): dotted 1.5px underline in --fg-3, 3px offset, help cursor. */
 @utility inf { text-decoration: underline dotted var(--fg-3); text-decoration-thickness: 1.5px; text-underline-offset: 3px; cursor: help; }
-/* 24px tall target for name and title links outside sentences (§8.1 Link). */
-@utility target-24 { padding-block: 3px; margin-block: -3px; }
+/* 24px tall target for name and title links outside sentences (§8.1 Link, §11 rule 7). The padding
+   tops the line box up to 24px whatever the line height (4px on a 16px caption line, at least 3px
+   otherwise) and the negative margin gives the space back; min-height covers block-level links. */
+@utility target-24 {
+  --target-24-pad: max(3px, calc((24px - 1lh) / 2));
+  padding-block: var(--target-24-pad); margin-block: calc(var(--target-24-pad) * -1); min-height: 24px;
+}
 /* Feed headlines (§6.3). */
 @utility balance { text-wrap: balance; }
+/* Page side gutters (§8.2): none on phone (full-bleed cards), 24px from md; never less than the
+   safe-area insets, so landscape notches and rounded corners don't clip content. */
+@utility page-x {
+  padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);
+  @media (width >= 45.0625rem) {
+    padding-left: max(24px, env(safe-area-inset-left)); padding-right: max(24px, env(safe-area-inset-right));
+  }
+}
 
 /* ---------- 6. Shell ---------- */
-/* Phone pages leave room for the fixed bottom tab bar (§8.2). */
+/* What sits at the bottom of a phone screen: the safe area, plus the fixed tab bar when the page has
+   one (ShellFrame sets .has-tabbar: signed in, or a visitor off the landing page). Sticky footers,
+   composers and toasts sit at bottom: var(--tabbar-offset). */
+:root { --tabbar-offset: env(safe-area-inset-bottom); }
 @media (max-width: 720px) {
+  :root:has(.has-tabbar) { --tabbar-offset: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); }
+  /* Phone pages leave room for the fixed bottom tab bar (§8.2). */
   .has-tabbar { padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); }
   /* Capture aid (§10): automated full-page screenshots pin the tab bar to the end of the document. */
   html.capture-full body { position: relative; }

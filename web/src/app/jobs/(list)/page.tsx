@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Pagination } from "@/components/ui/Pagination";
 import { JobCard } from "@/components/jobs/JobCard";
-import { JobDetailPane } from "@/components/jobs/JobDetailPane";
+import { JobDetailBody } from "@/components/jobs/JobDetailBody";
 import { JobFilters } from "@/components/jobs/JobFilters";
 import { hasFilters, jobsHref, parseJobsQuery, roleGroupLabel } from "@/components/jobs/labels";
 import { proofFor } from "@/components/jobs/ProgramPeople";
@@ -58,17 +58,23 @@ export default async function JobsPage({ searchParams }: PageProps) {
   const countLine =
     result.total === 0
       ? null
-      : `${plural(result.total, "open job", "open jobs")}${result.samples ? ` · ${plural(result.samples, "sample listing", "sample listings")}` : ""}`;
+      : [
+          plural(result.total, "open job", "open jobs"),
+          result.samples ? plural(result.samples, "sample listing", "sample listings") : null,
+          result.demos ? plural(result.demos, "demo listing", "demo listings") : null,
+        ]
+          .filter(Boolean)
+          .join(" · ");
 
   return (
     <PageContainer>
       <Card padding="main" aria-labelledby="jobs-title">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 id="jobs-title" className="text-display-sm md:text-display">
+            <h1 id="jobs-title" className="text-display-sm">
               Jobs
             </h1>
-            <p className="mt-0.5 text-small text-fg-2">Openings at Division III football programs. Sample listings are labeled.</p>
+            <p className="mt-0.5 text-small text-fg-2">Openings at Division III football programs. Sample and demo listings are labeled.</p>
           </div>
           {isEmployer && (
             <ButtonLink href="/employers/jobs/new" icon={Plus} variant="secondary" className="max-md:hidden">
@@ -115,6 +121,7 @@ export default async function JobsPage({ searchParams }: PageProps) {
               {result.jobs.map((j) => (
                 <li key={j.id}>
                   <JobCard
+                    layout="list"
                     job={j}
                     href={`/jobs/${j.id}`}
                     selectHref={jobsHref(query, { id: j.id })}
@@ -138,7 +145,8 @@ export default async function JobsPage({ searchParams }: PageProps) {
             )}
           </Card>
           {selected && network && (
-            <JobDetailPane
+            <JobDetailBody
+              frame="pane"
               job={selected}
               network={network}
               owner={selectedOwner}

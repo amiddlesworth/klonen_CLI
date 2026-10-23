@@ -44,3 +44,9 @@ Started 2026-10-23 05:07 UTC. Branch: `coach-network-mvp`.
 - Private demo published: https://claude.ai/artifact/WHdcyt6LcaGe6z51aWZnGf (448 browser-rendered pages + hub).
 - Strategy doc Ingestion section updated with final numbers.
 - Integration pass with full verification running; see docs/MORNING_REPORT.md.
+
+## Integration pass (finished ~17:30 UTC)
+- Security: next 15.5.28 / react 19.1.10 (GHSA-9qr9-h5gf-34mp); demo job posts, messages and pipeline edits scoped to the posting browser with caps; role allowlist and same-origin redirects; Object.hasOwn session check; unique indexes + ON CONFLICT; zod on every action; canonical URLs from SITE_URL; /dev/components 404 in production; CSP, X-Frame-Options, nosniff, Referrer-Policy, no X-Powered-By.
+- Consistency: one job detail, one JobCard, one Current program card, one page header pattern, one stepper, signed-out navigation, consistent totals, place formatting, focus rings, phone fixes.
+- Final review: build health green; design panel "reads as one system" with 3 majors fixed (search ranking, row actions, inferred-year key); mobile 14/15 earlier findings fixed plus one new overflow fixed; security 9/12 fixed outright plus pipeline scoping. 26 minor items in docs/POLISH_BACKLOG.md.
+- Demo refreshed from the integrated production build (version 4 of the private artifact).

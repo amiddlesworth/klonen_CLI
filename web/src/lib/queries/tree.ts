@@ -184,7 +184,8 @@ async function fetchPeople(ids: string[]): Promise<Map<string, TreePerson>> {
     .select({ ...personSummaryCols, firstName: people.firstName })
     .from(people)
     .leftJoin(organizations, eq(organizations.id, people.currentOrgId))
-    .where(inArray(people.id, ids));
+    // A fictional demo candidate is in no real coach's tree (members without a person are dropped).
+    .where(and(inArray(people.id, ids), eq(people.isDemo, false)));
   return new Map(rows.map((r) => [r.id, { ...toSummary(r), firstName: r.firstName?.trim() || r.fullName.split(/\s+/)[0] }]));
 }
 

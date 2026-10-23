@@ -165,13 +165,30 @@ for (const width of [390, 1440]) {
     const { page, context } = await open(1440, { as, path });
     tops[path] = await page.evaluate(() => {
       const main = document.getElementById('main');
-      const first = main?.firstElementChild;
+      // Skip visually hidden children (an sr-only h1 is absolutely positioned, 1px).
+      const first = [...(main?.children ?? [])].find((el) => getComputedStyle(el).position !== 'absolute' && el.getBoundingClientRect().height > 1);
       return first ? Math.round(first.getBoundingClientRect().top + window.scrollY) : null;
     });
     await context.close();
   }
   const values = Object.values(tops).filter((v) => v !== null);
   check('1440 first card top is the same in every layout', values.length > 1 && values.every((v) => v === values[0]), JSON.stringify(tops));
+}
+
+// 5. No horizontal scroll at 390 on a touch phone (§11 rule 12) through the claim flow, signed out.
+//    Touch matters: pointer-coarse hit areas (Button size="sm") can reach past the page edge.
+{
+  const { page, context } = await open(390, { path: '/claim/ian-falconer' });
+  const width = () => page.evaluate(() => document.documentElement.scrollWidth);
+  check('390 touch claim step 1: scrollWidth is 390', (await width()) === 390, `scrollWidth ${await width()}`);
+  await page.fill('#claim-email', 'coach@school.edu');
+  await page.getByRole('button', { name: 'Send code' }).click();
+  await page.getByLabel('6-digit code').fill('123456');
+  // Any six digits verify, and verifying moves straight to step 2.
+  await page.getByRole('button', { name: 'Verify', exact: true }).click();
+  await page.getByRole('heading', { name: /review your career/i }).waitFor();
+  check('390 touch claim step 2: scrollWidth is 390', (await width()) === 390, `scrollWidth ${await width()}`);
+  await context.close();
 }
 
 await browser.close();

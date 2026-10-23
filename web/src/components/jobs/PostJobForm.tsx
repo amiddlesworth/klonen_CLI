@@ -1,7 +1,7 @@
 "use client";
 import { useActionState, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check, CircleAlert, CreditCard, Eye, Lock } from "lucide-react";
+import { ArrowLeft, CircleAlert, CreditCard, Eye, Lock } from "lucide-react";
 import { ProgramBadges } from "@/components/data/Badges";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -12,12 +12,13 @@ import { Icon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { OrgMark } from "@/components/ui/OrgMark";
 import { Select } from "@/components/ui/Select";
+import { STEPPER_BAND, Stepper } from "@/components/ui/Stepper";
 import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/components/ui/Toast";
 import { createJob } from "@/lib/actions/jobs";
 import { BRAND } from "@/lib/brand";
 import { cn } from "@/lib/cn";
-import { ROLE_GROUP_LABEL, salaryRange, type RoleGroup } from "@/lib/format";
+import { ROLE_GROUP_LABEL, placeLong, salaryRange, type RoleGroup } from "@/lib/format";
 import type { JobOrg } from "@/lib/queries/jobsx";
 import { JobCard } from "./JobCard";
 import { JobHeader } from "./JobHeader";
@@ -57,41 +58,13 @@ Qualifications
 function Section({ title, children, className }: { title: string; children: ReactNode; className?: string }) {
   return (
     <fieldset className={cn("min-w-0 border-t border-divider py-5 first:border-t-0 first:pt-0", className)}>
-      <legend className="float-left mb-3 w-full text-body font-semibold text-fg-1">{title}</legend>
+      <legend className="float-left mb-3 w-full text-small font-semibold text-fg-1">{title}</legend>
       <div className="clear-both flex flex-col gap-4">{children}</div>
     </fieldset>
   );
 }
 
-function Stepper({ step }: { step: "edit" | "checkout" }) {
-  const steps = [
-    { key: "edit", label: "Listing details" },
-    { key: "checkout", label: "Checkout" },
-  ] as const;
-  return (
-    <ol className="flex flex-wrap items-center gap-x-4 gap-y-1 text-small font-medium">
-      {steps.map((s, i) => {
-        const current = s.key === step;
-        const done = step === "checkout" && s.key === "edit";
-        return (
-          <li key={s.key} aria-current={current ? "step" : undefined} className={cn("flex items-center gap-2", current || done ? "text-fg-1" : "text-fg-3")}>
-            <span
-              aria-hidden="true"
-              className={cn(
-                "grid size-5 place-items-center rounded-full text-caption font-semibold",
-                current ? "bg-badge-bg text-badge-fg" : done ? "bg-hover text-fg-1" : "shadow-[inset_0_0_0_1px_var(--control)]",
-              )}
-            >
-              {done ? <Icon icon={Check} size={12} /> : i + 1}
-            </span>
-            {s.label}
-            {done && <span className="sr-only"> (done)</span>}
-          </li>
-        );
-      })}
-    </ol>
-  );
-}
+const POST_STEPS = ["Listing details", "Checkout"] as const;
 
 type PostJobFormProps = { org: JobOrg; posterName: string };
 
@@ -186,14 +159,14 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
   const errorCount = submitted ? ORDER.filter((f) => clientErrors[f]).length : 0;
 
   const city = values.city.trim();
-  const place = [city || org.city, org.state].filter(Boolean).join(", ");
+  const place = placeLong(city || org.city, org.state);
   const previewJob = {
     id: 0,
     title: values.title.trim() || "Job title",
     // No role group chip until one is chosen: the preview never shows a value the employer didn't pick.
     roleGroup: values.roleGroup,
     unit: values.unit || null,
-    location: place || null,
+    location: place,
     employmentType: values.employmentType || "Full-time",
     salaryMin: salaryMin ?? null,
     salaryMax: salaryMax ?? null,
@@ -204,24 +177,25 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
   };
 
   // Framed (cards) beside the form at lg; unframed inside the phone disclosure card, so no
-  // bordered box sits inside another (§5.3).
+  // bordered box sits inside another (§5.3). The card is the feed's own JobCard (feed layout): beside
+  // the form it gets the feed column's width, so it shows exactly as the feed will (audit X03).
   const preview = (framed: boolean) => (
     <div className={cn("flex flex-col", framed ? "gap-3" : "divide-y divide-divider")} inert>
       <div className={framed ? undefined : "pb-3"}>
         <p className="mb-1.5 text-caption font-medium text-fg-3">In the feed and on Jobs</p>
         {framed ? (
           <Card className="overflow-hidden">
-            <JobCard job={previewJob} variant="card" href="#" meta={`${org.shortName} · new listing`} preview headingLevel="h3" />
+            <JobCard job={previewJob} layout="feed" href="#" meta={`${org.shortName} · new listing`} preview headingLevel="h3" />
           </Card>
         ) : (
-          <JobCard job={previewJob} variant="card" href="#" meta={`${org.shortName} · new listing`} preview headingLevel="h3" className="-mx-4 px-4" />
+          <JobCard job={previewJob} layout="feed" href="#" meta={`${org.shortName} · new listing`} preview headingLevel="h3" className="-mx-4 px-4" />
         )}
       </div>
       <div className={framed ? undefined : "pt-3"}>
         <p className="mb-1.5 text-caption font-medium text-fg-3">Top of the job page</p>
         {framed ? (
-          <Card className="px-4 pt-4">
-            <JobHeader job={previewJob} headingLevel="h2" preview titleClassName="md:text-display-sm" />
+          <Card className="px-6 pt-6">
+            <JobHeader job={previewJob} headingLevel="h2" preview />
           </Card>
         ) : (
           <JobHeader job={previewJob} headingLevel="h2" preview />
@@ -244,19 +218,21 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
   const unitOptions = POST_UNITS.map((v) => ({ value: v, label: UNIT_LABEL[v] }));
 
   return (
-    <div className="flex flex-col gap-2 md:gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-6">
+    // lg: the preview column takes the feed column's width (568px) when there is room, never under 360px.
+    <div className="flex flex-col gap-2 md:gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(360px,568px)] lg:items-start lg:gap-6">
       <form ref={formRef} action={formAction} noValidate className="min-w-0" aria-labelledby={`${uid}-heading`}>
         <Card padding="main">
-          <div className="mb-5 flex flex-col gap-3">
-            <div>
-              <h1 id={`${uid}-heading`} className="text-display-sm md:text-display">
-                Post a job
-              </h1>
-              <p className="mt-0.5 text-small text-fg-2">
-                Listings appear on Jobs and in the {BRAND.name} feed. This is the demo: nothing is charged and nothing leaves the demo.
-              </p>
-            </div>
-            <Stepper step={step} />
+          {/* The page header, then the shared Stepper in a band under it, as in the claim flow (audit X15). */}
+          <div>
+            <h1 id={`${uid}-heading`} className="text-display-sm">
+              Post a job
+            </h1>
+            <p className="mt-0.5 text-small text-fg-2">
+              Listings appear on Jobs and in the {BRAND.name} feed. This is the demo: nothing is charged and nothing leaves the demo.
+            </p>
+          </div>
+          <div className={cn(STEPPER_BAND, "-mx-4 mb-5 mt-4 border-b md:-mx-6")}>
+            <Stepper steps={POST_STEPS} current={step === "edit" ? 0 : 1} label="Post a job progress" />
           </div>
 
           {state?.formError && (
@@ -279,7 +255,7 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
             <h2 ref={editHeading} className="sr-only">
               Listing details
             </h2>
-            <Section title="Role">
+            <Section title="Role" className="border-t-0 pt-0">
               <Input
                 id={id("title")}
                 name="title"
@@ -326,7 +302,7 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
                 <OrgMark shortName={org.shortName} name={org.name} size={40} />
                 <div className="min-w-0">
                   <p className="text-body font-semibold text-fg-1">{org.name}</p>
-                  <p className="text-small text-fg-2">{[org.nickname, [org.city, org.state].filter(Boolean).join(", ")].filter(Boolean).join(" · ")}</p>
+                  <p className="text-small text-fg-2">{[org.nickname, placeLong(org.city, org.state)].filter(Boolean).join(" · ")}</p>
                   <ProgramBadges level={org.level} conferenceAbbr={org.conferenceAbbr} conference={org.conference} className="mt-1.5" />
                 </div>
               </div>
@@ -496,7 +472,7 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
                 <Icon icon={CreditCard} size={16} className="mt-0.5 text-fg-2" />
                 <p>
                   <span className="font-medium text-fg-1">Payments are disabled in the demo.</span> Nothing is charged and no card is asked for. Publishing adds this listing to the
-                  demo only, labeled as a sample listing, and opens a hiring pipeline for it.
+                  demo only, labeled as a demo listing, and opens a hiring pipeline for it.
                 </p>
               </div>
               {phonePreview(false)}

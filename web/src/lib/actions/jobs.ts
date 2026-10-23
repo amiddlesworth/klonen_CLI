@@ -5,7 +5,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { jobs, shortlists } from "@/db/schema";
 import { composeDescription, fieldErrors, postJobSchema, type PostJobState } from "@/components/jobs/post-job-schema";
-import { ensureDemoScope, readDemoScope } from "@/lib/demo-scope";
+import { DEMO_LISTING_SEARCH_TTL_MS, ensureDemoScope, purgeExpiredDemoSearches, readDemoScope } from "@/lib/demo-scope";
 import { listingSearchName } from "@/lib/queries/jobsx";
 import { getSession } from "@/lib/session";
 
@@ -56,10 +56,10 @@ export async function createJob(_prev: PostJobState, formData: FormData): Promis
   const scope = demo ? await ensureDemoScope() : null;
   const now = new Date();
   if (scope) {
-    // Expired demo listings (and the searches opened with them) are removed, like demo messages.
+    // Expired demo listings (and expired demo searches: lib/demo-scope.ts) are removed, like demo messages.
     const expired = new Date(now.getTime() - LISTING_DAYS * DAY_MS);
     await db.delete(jobs).where(and(isNotNull(jobs.demoScope), lt(jobs.postedAt, expired)));
-    await db.delete(shortlists).where(and(isNotNull(shortlists.demoScope), lt(shortlists.createdAt, expired)));
+    await purgeExpiredDemoSearches(now);
 
     const [[mine], [everyone]] = await Promise.all([
       db.select({ n: count() }).from(jobs).where(and(eq(jobs.demoScope, scope), eq(jobs.status, "open"))),
@@ -105,7 +105,13 @@ export async function createJob(_prev: PostJobState, formData: FormData): Promis
     // Created at the listing's posted time: getListingPipelineId finds it by name from that moment on.
     const [list] = await tx
       .insert(shortlists)
-      .values({ ownerUserId: userId, name: listingSearchName(row.title), createdAt: now, demoScope: scope })
+      .values({
+        ownerUserId: userId,
+        name: listingSearchName(row.title),
+        createdAt: now,
+        demoScope: scope,
+        demoExpiresAt: scope ? new Date(now.getTime() + DEMO_LISTING_SEARCH_TTL_MS) : null,
+      })
       .returning({ id: shortlists.id });
     return { row, list };
   });

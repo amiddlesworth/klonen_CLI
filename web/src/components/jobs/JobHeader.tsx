@@ -199,7 +199,11 @@ function Fact({ label, value, muted, num }: { label: string; value: ReactNode; m
   return (
     <div className="flex min-w-0 flex-col py-3 pr-3 max-md:pr-1 [&+&]:border-l [&+&]:border-divider [&+&]:pl-4 max-md:[&+&]:pl-2.5">
       <dt className="order-2 text-caption text-fg-2">{label}</dt>
-      <dd className={cn("order-1 text-subtitle font-semibold max-md:text-body", num && "num", muted && "font-normal text-fg-3")}>{value}</dd>
+      {/*
+        The StatBand value size of every header from md (text-stat; audit X12). Phone keeps 15/600: three
+        word values ("Graduate assistantship") share 390px, and a longer word would not fit its column.
+      */}
+      <dd className={cn("order-1 text-stat max-md:text-subtitle max-md:font-semibold", num && "num", muted && "font-normal text-fg-3 max-md:font-normal")}>{value}</dd>
     </div>
   );
 }

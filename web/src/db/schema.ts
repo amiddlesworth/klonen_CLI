@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   index,
   integer,
@@ -200,14 +201,27 @@ export const claims = pgTable(
   (t) => [uniqueIndex("claims_person_user_idx").on(t.personId, t.userId)],
 );
 
-export const shortlists = pgTable("shortlists", {
-  id: serial("id").primaryKey(),
-  ownerUserId: text("owner_user_id").notNull().references(() => users.id),
-  name: text("name").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  /** The search opened with a demo listing belongs to the same browser as the listing (jobs.demoScope). Null = seeded or real. */
-  demoScope: text("demo_scope"),
-});
+export const shortlists = pgTable(
+  "shortlists",
+  {
+    id: serial("id").primaryKey(),
+    ownerUserId: text("owner_user_id").notNull().references(() => users.id),
+    name: text("name").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    /**
+     * Searches written from a shared demo account belong to one browser (its demo scope, lib/demo-scope.ts):
+     * the search opened with a demo listing (jobs.demoScope), and a browser's own copy of a seeded search.
+     * Null = a seeded or real search.
+     */
+    demoScope: text("demo_scope"),
+    /** A browser's copy of a seeded search: the seeded search it was copied from (and stands in for). */
+    clonedFromId: integer("cloned_from_id").references((): AnyPgColumn => shortlists.id, { onDelete: "cascade" }),
+    /** When a scoped search is deleted (demo pipeline TTL). Null on seeded and real searches. */
+    demoExpiresAt: timestamp("demo_expires_at"),
+  },
+  // One copy of a seeded search per browser, even when its first writes race (NULLs stay distinct).
+  (t) => [uniqueIndex("shortlists_clone_scope_idx").on(t.clonedFromId, t.demoScope)],
+);
 
 export const shortlistEntries = pgTable(
   "shortlist_entries",

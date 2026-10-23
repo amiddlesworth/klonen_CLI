@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useOptimistic, useRef, useState, useSyncExternalStore, useTransition, type DragEvent, type MouseEvent } from "react";
 import { useSearchParams } from "next/navigation";
-import { Check, ChevronDown, ListPlus, Search, Users } from "lucide-react";
+import { Check, ChevronDown, Search, Users } from "lucide-react";
 import { Button, ButtonLink, buttonClasses } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { SampleChip } from "@/components/ui/Chip";
@@ -295,7 +295,7 @@ export function PipelineView({ shortlist, shortlists, programName, candidates, f
               <ButtonLink href={findHref} icon={Search} phone="large">
                 Find candidates
               </ButtonLink>
-              <Button variant="primary" icon={ListPlus} phone="large" onClick={() => setAdding(true)}>
+              <Button variant="primary" phone="large" onClick={() => setAdding(true)}>
                 Add candidate
               </Button>
             </div>

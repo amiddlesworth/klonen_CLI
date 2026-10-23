@@ -94,7 +94,7 @@ export function SampleProfiles({ profiles }: { profiles: SampleProfile[] | null 
         description="Current Division III head coaches with long careers, each built from public staff bios."
         action={
           <TextLink href="/search" arrow target24>
-            Search all coaches
+            View all coaches
           </TextLink>
         }
       />

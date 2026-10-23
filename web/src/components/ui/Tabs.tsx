@@ -66,7 +66,7 @@ export function Tabs({ items, label, className }: TabsProps) {
           )}
         >
           {t.label}
-          {t.count != null && <span className="num font-normal text-fg-3">{t.count}</span>}
+          {t.count != null && <span className="num font-normal text-fg-3">{t.count.toLocaleString("en-US")}</span>}
         </Link>
       ))}
     </div>

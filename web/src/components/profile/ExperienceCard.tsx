@@ -1,16 +1,18 @@
 import Link from "next/link";
 import { BriefcaseBusiness } from "lucide-react";
 import { ProgramBadges } from "@/components/data/Badges";
+import { InferredKey } from "@/components/data/InferredYear";
 import { SeasonStrip, type StripStint } from "@/components/data/SeasonStrip";
 import { SectionCard } from "@/components/data/SectionCard";
 import { SourceDisclosure } from "@/components/data/SourceDisclosure";
+import { keepParen } from "@/components/data/TitleOrg";
 import { OrgMark } from "@/components/ui/OrgMark";
 import { TextLink } from "@/components/ui/TextLink";
 import { cn } from "@/lib/cn";
 import type { OrgSummary } from "@/lib/queries/people";
 import { ExperienceList } from "./ExperienceList";
-import { LedgerRange } from "./LedgerRange";
-import { levelLine, stateName, type LedgerGroup, type LedgerItem } from "./model";
+import { LedgerRange, dottedYear } from "./LedgerRange";
+import { levelLine, stateName, type LedgerGroup, type LedgerItem, type RangeText } from "./model";
 
 type ExperienceCardProps = {
   groups: LedgerGroup[];
@@ -22,8 +24,12 @@ type ExperienceCardProps = {
   firstName: string;
   slug: string;
   owner: boolean;
-  /** Whether an inferred year appears anywhere on the page (the legend explains the mark once). */
-  showInferredKey: boolean;
+  /**
+   * The legend's sample year: the first year dotted in this card or in Playing career (ledgerDottedYear,
+   * playingDottedYear), which the legend explains. Null hides the key: the tree card and Same tree
+   * explain their own dotted years (audit C03).
+   */
+  inferredKeyYear: number | null;
   /** Roles in other sports: listed here, left out of the season and stop counts (the card says so). */
   otherSportRoles?: number;
   /** Unclassified football staff roles with no coaching title ("Faculty Liaison"): listed, not counted. */
@@ -57,14 +63,14 @@ function uncountedNote(otherSport: number, staffOnly: number): string {
   return `Seasons and coaching stops count football coaching only: ${parts.join(" and ")} ${verb} listed but not counted.`;
 }
 
-/** Program name, linked when the program has a page. */
+/** Program name, linked when the program has a page; never broken inside its parenthetical ("Pacific University (Oregon)"). */
 export function OrgName({ org }: { org: Pick<OrgSummary, "slug" | "name" | "inRegistry"> }) {
   return org.inRegistry ? (
     <Link href={`/programs/${org.slug}`} className="target-24 underline-offset-2 hover:underline">
-      {org.name}
+      {keepParen(org.name)}
     </Link>
   ) : (
-    <span>{org.name}</span>
+    <span>{keepParen(org.name)}</span>
   );
 }
 
@@ -82,14 +88,14 @@ export function ExperienceCard({
   firstName,
   slug,
   owner,
-  showInferredKey,
+  inferredKeyYear,
   otherSportRoles = 0,
   staffOnlyRoles = 0,
   isDemo = false,
 }: ExperienceCardProps) {
   const claimLink = owner ? (
     <TextLink href={`/claim/${slug}`} arrow target24 className="text-small">
-      Claim to edit
+      Claim profile
     </TextLink>
   ) : undefined;
 
@@ -117,7 +123,7 @@ export function ExperienceCard({
   const item = (g: LedgerGroup) => ({ key: g.org.id, node: <ExperienceGroup group={g} personName={personName} isDemo={isDemo} /> });
 
   return (
-    // The owner's "Claim to edit" sits in the legend row, so the title row keeps one right-aligned item at every width.
+    // The owner's "Claim profile" link sits in the legend row, so the title row keeps one right-aligned item at every width.
     <SectionCard id="experience" title="Experience" meta={meta}>
       {/* overflow-x-clip: a phone strip label that runs past the last column ("Southwestern") can't widen
           the page (§11.12). clip, not hidden: no scroll container, vertical overflow untouched. */}
@@ -161,18 +167,31 @@ export function ExperienceCard({
             Time away
           </span>
         )}
-        {showInferredKey && (
-          <span className="inline-flex items-center gap-1.5">
-            <span aria-hidden="true" className="inf num cursor-default">
-              2004
-            </span>
-            Year inferred from the bio, not stated in it
-          </span>
-        )}
+        {inferredKeyYear != null && <InferredKey year={inferredKeyYear} />}
         {claimLink && <span className="ml-auto">{claimLink}</span>}
       </div>
     </SectionCard>
   );
+}
+
+/** Whether a group shows this range: an undated group's ranges would only repeat its heading. */
+const rangeShown = (group: LedgerGroup, text: RangeText) => group.dated || !text.undated;
+
+/**
+ * The first year the Experience list shows dotted, in display order (dated programs newest first, then
+ * the undated ones; the program's range, then its role ranges when it has two or more roles), or null.
+ */
+export function ledgerDottedYear(groups: LedgerGroup[]): number | null {
+  for (const g of [...groups.filter((x) => x.dated), ...groups.filter((x) => !x.dated)]) {
+    const own = rangeShown(g, g.range) ? dottedYear(g.range, g.inferred) : null;
+    if (own != null) return own;
+    if (g.roleCount < 2) continue;
+    for (const i of g.items) {
+      const y = i.kind === "role" && rangeShown(g, i.range) ? dottedYear(i.range, i.inferred) : null;
+      if (y != null) return y;
+    }
+  }
+  return null;
 }
 
 /** One program group's content; ExperienceList wraps it in its list item. */
@@ -182,7 +201,7 @@ function ExperienceGroup({ group, personName, isDemo }: { group: LedgerGroup; pe
   const place = stateName(org.state);
   // An undated group sits under the "Years not in source · order unknown" heading: its ranges would only
   // say that again (on the group and on every role).
-  const showRange = (text: LedgerGroup["range"]) => group.dated || !text.undated;
+  const showRange = (text: RangeText) => rangeShown(group, text);
   return (
     <>
       <OrgMark shortName={org.shortName} name={org.name} size={40} />
@@ -224,7 +243,7 @@ function ExperienceGroup({ group, personName, isDemo }: { group: LedgerGroup; pe
                 />
               )}
               <p className="col-start-2 row-start-1 text-body font-medium">
-                {role.role}
+                {item.title}
                 {role.isCurrent && <span className="sr-only"> (current role)</span>}
               </p>
               {rowRange && (
@@ -248,6 +267,8 @@ function ExperienceGroup({ group, personName, isDemo }: { group: LedgerGroup; pe
                   evidence={role.evidence}
                   sourceUrl={role.sourceUrl}
                   sourceDetail={`${personName} bio`}
+                  // The row shows the staff directory's title (the header's); the bio's own wording stays here.
+                  note={item.bioTitle ? `Shown with the staff directory's title. Title in the bio: ${item.bioTitle}` : undefined}
                   className={cn("col-start-2 mt-0.5", rowRange ? "row-start-4 md:row-start-3" : "row-start-3")}
                 />
               )}

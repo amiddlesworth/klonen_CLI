@@ -24,7 +24,7 @@ function Row({ row, max, separate }: { row: TrackerRow; max: number; separate?: 
       </th>
       <td aria-hidden="true" className={cn(cell, "w-[38%] px-3")}>
         <div className="h-1.5 overflow-hidden rounded-[3px] bg-track">
-          <i className={cn("block h-full rounded-[3px]", row.isViewer ? "bg-accent" : "bg-bar")} style={{ width: `${Math.max(pct, row.hires ? 4 : 0)}%` }} />
+          <i className={cn("block h-full rounded-[3px]", row.isViewer ? "bg-bar-you" : "bg-bar")} style={{ width: `${Math.max(pct, row.hires ? 4 : 0)}%` }} />
         </div>
       </td>
       <td className={cn(cell, "num w-10 text-right", row.isViewer ? "font-semibold" : "font-medium")}>{row.hires}</td>

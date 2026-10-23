@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DemoLabel } from "@/components/data/Badges";
 import { StatGroup, type Stat } from "@/components/data/StatGroup";
+import { keepParen } from "@/components/data/TitleOrg";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { FilterChip } from "@/components/ui/FilterChip";
@@ -23,7 +24,7 @@ export function TreeBreadcrumb({ data }: { data: TreeExplorer }) {
   }
   crumbs.push({ href: `/in/${focal.slug}`, label: focal.fullName });
   return (
-    <nav aria-label="Breadcrumb" className="max-md:hidden md:-mt-1">
+    <nav aria-label="Breadcrumb" className="max-md:hidden">
       <ol className="flex flex-wrap items-center gap-1 text-small leading-6 text-fg-2">
         {crumbs.map((c) => (
           <li key={c.href} className="flex items-center gap-1">
@@ -113,10 +114,10 @@ export function TreeHeader({ data, view, depth, mode }: TreeHeaderProps) {
                     {" at "}
                     {org.inRegistry ? (
                       <TextLink href={`/programs/${org.slug}`} variant="plain" className="font-medium text-fg-1">
-                        {org.name}
+                        {keepParen(org.name)}
                       </TextLink>
                     ) : (
-                      <span className="font-medium text-fg-1">{org.name}</span>
+                      <span className="font-medium text-fg-1">{keepParen(org.name)}</span>
                     )}
                   </>
                 )}

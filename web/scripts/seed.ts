@@ -9,6 +9,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { sql } from "drizzle-orm";
 import { db, pool, schema } from "../src/db";
+import { CURRENT_SEASON } from "../src/lib/brand";
 
 const DATA = join(__dirname, "..", "..", "data");
 const load = <T>(name: string): T[] => JSON.parse(readFileSync(join(DATA, `${name}.json`), "utf8"));
@@ -234,27 +235,42 @@ async function main() {
     DEMO_CANDIDATES.map((c, i) => ({ shortlistId: list.id, personId: demoPeople[i].id!, stage: c.stage, position: i, note: c.note })),
   );
 
-  // Notifications for the demo coach.
+  // Notifications for the demo coach. Tree notifications name a real, sourced move: someone in the
+  // coach's tree (tree_edges) whose football stint started in CURRENT_SEASON, so the row reads
+  // "{Name} joined {Program} as {title}" with "2026 season" and the source, as the feed does (audit X09).
+  // The profile-view count and the job match (a sample listing) are labeled sample data in the UI.
+  const treeIds = new Set(edges.flatMap((e) => (e.mentorId === DEMO_COACH_ID ? [e.menteeId] : e.menteeId === DEMO_COACH_ID ? [e.mentorId] : [])));
+  const treeMoveSlugs = [
+    ...new Set(
+      tenures
+        .filter((t) => treeIds.has(t.personId) && t.startYear === CURRENT_SEASON && !t.asPlayer && (t.sport ?? "football") === "football")
+        .map((t) => people.find((p) => p.id === t.personId)?.slug)
+        .filter((slug): slug is string => !!slug),
+    ),
+  ].slice(0, 2);
   await db.insert(schema.notifications).values([
     { userId: "u-demo-coach", kind: "profile_view", payload: { count: 14 } },
     { userId: "u-demo-coach", kind: "job_match", payload: { jobTitle: jobRows[0].title } },
-    { userId: "u-demo-coach", kind: "tree", payload: { text: "A coach from your tree changed jobs" } },
+    ...(treeMoveSlugs.length ? treeMoveSlugs : [null]).map((personSlug) => ({
+      userId: "u-demo-coach",
+      kind: "tree",
+      payload: personSlug ? { personSlug, text: "A coach from your tree changed jobs" } : { text: "A coach from your tree changed jobs" },
+    })),
   ]);
 
   // demo messages ---------------------------------------------------------------------------------
-  // A few short, labeled demo conversations for /messaging, all with the demo coach. The other people
-  // are fictional: a new demo athletic director (at the program holding the "Defensive Coordinator"
-  // sample listing, so no real coach's job reads as coming open), two of the fictional pipeline
-  // candidates above, and the demo AD Morgan Ellis. Words from the demo coach stay mundane and make no
-  // claim about the real person's career or plans.
+  // A few short, labeled demo conversations for /messaging, all with the demo coach. Every other person
+  // is fictional and none of them speaks for a real program: a consultant at a fictional search firm
+  // (no organization, no opening anywhere), two of the fictional pipeline candidates above (a fellow
+  // DB coach and a graduate assistant, neither naming a school), and the demo AD Morgan Ellis about
+  // the profile itself. No message announces a job, a search or any event at a real program, and the
+  // demo coach's words stay mundane and make no claim about the real person's career or plans.
   {
-    const dcJob = jobRows.find((j) => j.title === "Defensive Coordinator") ?? jobRows[0];
-    const dcOrg = orgs.find((o) => o.id === dcJob.orgId)!;
-    const orgName = (id: string | null | undefined) => orgs.find((o) => o.id === id)?.name ?? "my school";
     const riley = demoPeople.find((p) => p.slug === "demo-riley-ashgrove")!;
     const avery = demoPeople.find((p) => p.slug === "demo-avery-fieldstone")!;
     await db.insert(schema.users).values([
-      { id: "u-demo-dana", email: "demo-dana@example.com", name: "Dana Whitcombe", kind: "employer", orgId: dcOrg.id!, isDemo: true },
+      // A search firm account has no program (orgId null); the inbox titles it "Search consultant".
+      { id: "u-demo-search", email: "demo-search@example.com", name: "Quinn Harlow", kind: "employer", orgId: null, isDemo: true },
       { id: "u-demo-riley", email: "demo-riley@example.com", name: riley.fullName, kind: "coach", personId: riley.id!, isDemo: true },
       { id: "u-demo-avery", email: "demo-avery@example.com", name: avery.fullName, kind: "coach", personId: avery.id!, isDemo: true },
     ]);
@@ -272,22 +288,22 @@ async function main() {
       isDemo: true,
     });
     await db.insert(schema.messages).values([
-      // A fictional AD about the coordinator opening (the sample listing). Unread.
-      msg("u-demo-dana", COACH, 125,
-        `Hi Justin, I'm the athletic director at ${dcOrg.name}. We've opened a search for a defensive coordinator, and your special teams and secondary background stood out. Would you be open to a short call in the next week or two? Happy to work around your schedule.`,
+      // A consultant at a fictional search firm, introducing the firm in general terms. Unread.
+      msg("u-demo-search", COACH, 125,
+        "Hi Justin, I'm Quinn Harlow with Larkmoor Search, a coaching search firm. We help athletic departments put staffs together. Nothing specific to share today: just introducing myself in case you ever want to compare notes on how searches work.",
         null),
       // A fictional fellow DB coach proposing a film swap. Unread. It claims no role on a real staff:
       // program pages list real coaches only, so that claim would be contradicted one click away.
       msg("u-demo-riley", COACH, 60 * 26,
         `Hey Justin, ${riley.firstName} here. I'm putting together an offseason film swap with a few DB coaches. Interested? I can send some press coverage teaching tape first.`,
         null),
-      // The demo AD at Pacific (OR), grouped messages and a reply. The reply is still unread for Morgan.
-      msg("u-demo-ad", COACH, 60 * 74, "Hi Justin, quick reminder that updated staff bios for the athletics site are due Friday.", 30),
-      msg("u-demo-ad", COACH, 60 * 74 - 2, "If anything in your coaching history has changed, send it my way and I'll pass it along.", 28),
+      // The demo AD, about the profile itself (no event at the real program). Read, with a reply.
+      msg("u-demo-ad", COACH, 60 * 74, "Hi Justin, checking in from the athletic director side of the demo.", 30),
+      msg("u-demo-ad", COACH, 60 * 74 - 2, "If anything in your coaching record looks off, let me know.", 28),
       msg(COACH, "u-demo-ad", 60 * 74 - 40, "Will do. Thanks, Morgan.", null),
-      // A fictional graduate assistant asking for advice. Read.
+      // A fictional graduate assistant asking for advice, naming no school. Read.
       msg("u-demo-avery", COACH, 60 * 24 * 9 + 300,
-        `Coach Leatherman, I'm a defensive graduate assistant at ${orgName(avery.currentOrgId)} and hoping to coach defensive backs full time after this season. If you ever have 15 minutes, I'd value your advice on what to focus on.`,
+        "Coach Leatherman, I'm a defensive graduate assistant hoping to coach defensive backs full time after this season. If you ever have 15 minutes, I'd value your advice on what to focus on.",
         90),
     ]);
   }

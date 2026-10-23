@@ -41,7 +41,7 @@ export default function AboutPage() {
   return (
     <SingleColumnLayout>
       <Card padding="main">
-        <h1 className="text-display max-md:text-display-sm">About {BRAND.name}</h1>
+        <h1 className="text-display-sm">About {BRAND.name}</h1>
         <p className="mt-2 max-w-prose text-prose text-fg-2">{BRAND.description}</p>
         {SECTIONS.map((s) => (
           <section key={s.id} id={s.id} aria-labelledby={`${s.id}-title`} className="mt-6 scroll-mt-20 border-t border-divider pt-5">

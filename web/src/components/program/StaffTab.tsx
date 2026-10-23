@@ -116,7 +116,7 @@ export async function StaffTab({ org, viewerPersonId }: { org: ProgramOrg; viewe
               );
             })}
           </ul>
-          {unit === firstInferredUnit && <InferredFootnote className="mt-3">Dotted years are inferred from the staff bio, not stated in it.</InferredFootnote>}
+          {unit === firstInferredUnit && <InferredFootnote className="mt-3" />}
         </Card>
       ))}
     </>

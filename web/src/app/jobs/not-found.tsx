@@ -12,7 +12,7 @@ export default function JobNotFound() {
   return (
     <SingleColumnLayout>
       <Card padding="main" aria-labelledby="job-not-found">
-        <h1 id="job-not-found" className="text-display-sm md:text-display">
+        <h1 id="job-not-found" className="text-display-sm">
           Job not found
         </h1>
         <EmptyState

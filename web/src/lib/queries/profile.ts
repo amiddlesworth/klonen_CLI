@@ -91,8 +91,11 @@ export type PlayerLink = {
 /**
  * A tree link with what its years can honestly show (linkYears): no start year the source never gave
  * (an undated current stint is not a 2026 hire), inferred years flagged with their evidence.
+ * - years: the most recent period (order, "Joined Ian's staff in …").
+ * - runs: every period of the pair in this group (TreeLink.periods), oldest first, so a row shows all of
+ *   them ("2010–12, 2020–") and never implies one unbroken run.
  */
-export type ProfileTreeLink = TreeLink & { years: LinkYears; player: PlayerLink | null };
+export type ProfileTreeLink = TreeLink & { years: LinkYears; runs: LinkYears[]; player: PlayerLink | null };
 export type ProfileTree = { mentors: ProfileTreeLink[]; mentees: ProfileTreeLink[]; peers: ProfileTreeLink[] };
 
 const NO_YEARS: LinkYears = { ongoing: false, startYear: null, endYear: null, inferred: false, inferredFrom: null };
@@ -120,7 +123,9 @@ export async function getProfileTree(personId: string): Promise<ProfileTree> {
     .where(or(eq(treeEdges.mentorId, personId), eq(treeEdges.menteeId, personId)))
     .orderBy(desc(treeEdges.endYear), desc(treeEdges.startYear));
   const otherIds = [...new Set(edges.map((e) => (e.mentorId === personId ? e.menteeId : e.mentorId)))];
-  const [summaries, stints] = await Promise.all([getPeopleSummaries(otherIds), getYearStints([personId, ...otherIds])]);
+  const [allSummaries, stints] = await Promise.all([getPeopleSummaries(otherIds), getYearStints([personId, ...otherIds])]);
+  // A fictional demo candidate is in no real coach's tree (aggregateTree drops anyone not in the map).
+  const summaries = new Map([...allSummaries].filter(([, p]) => !p.isDemo));
   const tree = aggregateTree(personId, edges, summaries);
 
   const stintsByPerson = new Map<string, YearStint[]>();
@@ -130,20 +135,21 @@ export async function getProfileTree(personId: string): Promise<ProfileTree> {
 
   const annotate = (bucket: keyof ProfileTree, l: TreeLink): ProfileTreeLink => {
     const otherId = l.person.id;
-    const match = (e: (typeof edges)[number]) =>
-      e.orgSlug === l.org.slug &&
-      e.startYear === l.startYear &&
-      e.endYear === l.endYear &&
-      (bucket === "peers"
+    // Every edge of this pair in this group: one per contiguous run of shared seasons (TreeLink.periods).
+    const inGroup = (e: (typeof edges)[number]) =>
+      bucket === "peers"
         ? e.kind === "worked_alongside" && ((e.mentorId === personId && e.menteeId === otherId) || (e.mentorId === otherId && e.menteeId === personId))
-        : e.kind === "worked_under" && (bucket === "mentees" ? e.mentorId === personId && e.menteeId === otherId : e.mentorId === otherId && e.menteeId === personId));
-    const edge = edges.find(match);
+        : e.kind === "worked_under" && (bucket === "mentees" ? e.mentorId === personId && e.menteeId === otherId : e.mentorId === otherId && e.menteeId === personId);
+    const pairEdges = edges.filter(inGroup);
+    const latest = pairEdges.find((e) => e.orgSlug === l.org.slug && e.startYear === l.startYear && e.endYear === l.endYear);
     const both = pairStints(otherId);
-    const years = edge ? edgeYears(edge as EdgeRef, both) : NO_YEARS;
+    const years = latest ? edgeYears(latest as EdgeRef, both) : NO_YEARS;
+    const oldestFirst = [...pairEdges].sort((a, b) => (a.startYear ?? a.endYear ?? 9999) - (b.startYear ?? b.endYear ?? 9999));
+    const runs = oldestFirst.map((e) => edgeYears(e as EdgeRef, both));
     const playedFor = playedUnder(otherId, personId, both);
     const coached = playedFor ? null : playedUnder(personId, otherId, both);
     const player: PlayerLink | null = playedFor ? { kind: "played_for", years: playedFor } : coached ? { kind: "coached", years: coached } : null;
-    return { ...l, years, player };
+    return { ...l, years, runs: runs.length ? runs : [years], player };
   };
   return {
     mentors: tree.mentors.map((l) => annotate("mentors", l)).sort(byTenure),
@@ -229,7 +235,8 @@ export async function getSameTree(personId: string, currentOrgId: string, exclud
   const staff = await db
     .select({ id: people.id, slug: people.slug, fullName: people.fullName, firstName: people.firstName })
     .from(people)
-    .where(and(eq(people.currentOrgId, currentOrgId), ne(people.id, personId)));
+    // Fictional demo candidates are on no real staff: they connect no one.
+    .where(and(eq(people.currentOrgId, currentOrgId), ne(people.id, personId), eq(people.isDemo, false)));
   if (!staff.length) return [];
   const staffById = new Map(staff.map((s) => [s.id, s]));
   const staffIds = [...staffById.keys()];
@@ -293,7 +300,7 @@ export async function getSameTree(personId: string, currentOrgId: string, exclud
   return picked.flatMap((c) => {
     const person = summaries.get(c.personId);
     const years = edgeYears(c.edge, stints);
-    return person ? [{ via: c.via, relation: c.relation, orgShortName: c.orgShortName, years, person }] : [];
+    return person && !person.isDemo ? [{ via: c.via, relation: c.relation, orgShortName: c.orgShortName, years, person }] : [];
   });
 }
 
@@ -318,7 +325,7 @@ export async function getAlsoViewed(personId: string, personSlug: string, confer
     .select(personSummaryCols)
     .from(people)
     .innerJoin(organizations, eq(organizations.id, people.currentOrgId))
-    .where(and(eq(people.roleGroup, "head_coach"), eq(organizations.conferenceAbbr, conferenceAbbr), notInArray(people.id, skip)))
+    .where(and(eq(people.roleGroup, "head_coach"), eq(people.isDemo, false), eq(organizations.conferenceAbbr, conferenceAbbr), notInArray(people.id, skip)))
     .orderBy(asc(organizations.shortName), asc(people.fullName))
     .limit(40);
   if (rows.length <= limit) return rows.map(toSummary);

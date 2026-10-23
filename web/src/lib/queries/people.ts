@@ -166,9 +166,10 @@ export type Profile = {
   experience: ExperienceGroup[];
   playing: TenureRow[];
   /**
+   * Football coaching only (roles in other sports are listed in `experience`, never counted).
    * seasonsCoached: distinct seasons the coaching stints cover (seasonsCovered): gaps aren't counted and an
    * undated current role adds one season, so it never claims more than the source; null when nothing is dated.
-   * firstSeason: earliest coaching start year in the source.
+   * firstSeason: earliest coaching start year in the source. stops: programs with a football coaching stint.
    */
   stats: { stops: number; seasonsCoached: number | null; treeSize: number; firstSeason: number | null };
   sources: string[];
@@ -191,6 +192,7 @@ export async function getProfile(slug: string): Promise<Profile | null> {
       evidence: tenures.evidence,
       sourceUrl: tenures.sourceUrl,
       verified: tenures.verified,
+      sport: tenures.sport,
       org: orgCols,
     })
     .from(tenures)
@@ -202,8 +204,9 @@ export async function getProfile(slug: string): Promise<Profile | null> {
     : null;
   const experience = groupExperience(rows as TenureRow[]);
   const playing = (rows as TenureRow[]).filter((r) => r.asPlayer);
-  const coaching = (rows as TenureRow[]).filter((r) => !r.asPlayer);
-  const firstSeason = Math.min(...coaching.filter((r) => r.startYear).map((r) => r.startYear!));
+  // The numbers count football coaching only: a role in another sport is listed, never counted.
+  const football = rows.filter((r) => !r.asPlayer && r.sport === "football") as TenureRow[];
+  const firstSeason = Math.min(...football.filter((r) => r.startYear).map((r) => r.startYear!));
   const [{ n: treeSize }] = await db
     .select({ n: sql<number>`count(distinct case when ${treeEdges.mentorId} = ${person.id} then ${treeEdges.menteeId} else ${treeEdges.mentorId} end)::int` })
     .from(treeEdges)
@@ -214,8 +217,8 @@ export async function getProfile(slug: string): Promise<Profile | null> {
     experience,
     playing,
     stats: {
-      stops: new Set(experience.map((g) => g.org.id)).size,
-      seasonsCoached: seasonsCovered(coaching),
+      stops: new Set(football.map((r) => r.org.id)).size,
+      seasonsCoached: seasonsCovered(football),
       treeSize,
       firstSeason: Number.isFinite(firstSeason) ? firstSeason : null,
     },
@@ -305,13 +308,16 @@ export async function getTree(personId: string): Promise<Tree> {
   return aggregateTree(personId, edges, summaries);
 }
 
-/** Coaches connected to this person's tree or past programs, for "People you may know" and "Same tree" rails. */
+/**
+ * Coaches connected to this person's tree or past programs, for "People you may know" and "Same tree" rails.
+ * Never a fictional demo candidate (people.isDemo): suggestions are real coaches only.
+ */
 export async function getRelated(personId: string, limit = 5): Promise<PersonSummary[]> {
   const tree = await getTree(personId);
-  const ids = [...tree.mentors, ...tree.peers, ...tree.mentees].map((l) => l.person.id).filter((id) => id !== personId);
+  const ids = [...tree.mentors, ...tree.peers, ...tree.mentees].filter((l) => !l.person.isDemo).map((l) => l.person.id).filter((id) => id !== personId);
   const unique = [...new Set(ids)].slice(0, limit);
   const map = await getPeopleSummaries(unique);
-  return unique.map((id) => map.get(id)!).filter(Boolean);
+  return unique.map((id) => map.get(id)!).filter((p) => p && !p.isDemo);
 }
 
 /**

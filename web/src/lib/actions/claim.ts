@@ -1,5 +1,5 @@
 "use server";
-import { and, desc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { claims, people } from "@/db/schema";
@@ -12,8 +12,8 @@ const ClaimInput = z.object({
   slug: z.string().min(1).max(200),
   email: z.string().trim().toLowerCase().email().max(254),
   /** Every stint must have been reviewed; counts only (the claims table keeps no notes). */
-  confirmed: z.number().int().min(0),
-  flagged: z.number().int().min(0),
+  confirmed: z.number().int().min(0).max(10_000),
+  flagged: z.number().int().min(0).max(10_000),
 });
 
 /**
@@ -43,18 +43,12 @@ export async function submitClaim(input: z.input<typeof ClaimInput>): Promise<Cl
   if (!session || session.person?.slug !== parsed.data.slug) return { ok: true, recorded: false };
 
   try {
-    const userId = session.user.id;
-    const [existing] = await db
-      .select({ id: claims.id })
-      .from(claims)
-      .where(and(eq(claims.personId, person.id), eq(claims.userId, userId)))
-      .orderBy(desc(claims.id))
-      .limit(1);
-    if (existing) {
-      await db.update(claims).set({ email: parsed.data.email, status: "started" }).where(eq(claims.id, existing.id));
-    } else {
-      await db.insert(claims).values({ personId: person.id, userId, email: parsed.data.email, status: "started" });
-    }
+    // One row per (person, user), enforced by claims_person_user_idx, so concurrent publishes can't
+    // add a second row: a repeat updates the email.
+    await db
+      .insert(claims)
+      .values({ personId: person.id, userId: session.user.id, email: parsed.data.email, status: "started" })
+      .onConflictDoUpdate({ target: [claims.personId, claims.userId], set: { email: parsed.data.email, status: "started" } });
     return { ok: true, recorded: true };
   } catch {
     return { ok: false, error: "We couldn't record your claim. Try again." };

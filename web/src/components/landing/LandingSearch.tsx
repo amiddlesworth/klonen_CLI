@@ -6,11 +6,12 @@ import { TypeaheadPanel } from "@/components/shell/TypeaheadPanel";
 import { typeaheadOptions, type TypeaheadOption, type TypeaheadResponse } from "@/components/shell/typeahead";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import { PAGE_SEARCH_BOX } from "@/components/ui/PageSearchField";
 import { cn } from "@/lib/cn";
 
 /**
- * Landing search (§8.10): a 48px field (radius 8, 1px --control) with the primary "Search" button
- * inside on the right; on phone the button sits below at full width. People and programs typeahead
+ * Landing search (§8.10): the in-page search box (PAGE_SEARCH_BOX, audit X20) at 48px with the
+ * primary "Search" button inside on the right; on phone the button sits below at full width. People and programs typeahead
  * from /api/typeahead (↑ ↓ Enter Esc, same panel as the global search). Without JS it is a GET form
  * to /search?q=.
  */
@@ -118,10 +119,7 @@ export function LandingSearch({
               inputRef.current?.focus();
             }
           }}
-          className={cn(
-            "flex h-12 cursor-text items-center gap-2.5 rounded-md border border-control bg-surface pl-4 pr-1.5 text-fg-3 transition-colors max-md:pr-3",
-            "hover:border-fg-3 focus-within:border-accent focus-within:shadow-[0_0_0_3px_var(--accent-subtle)] focus-within:hover:border-accent",
-          )}
+          className={cn(PAGE_SEARCH_BOX, "h-12 gap-2.5 pl-4 pr-1.5 max-md:pr-3")}
         >
           <Icon icon={Search} size={20} />
           <label htmlFor={inputId} className="sr-only">

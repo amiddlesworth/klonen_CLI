@@ -10,7 +10,7 @@ import { CURRENT_SEASON } from "@/lib/brand";
 import { seasonRangeCompact, seasonRangeLabel } from "@/lib/format";
 import { escapeLike } from "@/lib/queries/orgs";
 import { countPeople } from "@/lib/queries/searchx";
-import { visibleShortlists } from "@/lib/demo-scope";
+import { readableShortlist, shortlistPublicId, visibleShortlists } from "@/lib/demo-scope";
 
 /* ------------------------------------------------------------------ types */
 
@@ -67,12 +67,13 @@ export type PipelineStatus = { entryId: number; stage: PipelineStage; shortlistI
  */
 export const getEmployerShortlists = cache(async (userId: string): Promise<ShortlistSummary[]> => {
   return db
-    .select({ id: shortlists.id, name: shortlists.name, count: count(shortlistEntries.id) })
+    // A browser's copy of a seeded search goes by the seeded search's id (lib/demo-scope.ts "pipeline").
+    .select({ id: shortlistPublicId(), name: shortlists.name, count: count(shortlistEntries.id) })
     .from(shortlists)
     .leftJoin(shortlistEntries, eq(shortlistEntries.shortlistId, shortlists.id))
     .where(and(eq(shortlists.ownerUserId, userId), await visibleShortlists()))
     .groupBy(shortlists.id)
-    .orderBy(asc(shortlists.createdAt), asc(shortlists.id));
+    .orderBy(asc(shortlists.createdAt), asc(shortlistPublicId()));
 });
 
 /**
@@ -103,7 +104,7 @@ export const getPipeline = cache(async (userId: string, listId?: number | null):
     .from(shortlistEntries)
     .innerJoin(people, eq(people.id, shortlistEntries.personId))
     .leftJoin(organizations, eq(organizations.id, people.currentOrgId))
-    .where(eq(shortlistEntries.shortlistId, current.id))
+    .where(eq(shortlistEntries.shortlistId, await readableShortlist(current.id)))
     .orderBy(asc(shortlistEntries.position), asc(shortlistEntries.id));
 
   const context = await getCandidateContext(rows.map((r) => ({ id: r.personId, currentOrgId: r.currentOrgId })));
@@ -139,13 +140,13 @@ export const getPipelineStatusMap = cache(async (userId: string): Promise<Map<st
       personId: shortlistEntries.personId,
       entryId: shortlistEntries.id,
       stage: shortlistEntries.stage,
-      shortlistId: shortlists.id,
+      shortlistId: shortlistPublicId(),
       shortlistName: shortlists.name,
     })
     .from(shortlistEntries)
     .innerJoin(shortlists, eq(shortlists.id, shortlistEntries.shortlistId))
     .where(and(eq(shortlists.ownerUserId, userId), await visibleShortlists()))
-    .orderBy(asc(shortlists.createdAt), asc(shortlists.id));
+    .orderBy(asc(shortlists.createdAt), asc(shortlistPublicId()));
   const map = new Map<string, PipelineStatus>();
   for (const r of rows) if (!map.has(r.personId)) map.set(r.personId, { entryId: r.entryId, stage: r.stage, shortlistId: r.shortlistId, shortlistName: r.shortlistName });
   return map;
@@ -215,6 +216,7 @@ export async function searchCandidateOptions(term: string, shortlistId: number |
   const t = term.trim().slice(0, 80);
   if (t.length < 2) return { options: [], more: false };
   const e = escapeLike(t);
+  const listId = shortlistId == null ? -1 : await readableShortlist(shortlistId);
   const rank = sql`case
     when lower(${people.fullName}) = ${t.toLowerCase()} then 0
     when ${people.fullName} ilike ${`${e}%`} then 1
@@ -234,7 +236,7 @@ export async function searchCandidateOptions(term: string, shortlistId: number |
     })
     .from(people)
     .leftJoin(organizations, eq(organizations.id, people.currentOrgId))
-    .leftJoin(shortlistEntries, and(eq(shortlistEntries.personId, people.id), eq(shortlistEntries.shortlistId, shortlistId ?? -1)))
+    .leftJoin(shortlistEntries, and(eq(shortlistEntries.personId, people.id), eq(shortlistEntries.shortlistId, listId)))
     .where(or(ilike(people.fullName, `%${e}%`), ilike(organizations.shortName, `%${e}%`), ilike(organizations.name, `%${e}%`)))
     .orderBy(rank, people.isDemo, roleOrder, asc(people.fullName), asc(people.id))
     .limit(CANDIDATE_OPTION_LIMIT + 1);

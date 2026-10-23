@@ -1,7 +1,7 @@
 "use client";
 import { useTransition } from "react";
 import { usePathname } from "next/navigation";
-import { Briefcase, ChevronDown, Users } from "lucide-react";
+import { Briefcase, CircleUserRound, Users } from "lucide-react";
 import { buttonClasses } from "@/components/ui/Button";
 import { SampleChip } from "@/components/ui/Chip";
 import { Icon } from "@/components/ui/Icon";
@@ -10,6 +10,7 @@ import { MenuDivider, MenuGroup, MenuLink, MenuRadioItem } from "@/components/ui
 import { useToast } from "@/components/ui/Toast";
 import { switchDemoAccount } from "@/lib/actions/session";
 import type { DemoRole } from "@/lib/session";
+import { TAB_CELL } from "./NavItem";
 import type { DemoAccountOption } from "./types";
 
 type Choice = DemoRole | "signed_out";
@@ -63,30 +64,38 @@ export function DemoAccountGroup({ accounts, current }: { accounts: DemoAccountO
 }
 
 /**
- * Signed-out "Sign in" control: a ghost button opening the demo account choices. On phone (the
- * compact top-bar version) it opens as a bottom sheet and also carries the For employers links,
- * since the phone top bar has no room for a second ghost control (§8.10).
+ * Signed-out "Sign in" control opening the demo account choices.
+ * - "nav": a ghost button (md and up; no chevron, §8.10).
+ * - "compact": the phone top bar's ghost button on the landing page, which has no tab bar.
+ * - "tab": the phone tab bar's last cell (icon over label).
+ * On phone ("compact", "tab") it opens as a bottom sheet and also carries the For employers links,
+ * since the phone bars have no room for a For employers control.
  */
-export function SignInMenu({ accounts, compact }: { accounts: DemoAccountOption[]; compact?: boolean }) {
+export function SignInMenu({ accounts, variant = "nav" }: { accounts: DemoAccountOption[]; variant?: "nav" | "compact" | "tab" }) {
+  const phone = variant !== "nav";
   return (
     <Menu
       trigger={
-        <>
-          Sign in
-          {!compact && <Icon icon={ChevronDown} size={14} />}
-        </>
+        variant === "tab" ? (
+          <>
+            <Icon icon={CircleUserRound} size={22} />
+            <span>Sign in</span>
+          </>
+        ) : (
+          "Sign in"
+        )
       }
       label="Sign in with a demo account"
-      triggerClassName={buttonClasses({ variant: "ghost", phone: "default" })}
-      placement="bottom-end"
+      triggerClassName={variant === "tab" ? TAB_CELL : buttonClasses({ variant: "ghost", phone: "default" })}
+      placement={variant === "tab" ? "top-end" : "bottom-end"}
       minWidth={280}
-      sheetOnPhone={compact}
+      sheetOnPhone={phone}
     >
       <p role="none" className="px-2 pb-1 pt-2 text-caption text-fg-3">
         Sign-in is a demo. Pick an account to explore as.
       </p>
       <DemoAccountGroup accounts={accounts} current="signed_out" />
-      {compact && (
+      {phone && (
         <div role="none" className="md:hidden">
           <MenuDivider />
           <MenuGroup label="For employers">

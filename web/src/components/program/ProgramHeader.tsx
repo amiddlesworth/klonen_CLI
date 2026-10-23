@@ -8,8 +8,8 @@ import { Icon } from "@/components/ui/Icon";
 import { OrgMark } from "@/components/ui/OrgMark";
 import { Tabs, type TabItem } from "@/components/ui/Tabs";
 import { cn } from "@/lib/cn";
+import { placeLong } from "@/lib/format";
 import type { ProgramOrg } from "@/lib/queries/program";
-import { placeLine } from "./place";
 
 type ProgramHeaderProps = {
   org: ProgramOrg;
@@ -26,12 +26,12 @@ type ProgramHeaderProps = {
 
 /**
  * Program header card (§8.6): OrgMark 56 (48 inline on phone), name text-display (h1), "{Nickname} ·
- * Place" 15 --fg-2, division and conference chips with the athletics SourceLink, actions right
+ * City, ST" 15 --fg-2 (the state alone when no city is known; lib/format placeLong), division and conference chips with the athletics SourceLink, actions right
  * (under the identity at 721–1080, a full-width row on phone), StatBand, then the tabs flush with the
  * card's bottom edge.
  */
 export function ProgramHeader({ org, stats, actions, tabs, note, context }: ProgramHeaderProps) {
-  const sub = [org.nickname, placeLine(org.city, org.state)].filter(Boolean).join(" · ");
+  const sub = [org.nickname, placeLong(org.city, org.state)].filter(Boolean).join(" · ");
   return (
     <Card aria-labelledby="program-name" className={cn("px-4 pt-4 md:px-6 md:pt-6", note && !tabs && "overflow-hidden")}>
       {context && (

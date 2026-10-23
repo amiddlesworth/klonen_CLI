@@ -25,6 +25,9 @@ type TopNavProps = {
  * Top nav (§8.2, md and up): 52px, --surface, 1px bottom border, sticky. Brand, the search field
  * (lg) or a labelled "Search" item (md, opens a full-width search), then Home, Network, Jobs,
  * Messaging, Notifications, Me ▾, a divider and For employers. Every item is icon over label.
+ * Visitors get the same shell with their public destinations (Search at md, Jobs), For employers
+ * and a ghost "Sign in"; the landing page keeps only the two ghost buttons (§8.10). Side padding
+ * respects the safe-area insets.
  */
 export function TopNav({ viewer, counts, accounts, preview }: TopNavProps) {
   const pathname = usePathname();
@@ -72,7 +75,7 @@ export function TopNav({ viewer, counts, accounts, preview }: TopNavProps) {
 
   return (
     <header className={cn("h-[var(--nav-h)] border-b border-border bg-surface", preview ? "relative min-w-[960px]" : "sticky top-0 z-30 hidden md:block")}>
-      <div className="mx-auto flex h-full max-w-page items-center gap-4 px-6">
+      <div className="mx-auto flex h-full max-w-page items-center gap-4 pl-[max(24px,env(safe-area-inset-left))] pr-[max(24px,env(safe-area-inset-right))]">
         <BrandMark href={viewer ? "/feed" : "/"} />
         {showSearch && (
           <div className="hidden lg:block">
@@ -99,26 +102,37 @@ export function TopNav({ viewer, counts, accounts, preview }: TopNavProps) {
             <NavItem href="/network" label="Network" icon={Users} active={section === "network"} />
             <NavItem href="/jobs" label="Jobs" icon={Briefcase} active={section === "jobs"} />
             <NavItem href="/messaging" label="Messaging" icon={MessageSquare} active={section === "messaging"} count={counts.unreadMessages} countNoun="unread" />
-            <NavItem href="/notifications" label="Notifications" icon={Bell} active={section === "notifications"} count={counts.newNotifications} />
+            <NavItem href="/notifications" label="Notifications" icon={Bell} active={section === "notifications"} count={section === "notifications" ? 0 : counts.newNotifications} />
             <MeMenu viewer={viewer} accounts={accounts} variant="nav" active={section === "me"} />
             <span aria-hidden="true" className="mx-2 h-8 w-px shrink-0 self-center bg-border" />
             <EmployersMenu viewer={viewer} active={section === "employers"} />
           </nav>
-        ) : (
-          <div className="ml-auto flex items-center gap-1">
-            {showSearch && (
+        ) : showSearch ? (
+          // Visitors on any page but the landing page: the public destinations as nav items (Search
+          // at md, Jobs), the divider and For employers, then a ghost "Sign in" (§8.2, §8.10).
+          <>
+            <nav aria-label={preview ? "Primary (preview)" : "Primary"} className="ml-auto flex h-full items-stretch">
               <button
                 ref={searchButtonRef}
                 type="button"
                 aria-expanded={searchOpen}
                 aria-controls={searchOpen ? overlayId : undefined}
+                aria-current={section === "search" ? "page" : undefined}
                 onClick={() => setSearchOpen((o) => !o)}
-                className={cn(NAV_ITEM, "h-[var(--nav-h)] lg:hidden")}
+                className={cn(NAV_ITEM, "lg:hidden")}
               >
                 <NavIcon icon={Search} />
                 <span>Search</span>
               </button>
-            )}
+              <NavItem href="/jobs" label="Jobs" icon={Briefcase} active={section === "jobs"} />
+              <span aria-hidden="true" className="mx-2 h-8 w-px shrink-0 self-center bg-border" />
+              <EmployersMenu viewer={null} active={section === "employers"} />
+            </nav>
+            <SignInMenu accounts={accounts} />
+          </>
+        ) : (
+          // The landing page keeps its clean bar: For employers and Sign in as ghost buttons (§8.10).
+          <div className="ml-auto flex items-center gap-1">
             <EmployersMenu viewer={null} variant="button" />
             <SignInMenu accounts={accounts} />
           </div>

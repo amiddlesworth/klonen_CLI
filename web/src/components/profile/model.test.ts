@@ -7,11 +7,14 @@ import {
   coachingStops,
   currentHeadline,
   firstSeason,
+  groupText,
   levelLine,
   otherSportRoleCount,
   playingLine,
+  roleTitle,
   staffOnlyRoleCount,
   stripStints,
+  treeRunsView,
   treeYearsView,
   undatedRoleCount,
   type SportRow,
@@ -77,10 +80,28 @@ describe("football coaching only", () => {
     const ledger = buildLedger([...football, basketball]);
     expect(ledger).toHaveLength(1);
     expect(ledger[0].roleCount).toBe(3);
-    expect(levelLine(basketball)).toBe("Women's basketball · Head coach");
-    expect(levelLine(row({ role: "Head Track and Field Coach", roleGroup: "other", sport: "track and field" }))).toBe("Track and field · Head coach");
-    expect(levelLine(row({ role: "Equipment Manager", roleGroup: "other", sport: "athletic department (all sports)" }))).toBe("Athletic department (all sports)");
+    expect(levelLine(basketball)).toBe("Head coach · Not counted in football seasons");
+    expect(levelLine(row({ role: "Head Track and Field Coach", roleGroup: "other", sport: "track and field" }))).toBe("Head coach · Not counted in football seasons");
+    expect(levelLine(row({ role: "Equipment Manager", roleGroup: "other", sport: "athletic department (all sports)" }))).toBe("Not counted in football seasons");
     expect(playingLine(baseballPlayer)).toBe("Baseball · Player (catcher)");
+  });
+
+  it("names the sport on the role line of a stint in another sport", () => {
+    const ledger = buildLedger([...football, basketball]);
+    const titles = ledger[0].items.flatMap((i) => (i.kind === "role" ? [i.title] : []));
+    expect(titles).toContain("Head women's basketball coach");
+    expect(titles).toContain("Assistant Coach / Outside Linebackers");
+    const t = (role: string, sport: string) => roleTitle(row({ role, roleGroup: "other", sport }));
+    expect(t("Assistant Coach", "basketball")).toBe("Assistant basketball coach");
+    expect(t("Coach", "baseball")).toBe("Baseball coach");
+    expect(t("Varsity Head Coach", "baseball")).toBe("Varsity head baseball coach");
+    expect(t("Head Baseball Coach", "baseball")).toBe("Head Baseball Coach");
+    expect(t("Assistant Track Coach", "track and field")).toBe("Assistant Track Coach");
+    expect(t("Head Men's Lacrosse Coach", "men's lacrosse")).toBe("Head Men's Lacrosse Coach");
+    expect(t("Sprints / Long Jumps Coach", "track and field")).toBe("Sprints / Long Jumps Coach · Track and field");
+    expect(t("Head Coach / Offensive Coordinator", "women's tackle football")).toBe("Head Coach / Offensive Coordinator · Women's tackle football");
+    expect(t("Coach", "unspecified")).toBe("Coach");
+    expect(roleTitle(row({ role: "Head Coach" }))).toBe("Head Coach");
   });
 
   it("counts an unclassified football role only when its title names a coaching job", () => {
@@ -98,6 +119,43 @@ describe("football coaching only", () => {
     expect(levelLine(row({ roleGroup: "coordinator", unit: "special_teams" }))).toBe("Coordinator · Special teams");
     const noSport = row({ startYear: 2020, endYear: 2021, sport: undefined });
     expect(coachingSeasons([noSport])).toEqual([2020, 2021]);
+  });
+});
+
+describe("groupText", () => {
+  it("shows gaps between stints and never stretches a start to Present", () => {
+    expect(groupText([{ startYear: 2014, endYear: null, isCurrent: true }, { startYear: 1995, endYear: 1996, isCurrent: false }])).toMatchObject({
+      range: "1995–1996, 2014–Present",
+      count: "15 seasons · 2 stints",
+    });
+  });
+  it("keeps the gap when a role has no start year, and says years are missing instead of counting", () => {
+    expect(groupText([{ startYear: null, endYear: null, isCurrent: true }, { startYear: 1995, endYear: 1996, isCurrent: false }])).toMatchObject({
+      range: "1995–1996, Present",
+      count: "Some years not in source",
+    });
+  });
+  it("words a group with no start year at all", () => {
+    expect(groupText([{ startYear: null, endYear: null, isCurrent: true }, { startYear: null, endYear: 2010, isCurrent: false }])).toMatchObject({
+      range: "Current",
+      count: "Start year not in source",
+    });
+  });
+});
+
+describe("one current title per page (X19)", () => {
+  const current = row({ role: "Special Teams Coordinator / Safeties Coach", startYear: 2024, isCurrent: true, orgId: "pacific" });
+  const past = row({ role: "Graduate Assistant", startYear: 2020, endYear: 2023, orgId: "pacific" });
+  it("shows the directory title on the current role and keeps the bio's wording for its Source", () => {
+    const ledger = buildLedger([current, past], { orgId: "pacific", directoryTitle: "Special Teams Coordinator / Defensive Backs Coach" });
+    const [now, before] = ledger[0].items.filter((i) => i.kind === "role");
+    expect(now).toMatchObject({ title: "Special Teams Coordinator / Defensive Backs Coach", bioTitle: "Special Teams Coordinator / Safeties Coach" });
+    expect(before).toMatchObject({ title: "Graduate Assistant", bioTitle: null });
+    expect(currentHeadline([current, past], "pacific", "Special Teams Coordinator / Defensive Backs Coach")).toBe(now.kind === "role" ? now.title : "");
+  });
+  it("keeps the bio title when there is no directory title", () => {
+    const ledger = buildLedger([current], { orgId: "pacific", directoryTitle: null });
+    expect(ledger[0].items[0]).toMatchObject({ title: "Special Teams Coordinator / Safeties Coach", bioTitle: null });
   });
 });
 
@@ -126,6 +184,17 @@ describe("treeYearsView", () => {
   it("never marks the end of an ongoing run", () => {
     const v = treeYearsView(years({ ongoing: true, startYear: 2020, inferred: true, startInferred: true, endInferred: false }), () => undefined);
     expect(v).toMatchObject({ kind: "range", endYear: null, startInferred: true, endInferred: false });
+  });
+});
+
+describe("treeRunsView", () => {
+  it("shows every period of a pair, oldest first, with Current last", () => {
+    const runs = treeRunsView([years({ startYear: 2010, endYear: 2012 }), years({ startYear: 2016, endYear: 2019 }), years({ ongoing: true })], () => undefined);
+    expect(runs.map((r) => r.kind)).toEqual(["range", "range", "current"]);
+    expect(runs[0]).toMatchObject({ startYear: 2010, endYear: 2012 });
+  });
+  it("drops periods the source doesn't pin", () => {
+    expect(treeRunsView([years({}), years({ startYear: 2020, endYear: 2021 })], () => undefined)).toHaveLength(1);
   });
 });
 

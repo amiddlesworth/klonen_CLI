@@ -13,8 +13,8 @@ const AvailabilityInput = z.object({
   open: z.boolean(),
   audience: z.enum(AUDIENCES as [string, ...string[]]),
   selectedOrgIds: z.array(z.string().max(64)).max(50),
-  roles: z.array(z.string()).max(10),
-  regions: z.array(z.string()).max(10),
+  roles: z.array(z.string().max(64)).max(10),
+  regions: z.array(z.string().max(64)).max(10),
 });
 
 /**

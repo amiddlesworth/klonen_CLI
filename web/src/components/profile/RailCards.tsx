@@ -1,22 +1,18 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { ChevronRight, ExternalLink, Network } from "lucide-react";
-import { ProgramBadges } from "@/components/data/Badges";
+import { ChevronRight, Network } from "lucide-react";
 import { ContextLine } from "@/components/data/ContextLine";
+import { InferredKey } from "@/components/data/InferredYear";
 import { PersonRow } from "@/components/data/PersonRow";
+import { PersonRowAction } from "@/components/data/PersonRowAction";
+import { CurrentProgramCard as SharedCurrentProgramCard } from "@/components/data/CurrentProgramCard";
 import { SectionCard } from "@/components/data/SectionCard";
-import type { DemoAccountOption } from "@/components/shell/types";
-import { ButtonLink } from "@/components/ui/Button";
-import { SampleChip } from "@/components/ui/Chip";
 import { Icon } from "@/components/ui/Icon";
-import { OrgMark } from "@/components/ui/OrgMark";
-import { TextLink } from "@/components/ui/TextLink";
-import { BRAND } from "@/lib/brand";
-import { conferenceShort, sourceDomain, titleShort } from "@/lib/format";
+import { conferenceShort, titleShort } from "@/lib/format";
 import type { PersonSummary } from "@/lib/queries/people";
+import { getProgramCounts } from "@/lib/queries/program";
 import type { ProgramCard, SameTreeLink } from "@/lib/queries/profile";
-import { stateName, treeYearsView, type TreeYearsView } from "./model";
-import { RowConnectButton } from "./ProfileActions";
+import { treeYearsView, type TreeYearsView } from "./model";
 import { InlineYears } from "./TreeYears";
 
 /** Every rail row is a football coach: "Head Football Coach" reads "Head Coach" there. */
@@ -66,77 +62,13 @@ function TitleOrg({ title, org }: { title: string | null; org: string | null }) 
   );
 }
 
-/** Rail: Current program (§8.4): the program, staff on the network, open jobs, View staff and the athletics site. */
-export function CurrentProgramCard({ program }: { program: ProgramCard }) {
-  const href = program.inRegistry ? `/programs/${program.slug}` : null;
-  const sub = [program.nickname, stateName(program.state)].filter(Boolean).join(" · ");
-  return (
-    <SectionCard
-      id="current-program"
-      size="rail"
-      title="Current program"
-      action={
-        href ? (
-          <TextLink href={href} arrow target24 className="text-small" aria-label={`View program: ${program.name}`}>
-            View program
-          </TextLink>
-        ) : undefined
-      }
-    >
-      <div className="mt-3 flex gap-3">
-        <OrgMark shortName={program.shortName} name={program.name} size={40} />
-        <div className="min-w-0">
-          <p className="text-small font-semibold">
-            {href ? (
-              <Link href={href} className="target-24 underline-offset-2 hover:underline">
-                {program.name}
-              </Link>
-            ) : (
-              program.name
-            )}
-          </p>
-          {sub && <p className="mt-0.5 text-caption text-fg-2">{sub}</p>}
-          <ProgramBadges level={program.level} conferenceAbbr={program.conferenceAbbr} conference={program.conference} className="mt-1.5" />
-        </div>
-      </div>
-      <dl className="mt-3">
-        <div className="flex items-baseline justify-between gap-2 border-t border-divider py-2 text-small text-fg-2">
-          <dt>Staff on {BRAND.name}</dt>
-          <dd className="num font-semibold text-fg-1">{program.staffCount}</dd>
-        </div>
-        <div className="flex items-center justify-between gap-2 border-t border-divider py-2 text-small text-fg-2">
-          <dt className="flex items-center gap-1.5">
-            Open jobs
-            {program.sampleJobs > 0 && <SampleChip label="Sample" />}
-          </dt>
-          <dd className="num font-semibold text-fg-1">
-            {href && program.openJobs > 0 ? (
-              <Link href={`${href}?tab=jobs`} className="target-24 underline-offset-2 hover:underline" aria-label={`${program.openJobs} open ${program.openJobs === 1 ? "job" : "jobs"} at ${program.shortName}`}>
-                {program.openJobs}
-              </Link>
-            ) : (
-              program.openJobs
-            )}
-          </dd>
-        </div>
-      </dl>
-      {(href || program.athleticsUrl) && (
-        <div className="mt-1 flex gap-2">
-          {href && (
-            <ButtonLink href={`${href}?tab=staff`} size="sm" className="flex-auto">
-              View staff
-            </ButtonLink>
-          )}
-          {program.athleticsUrl && (
-            <ButtonLink href={program.athleticsUrl} size="sm" iconRight={ExternalLink} className="min-w-0 flex-auto">
-              <span className="truncate">{sourceDomain(program.athleticsUrl)}</span>
-              <span className="sr-only"> (opens in a new tab)</span>
-            </ButtonLink>
-          )}
-        </div>
-      )}
-    </SectionCard>
-  );
+/**
+ * Rail: Current program (§8.4). The shared CurrentProgramCard (components/data, also the job rail),
+ * with the program page's own counts, so Staff listed · Alumni coaches · Open jobs match that page.
+ */
+export async function CurrentProgramCard({ program }: { program: ProgramCard }) {
+  const counts = await getProgramCounts(program.id);
+  return <SharedCurrentProgramCard org={program} counts={counts} />;
 }
 
 /**
@@ -180,15 +112,11 @@ export function SameTreeCard({
   links,
   firstName,
   programShortName,
-  signedIn,
-  accounts,
   explainInferred,
 }: {
   links: SameTreeLink[];
   firstName: string;
   programShortName: string;
-  signedIn: boolean;
-  accounts: DemoAccountOption[];
   /** Explain the dotted year here (when nothing else on the page does). */
   explainInferred?: boolean;
 }) {
@@ -212,19 +140,18 @@ export function SameTreeCard({
                     <ViaLine link={l} />
                   </ContextLine>
                 }
-                action={
-                  <RowConnectButton
-                    person={{ id: p.id, slug: p.slug, fullName: p.fullName, firstName: p.fullName.split(" ")[0], claimed: p.claimed }}
-                    signedIn={signedIn}
-                    accounts={accounts}
-                  />
-                }
+                // Unclaimed (every real coach today): Connect opens the invite dialog, never a fake pending request.
+                action={<PersonRowAction person={p} />}
               />
             </li>
           );
         })}
       </ul>
-      {explainInferred && sameTreeInferred(links) && <p className="mt-3 border-t border-divider pt-3 text-caption text-fg-3">Dotted years are inferred from a bio, not stated in it.</p>}
+      {explainInferred && sameTreeInferred(links) && (
+        <p className="mt-3 border-t border-divider pt-3 text-caption text-fg-3">
+          <InferredKey />
+        </p>
+      )}
     </SectionCard>
   );
 }

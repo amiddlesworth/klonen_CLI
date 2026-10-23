@@ -1,15 +1,20 @@
 import type { ReactNode } from "react";
+import { BREADCRUMB_ROW } from "@/components/ui/Breadcrumb";
 import { cn } from "@/lib/cn";
 import { LegalFooter } from "./LegalFooter";
 import { RightRail } from "./RightRail";
 import { StickyAside } from "./StickyAside";
 
 /*
- * Page layouts (§8.2 AppShell grid). Container: max 1200px with 24px side padding (1152 content),
+ * Page layouts (§8.2 AppShell grid). Container: max 1200px with 24px side padding (1152 content;
+ * `page-x`, which also respects the safe-area insets in landscape),
  * centered; page padding top 20 in every layout (so the first card never jumps between tabs), bottom 48. Phone: one column, full-bleed cards, no side padding
  * (content that is not a card brings its own 16px gutter) and an 8px canvas gap under the top bar
  * (the phone card gap, §5.1). Each layout renders the page's single <main id="main"> (the skip link
  * target); rails are labelled <aside>s.
+ *
+ * Sub-pages pass a `breadcrumb` (ui/Breadcrumb): every layout puts it in the same fixed 32px row
+ * (BREADCRUMB_ROW) with a 12px gap below, so first cards line up across sibling sub-pages.
  *
  * Sticky rails pin only when they fit: StickyAside sets --rail-top so a rail taller than the
  * viewport scrolls until its end (the legal footer) is visible, then pins there.
@@ -19,9 +24,10 @@ const MAIN = "flex min-w-0 flex-col gap-2 outline-none md:gap-3";
 const STICKY = "md:sticky md:top-[var(--rail-top,calc(var(--nav-h)+20px))]";
 
 /** Generic page body: one column at full page width. */
-export function PageContainer({ children, footer = true, className }: { children: ReactNode; footer?: boolean; className?: string }) {
+export function PageContainer({ children, footer = true, breadcrumb, className }: { children: ReactNode; footer?: boolean; breadcrumb?: ReactNode; className?: string }) {
   return (
-    <div className={cn("mx-auto w-full max-w-page pb-4 pt-2 md:px-6 md:pb-12 md:pt-5", className)}>
+    <div className={cn("mx-auto w-full max-w-page pb-4 pt-2 page-x md:pb-12 md:pt-5", className)}>
+      {breadcrumb && <div className={cn(BREADCRUMB_ROW, "md:mb-3")}>{breadcrumb}</div>}
       <main id="main" tabIndex={-1} className={MAIN}>
         {children}
       </main>
@@ -47,7 +53,7 @@ export function ThreeColumnLayout({ left, leftLabel = "Your profile", right, rig
   return (
     <div
       className={cn(
-        "mx-auto w-full max-w-page items-start pb-4 pt-2 max-md:block md:grid md:grid-cols-[minmax(0,1fr)_var(--rail-tablet)] md:gap-6 md:px-6 md:pb-12 md:pt-5",
+        "mx-auto w-full max-w-page items-start pb-4 pt-2 max-md:block md:grid md:grid-cols-[minmax(0,1fr)_var(--rail-tablet)] md:gap-6 page-x md:pb-12 md:pt-5",
         left ? "lg:grid-cols-[var(--rail-left)_minmax(0,1fr)_var(--rail-feed)]" : "lg:grid-cols-[minmax(0,1fr)_var(--rail-feed)]",
       )}
     >
@@ -81,16 +87,16 @@ type TwoColumnProps = {
  */
 export function TwoColumnLayout({ breadcrumb, rail, railLabel = "Related", children }: TwoColumnProps) {
   return (
-    <div className="mx-auto grid w-full max-w-page items-start gap-x-6 gap-y-2 pb-4 pt-2 md:gap-y-3 md:px-6 md:pb-12 md:pt-5 min-[961px]:grid-cols-[minmax(0,1fr)_var(--rail-tablet)] lg:grid-cols-[minmax(0,1fr)_var(--rail-profile)]">
-      {/* The page top is 20px in every layout; the breadcrumb sits 16px under the nav (profile.html). */}
-      {breadcrumb && <div className="col-span-full max-md:hidden md:-mt-1">{breadcrumb}</div>}
+    <div className="mx-auto grid w-full max-w-page items-start gap-x-6 gap-y-2 pb-4 pt-2 md:gap-y-3 page-x md:pb-12 md:pt-5 min-[961px]:grid-cols-[minmax(0,1fr)_var(--rail-tablet)] lg:grid-cols-[minmax(0,1fr)_var(--rail-profile)]">
+      {/* The page top is 20px in every layout; the breadcrumb row is the fixed 32px BREADCRUMB_ROW. Hidden on phone (§8.4). */}
+      {breadcrumb && <div className={cn("col-span-full max-md:hidden", BREADCRUMB_ROW)}>{breadcrumb}</div>}
       <main id="main" tabIndex={-1} className={MAIN}>
         {children}
       </main>
       <RightRail
         label={railLabel}
         stickyOffset={16}
-        className="min-[961px]:sticky min-[961px]:top-[var(--rail-top,calc(var(--nav-h)+16px))] md:max-[961px]:grid md:max-[961px]:grid-cols-2 md:max-[961px]:items-start"
+        className="min-[961px]:sticky min-[961px]:top-[var(--rail-top,calc(var(--nav-h)+16px))] md:max-[961px]:grid md:max-[961px]:grid-cols-2 md:max-[961px]:items-start md:max-[961px]:*:self-start"
       >
         {rail}
       </RightRail>
@@ -108,7 +114,7 @@ type SidebarProps = {
 /** Search: lg `232 · 1fr`; md and phone one column. */
 export function SidebarLayout({ sidebar, sidebarLabel = "Filters", children }: SidebarProps) {
   return (
-    <div className="mx-auto grid w-full max-w-page items-start gap-6 pb-4 pt-2 md:px-6 md:pb-12 md:pt-5 lg:grid-cols-[var(--rail-left)_minmax(0,1fr)]">
+    <div className="mx-auto grid w-full max-w-page items-start gap-6 pb-4 pt-2 page-x md:pb-12 md:pt-5 lg:grid-cols-[var(--rail-left)_minmax(0,1fr)]">
       {sidebar && (
         <StickyAside aria-label={sidebarLabel} className={cn("hidden min-w-0 lg:block", STICKY)}>
           {sidebar}
@@ -125,9 +131,10 @@ export function SidebarLayout({ sidebar, sidebarLabel = "Filters", children }: S
 }
 
 /** Single centered column (claim flow, settings): max 640. */
-export function SingleColumnLayout({ children, footer = true }: { children: ReactNode; footer?: boolean }) {
+export function SingleColumnLayout({ children, footer = true, breadcrumb }: { children: ReactNode; footer?: boolean; breadcrumb?: ReactNode }) {
   return (
-    <div className="mx-auto w-full max-w-[640px] pb-4 pt-2 md:px-6 md:pb-12 md:pt-5 md:box-content">
+    <div className="mx-auto w-full max-w-[640px] pb-4 pt-2 page-x md:pb-12 md:pt-5 md:box-content">
+      {breadcrumb && <div className={cn(BREADCRUMB_ROW, "md:mb-3")}>{breadcrumb}</div>}
       <main id="main" tabIndex={-1} className={MAIN}>
         {children}
       </main>

@@ -6,7 +6,7 @@ import { db } from "@/db";
 import { organizations, people, tenures } from "@/db/schema";
 import { CURRENT_SEASON } from "@/lib/brand";
 import { conferenceShort, seasonSpans, type StintSpan } from "@/lib/format";
-import { getOrg, getOrgJobs } from "./orgs";
+import { conferenceKey, getOrg, getOrgJobs } from "./orgs";
 import { personSummaryCols, toSummary, type PersonSummary } from "./people";
 import { visibleJobsRaw } from "@/lib/demo-scope";
 
@@ -505,7 +505,8 @@ export const getConferencePeers = cache(async (orgId: string, conferenceAbbr: st
       and(
         eq(organizations.inRegistry, true),
         ne(organizations.id, orgId),
-        sql`regexp_replace(${organizations.conferenceAbbr}, '\\[[^]]*\\]', '', 'g') = ${abbr}`,
+        // The one cleaned conference expression (orgs.ts conferenceKey), as search and the jobs filters use.
+        sql`${conferenceKey} = ${abbr}`,
       ),
     )
     .groupBy(organizations.id)

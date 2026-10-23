@@ -147,7 +147,7 @@ export function CandidateCard({ candidate: c, onMove, onRemove, onEditNote, drag
         <button
           type="button"
           title="Edit note"
-          aria-describedby={nameId}
+          aria-label={`Edit note: ${fullName}. ${c.note}`}
           onClick={() => onEditNote(c)}
           className="flex w-full items-start gap-2 border-t border-divider bg-surface-2 px-4 py-2 text-left transition-colors hover:bg-hover focus-visible:-outline-offset-2 md:px-3"
         >
@@ -161,11 +161,12 @@ export function CandidateCard({ candidate: c, onMove, onRemove, onEditNote, drag
 
       <div className="flex items-center justify-between gap-1 border-t border-divider px-2 py-1 md:px-1">
         {next ? (
-          <Button variant="ghost" iconRight={ArrowRight} aria-describedby={nameId} className="gap-1 md:px-2" onClick={() => onMove(c, next)}>
+          // A distinct name per card (audit m6), starting with the visible words (WCAG 2.5.3 label in name).
+          <Button variant="ghost" iconRight={ArrowRight} aria-label={`Move to ${STAGE_LABEL[next]}: ${fullName}`} className="gap-1 md:px-2" onClick={() => onMove(c, next)}>
             Move to {STAGE_LABEL[next]}
           </Button>
         ) : (
-          <Button variant="ghost" icon={c.note ? Pencil : StickyNote} aria-describedby={nameId} className="gap-1 md:px-2" onClick={() => onEditNote(c)}>
+          <Button variant="ghost" icon={c.note ? Pencil : StickyNote} aria-label={`${noteLabel}: ${fullName}`} className="gap-1 md:px-2" onClick={() => onEditNote(c)}>
             {noteLabel}
           </Button>
         )}

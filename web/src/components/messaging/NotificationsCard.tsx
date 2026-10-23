@@ -11,6 +11,7 @@ import { SampleChip } from "@/components/ui/Chip";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
 import { OrgMark } from "@/components/ui/OrgMark";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { CURRENT_SEASON } from "@/lib/brand";
 import { timeAgo } from "@/lib/format";
@@ -76,6 +77,12 @@ type Described = {
    * notification's timestamp. `inferred` holds the tooltip reason when the season isn't stated (§6.2).
    */
   season?: { sourceUrl: string | null; inferred: string | null };
+  /**
+   * How the row is dated when it is not a move (§6.3, rule 6): "season" for a job ("2026 season", as job
+   * cards), "none" for an account notice with no event behind it (profile views). Relative time ("5h")
+   * only for events people create with a real timestamp (messages, mentions).
+   */
+  when?: "season" | "none";
   /** For the demo footnote: what this row is when it is sample data ("profile views"); null for a sourced move. */
   sample: string | null;
 };
@@ -108,6 +115,7 @@ function describe(n: NotificationItem, profileSlug: string | null, viewerOrg: Vi
         ) : (
           "Someone viewed your profile."
         ),
+        when: "none",
         sample: "profile views",
       };
     }
@@ -130,6 +138,7 @@ function describe(n: NotificationItem, profileSlug: string | null, viewerOrg: Vi
           "A new job matches your position group."
         ),
         chips: job?.isSample ? <SampleChip label="Sample listing" /> : undefined,
+        when: "season",
         sample: "job matches",
       };
     }
@@ -201,8 +210,12 @@ function describe(n: NotificationItem, profileSlug: string | null, viewerOrg: Vi
   }
 }
 
-/** The time line: "2026 season" (dotted when inferred) and the source for a move, else the relative time. */
+/**
+ * The time line: "2026 season" (dotted when inferred) and the source for a move; the season for a job;
+ * otherwise the relative time of a real event (messages, mentions).
+ */
 function TimeLine({ n, d, now }: { n: NotificationItem; d: Described; now: Date }) {
+  if (d.when === "season") return <span className="num">{CURRENT_SEASON} season</span>;
   if (d.season) {
     return (
       <>
@@ -277,17 +290,14 @@ export function NotificationsCard({ items, filter, role, profileSlug, viewerOrg,
   return (
     <Card>
       <div className="px-4 pt-4 md:px-6 md:pt-5">
-        <div className="mb-3 flex min-h-8 flex-wrap items-center gap-x-3 gap-y-1">
-          <h1 id="notifications-title" tabIndex={-1} className="text-title">
-            Notifications
-          </h1>
-          {unread > 0 && <span className="num text-small text-fg-3">{unread} new</span>}
-          {unread > 0 && (
-            <span className="ml-auto">
-              <MarkAllReadButton filter={filter} />
-            </span>
-          )}
-        </div>
+        <PageHeader
+          id="notifications-title"
+          title="Notifications"
+          headingProps={{ tabIndex: -1 }}
+          meta={unread > 0 ? `${unread.toLocaleString("en-US")} new` : undefined}
+          actions={unread > 0 ? <MarkAllReadButton filter={filter} /> : undefined}
+          className="mb-3"
+        />
         <SegmentedControl label="Filter notifications" value={filter} options={NOTIFICATION_FILTERS} />
       </div>
 
@@ -315,7 +325,7 @@ export function NotificationsCard({ items, filter, role, profileSlug, viewerOrg,
                   sentence={d.sentence}
                   context={d.context}
                   chips={d.chips}
-                  time={<TimeLine n={n} d={d} now={now} />}
+                  time={d.when === "none" ? null : <TimeLine n={n} d={d} now={now} />}
                 />
               ),
             }))}
@@ -325,7 +335,7 @@ export function NotificationsCard({ items, filter, role, profileSlug, viewerOrg,
 
       {(hasInferred || note) && (
         <div className="space-y-2 border-t border-divider px-4 py-3 md:px-6">
-          {hasInferred && <InferredFootnote>Dotted years are inferred from the staff bio, not stated in it.</InferredFootnote>}
+          {hasInferred && <InferredFootnote />}
           {note && (
             <p className="text-caption text-fg-3">
               <SampleChip label="Demo" className="mr-1.5" />

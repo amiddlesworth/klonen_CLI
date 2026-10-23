@@ -13,7 +13,7 @@ export default function PostJobError({ error, reset }: { error: Error & { digest
   return (
     <SingleColumnLayout>
       <Card padding="main" aria-labelledby="post-job-error-title">
-        <h1 id="post-job-error-title" className="mb-3 text-display-sm md:text-display">
+        <h1 id="post-job-error-title" className="mb-3 text-display-sm">
           Post a job
         </h1>
         <ErrorState

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, type FormEvent, type RefObject } from "react";
-import { Check, Mail } from "lucide-react";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { SampleChip } from "@/components/ui/Chip";
@@ -138,7 +138,7 @@ export function IdentityStep({ headingRef, verifiedEmail, onVerified, onContinue
             fieldClassName="max-w-[400px]"
           />
           <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
-            <Button type="submit" variant="primary" icon={Mail} className="max-md:w-full">
+            <Button type="submit" variant="primary" className="max-md:w-full">
               Send code
             </Button>
             <p className="flex items-center gap-1.5 text-caption text-fg-3">

@@ -49,10 +49,20 @@ export function Field({ id, label, help, error, required, className, children }:
   );
 }
 
+/**
+ * Focus ring for form controls (§8.0, §9): a 2px --focus ring (the 1px border plus a 1px shadow
+ * ring; 6.24:1 light, 7.10:1 dark) with the --accent-subtle halo outside it as a soft glow. It
+ * replaces the global outline, which would sit 2px off the control's edge.
+ */
+export const CONTROL_FOCUS = "focus-visible:outline-none focus:border-focus focus:shadow-[0_0_0_1px_var(--focus),0_0_0_4px_var(--accent-subtle)]";
+/** The same ring on a wrapper whose input has focus (search fields with an icon inside). */
+export const CONTROL_FOCUS_WITHIN =
+  "focus-within:border-focus focus-within:shadow-[0_0_0_1px_var(--focus),0_0_0_4px_var(--accent-subtle)] focus-within:hover:border-focus";
+
 /** Shared look for Input, Textarea and Select (§8.1). */
 export const CONTROL_CLASSES =
   "w-full min-w-0 rounded-sm border border-control bg-surface px-3 text-small text-fg-1 transition-colors placeholder:text-fg-3 " +
-  "hover:border-fg-3 focus-visible:outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--accent-subtle)] " +
-  "aria-invalid:border-danger aria-invalid:focus:shadow-[0_0_0_3px_var(--danger-subtle)] " +
+  `hover:border-fg-3 ${CONTROL_FOCUS} ` +
+  "aria-invalid:border-danger aria-invalid:focus:border-danger aria-invalid:focus:shadow-[0_0_0_1px_var(--danger),0_0_0_4px_var(--danger-subtle)] " +
   "disabled:cursor-not-allowed disabled:border-transparent disabled:bg-hover disabled:text-fg-disabled " +
   "max-md:text-base";

@@ -199,7 +199,7 @@ export function ProgramPicker({ id, programs, selected, onChange, excluded, erro
           role="listbox"
           aria-label="Matching programs"
           hidden={!expanded}
-          className="absolute inset-x-0 top-full z-40 mt-1 max-h-80 scroll-mb-4 overflow-y-auto rounded-md bg-surface p-1 shadow-pop max-md:scroll-mb-[calc(var(--tabbar-h)+env(safe-area-inset-bottom)+8px)]"
+          className="absolute inset-x-0 top-full z-40 mt-1 max-h-80 scroll-mb-4 overflow-y-auto rounded-md bg-surface p-1 shadow-pop max-md:scroll-mb-[calc(var(--tabbar-offset)+8px)]"
         >
           {results.length === 0 && !excludedMatches ? (
             <li role="presentation" className="px-2 py-2.5 text-small text-fg-2">

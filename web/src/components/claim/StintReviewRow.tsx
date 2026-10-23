@@ -77,10 +77,10 @@ function excerpt(text: string, cue: { start: number; end: number }, max = 72): s
 function yearsHint(s: ClaimStint): string | null {
   if (s.inferred) {
     const text = s.evidence ? clean(s.evidence) : "";
-    if (!text) return "Confirm these years: inferred from the bio, not stated in it.";
+    if (!text) return "Confirm these years: inferred from the staff bio, not stated in it.";
     const cue = cueIn(text);
     // Quote only a phrase that holds a year or a span; never imply a sentence states a year it doesn't.
-    return cue ? `Confirm these years: inferred from “${excerpt(text, cue)}”` : "Confirm these years: inferred from the bio; the sentence under Source gives no year.";
+    return cue ? `Confirm these years: inferred from “${excerpt(text, cue)}”` : "Confirm these years: inferred from the staff bio; the sentence under Source gives no year.";
   }
   if (s.startYear && (s.isCurrent || s.endYear)) return null;
   // The range already says what's missing ("End year not in source"); the hint says what to do.

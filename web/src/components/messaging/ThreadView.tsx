@@ -207,7 +207,7 @@ export function ThreadView({ threadId, me, other, messages, scrollPageOnPhone, i
       <form
         ref={formRef}
         onSubmit={submit}
-        className="z-10 flex flex-wrap items-end gap-x-2 border-t border-divider bg-surface px-4 py-3 max-md:sticky max-md:bottom-[calc(var(--tabbar-h)+env(safe-area-inset-bottom))] md:items-center md:gap-x-3 md:px-6"
+        className="z-10 flex flex-wrap items-end gap-x-2 border-t border-divider bg-surface px-4 py-3 max-md:sticky max-md:bottom-[var(--tabbar-offset)] md:items-center md:gap-x-3 md:px-6"
       >
         <label htmlFor={composerId} className="sr-only">
           Write a message to {other.name}

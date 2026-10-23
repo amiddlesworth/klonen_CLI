@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Briefcase } from "lucide-react";
 import { PageContainer, SingleColumnLayout } from "@/components/shell/Layouts";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PostJobForm } from "@/components/jobs/PostJobForm";
@@ -20,6 +21,9 @@ export const metadata: Metadata = {
  * Post a job (§8.13). Requires the athletic director demo session; anyone else gets an
  * explanation and a one-click switch to that account (it stays on this page).
  */
+/** Wayfinding (audit X11): Post a job sits under the hiring pipeline, where a published listing lands. */
+const crumb = <Breadcrumb items={[{ label: "Hiring pipeline", href: "/employers/pipeline" }]} current="Post a job" phone="back" />;
+
 export default async function PostJobPage() {
   const session = await getSession().catch(() => null);
   const org = session?.user.kind === "employer" && session.user.orgId ? await getEmployerOrg(session.user.orgId) : null;
@@ -29,10 +33,10 @@ export default async function PostJobPage() {
     const ad = accounts.find((a) => a.role === "employer");
     const who = session ? `You're viewing as ${session.user.name}, the coach demo account.` : "You're browsing signed out.";
     return (
-      <SingleColumnLayout>
+      <SingleColumnLayout breadcrumb={crumb}>
         <Card padding="main" aria-labelledby="post-job-gate">
           {/* The same h1 scale as the form state, so the route's title doesn't jump between states. */}
-          <h1 id="post-job-gate" className="text-display-sm md:text-display">
+          <h1 id="post-job-gate" className="text-display-sm">
             Post a job
           </h1>
           <EmptyState
@@ -53,7 +57,7 @@ export default async function PostJobPage() {
   }
 
   return (
-    <PageContainer>
+    <PageContainer breadcrumb={crumb}>
       <PostJobForm org={org} posterName={session.user.name} />
     </PageContainer>
   );

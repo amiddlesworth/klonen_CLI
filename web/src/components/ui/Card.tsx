@@ -1,5 +1,6 @@
 import type { ComponentProps, ElementType, ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import { PAGE_TITLE } from "./PageHeader";
 
 type CardPadding = "none" | "main" | "rail";
 
@@ -26,7 +27,7 @@ export function Card({ as: Tag = "section", padding = "none", className, ...rest
 
 export type CardHeaderProps = {
   title: ReactNode;
-  /** Heading element for the title (default h2). */
+  /** Heading element for the title (default h2). An h1 is a page title and takes PAGE_TITLE (20/28). */
   as?: "h1" | "h2" | "h3";
   id?: string;
   /** Right side: at most one meta ("7 people", text-small --fg-3)… */
@@ -53,7 +54,7 @@ export function CardHeader({ title, as: Tag = "h2", id, meta, action, subtitle, 
   return (
     <div className={cn(size === "main" ? "mb-3" : "mb-1", className)}>
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-        <Tag id={id} className={cn("grow", size === "main" ? "text-title" : "text-body font-semibold")}>
+        <Tag id={id} className={cn("grow", size === "rail" ? "text-body font-semibold" : Tag === "h1" ? PAGE_TITLE : "text-title")}>
           {title}
         </Tag>
         {(meta || action) && (

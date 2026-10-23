@@ -1,12 +1,22 @@
-import { InferredFootnote } from "@/components/data/InferredYear";
+import { InferredKey } from "@/components/data/InferredYear";
 import { ProgramBadges } from "@/components/data/Badges";
 import { SectionCard } from "@/components/data/SectionCard";
 import { SourceDisclosure } from "@/components/data/SourceDisclosure";
 import { OrgMark } from "@/components/ui/OrgMark";
 import type { AlmaMaterOrg } from "@/lib/queries/profile";
-import { LedgerRange } from "./LedgerRange";
+import { LedgerRange, dottedYear } from "./LedgerRange";
 import { OrgName } from "./ExperienceCard";
 import { inferredReason, playingLine, spanText, stateName, type SportRow } from "./model";
+
+/** The first year Playing career shows dotted (the Experience legend's sample when Experience has none), or null. */
+export function playingDottedYear(rows: SportRow[]): number | null {
+  for (const r of rows) {
+    const text = spanText(r);
+    const y = dottedYear(text, !r.yearsExplicit && !text.undated);
+    if (y != null) return y;
+  }
+  return null;
+}
 
 /**
  * Playing career (§8.4): stints with asPlayer only, in the group-header layout (tile, school +
@@ -41,7 +51,12 @@ export function PlayingCard({ rows, personName, explainInferred }: { rows: Sport
           );
         })}
       </ul>
-      {explainInferred && <InferredFootnote className="mt-3 border-t border-divider pt-3">Dotted years are inferred from the bio, not stated in it.</InferredFootnote>}
+      {/* Only when there is no Experience list: otherwise its legend explains these years too. */}
+      {explainInferred && playingDottedYear(rows) != null && (
+        <p className="mt-3 border-t border-divider pt-3 text-caption text-fg-3">
+          <InferredKey year={playingDottedYear(rows)} />
+        </p>
+      )}
     </SectionCard>
   );
 }

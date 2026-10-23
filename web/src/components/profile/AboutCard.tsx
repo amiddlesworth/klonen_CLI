@@ -23,7 +23,7 @@ export function AboutCard({ about, excerpt, sourceUrl, firstName, slug, owner }:
   const who = owner ? "You" : firstName;
   const action = owner ? (
     <TextLink href={`/claim/${slug}`} arrow target24 className="text-small">
-      Claim to edit
+      Claim profile
     </TextLink>
   ) : undefined;
 

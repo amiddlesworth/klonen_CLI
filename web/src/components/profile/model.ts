@@ -43,6 +43,40 @@ export function sportLabel(sport: string): string {
   return s ? s[0].toUpperCase() + s.slice(1) : s;
 }
 
+/** A sport the source names (not "unspecified"), lowercased as in a sentence; null otherwise. */
+function namedSport(sport: string | null | undefined): string | null {
+  const s = sport?.trim().toLowerCase();
+  return s && !/^(unspecified|unknown|other|n\/a)$/.test(s) ? s : null;
+}
+
+/** Words of a sport that name it in a title ("track and field" → track, field; "women's flag football" → flag, football). */
+const SPORT_STOP = new Set(["and", "men's", "women's", "mens", "womens", "boys", "girls", "the", "of"]);
+
+/** A bare coaching title with no "/" or parenthesis: "Coach", "Assistant Coach", "Varsity Head Coach". */
+const GENERIC_COACH = /^([A-Za-z.' -]*?)\s*\bcoach$/i;
+
+/**
+ * A role's title as the Experience row shows it. Football: as published. Another sport: the title names
+ * the sport, so it never reads as football: as published when it already does ("Head Baseball Coach"), a
+ * bare coaching title gains the sport ("Assistant Coach" in basketball → "Assistant basketball coach"),
+ * anything else gets it after ("Head Coach / Offensive Coordinator · Women's tackle football").
+ */
+export function roleTitle(r: Pick<SportRow, "role" | "sport">): string {
+  const title = (r.role ?? "").trim();
+  if (isFootball(r)) return title;
+  const sport = namedSport(r.sport);
+  if (!sport) return title;
+  const words = sport.split(/[^a-z']+/).filter((w) => w.length > 2 && !SPORT_STOP.has(w));
+  const lower = title.toLowerCase();
+  if (words.some((w) => lower.includes(w.replace(/s$/, "")))) return title;
+  const bare = GENERIC_COACH.exec(title);
+  if (bare) {
+    const text = `${bare[1].trim().toLowerCase()} ${sport} coach`.trim();
+    return text[0].toUpperCase() + text.slice(1);
+  }
+  return title ? `${title} · ${sportLabel(sport)}` : sportLabel(sport);
+}
+
 /**
  * A ledger range: the range line, the count line under it, and whether there is no year at all.
  * `lead` is a word before the year on a partial range ("From ", "Through "): only the year after it
@@ -64,18 +98,21 @@ export function spanText(s: Span): RangeText {
   return { range: YEARS_NOT_IN_SOURCE, count: null, undated: true };
 }
 
-/** A program's total range across its roles: seasonRangeMulti when every role is dated. */
+/**
+ * A program's total range across its roles, always through seasonRangeMulti so a gap between stints
+ * shows ("1995–1996, 2014–Present") and an old start is never stretched to Present. When some role lacks
+ * a year, the range still lists only the seasons the source pins (an undated current role reads
+ * "Present") and the count line says years are missing instead of counting.
+ */
 export function groupText(spans: Span[]): RangeText {
   if (spans.length === 1) return spanText(spans[0]);
   if (spans.every(fullyDated)) return { ...seasonRangeMulti(spans), undated: false };
-  const starts = spans.map((s) => s.startYear).filter((y): y is number => !!y);
   const isCurrent = spans.some((s) => s.isCurrent);
-  const ends = spans.map((s) => s.endYear ?? s.startYear).filter((y): y is number => !!y);
-  if (!starts.length) return spanText({ startYear: null, endYear: ends.length ? Math.max(...ends) : null, isCurrent });
-  const start = Math.min(...starts);
-  const end = isCurrent ? null : Math.max(start, ...ends);
-  const base = spanText({ startYear: start, endYear: end, isCurrent });
-  return { ...base, count: "Some years not in source" };
+  if (!spans.some((s) => s.startYear)) {
+    const ends = spans.map((s) => s.endYear).filter((y): y is number => !!y);
+    return spanText({ startYear: null, endYear: ends.length ? Math.max(...ends) : null, isCurrent });
+  }
+  return { ...seasonRangeMulti(spans), count: "Some years not in source", undated: false };
 }
 
 /** "Ian Falconer's", "Jesse Browning's", "Chris Jones'". */
@@ -131,13 +168,16 @@ export function staffOnlyRoleCount(rows: SportRow[]): number {
   return rows.filter(isFootballStaffOnly).length;
 }
 
-/** The season strip's input: football coaching stints only, so the figure counts what the header counts. */
-export function stripStints(rows: SportRow[]): StripStint[] {
+/**
+ * The season strip's input: football coaching stints only, so the figure counts what the header counts.
+ * `titleOf` gives each role's shown title (the ledger's), so a cell's tooltip matches its row.
+ */
+export function stripStints(rows: SportRow[], titleOf: (r: SportRow) => string = (r) => r.role): StripStint[] {
   return rows.filter(isFootballCoaching).map((r) => ({
     orgId: r.org.id,
     shortName: r.org.shortName,
     name: r.org.name,
-    role: r.role,
+    role: titleOf(r),
     roleGroup: r.roleGroup,
     startYear: r.startYear,
     endYear: r.endYear,
@@ -156,14 +196,15 @@ function otherSportLevel(role: string): string | null {
 }
 
 /**
- * The level line under a role title: "Coordinator · Special teams". A role in another sport names the
- * sport first ("Women's basketball · Head coach"), so it never reads as football; a football role the
- * source doesn't classify says so instead of a bare "Other".
+ * The level line under a role title: "Coordinator · Special teams". A role in another sport (whose title
+ * names the sport, roleTitle) says it isn't counted ("Head coach · Not counted in football seasons"); a
+ * football role the source doesn't classify says so instead of a bare "Other".
  */
 export function levelLine(r: Pick<SportRow, "roleGroup" | "unit" | "role" | "sport">): string {
   if (!isFootball(r)) {
+    // The title already names the sport (roleTitle); this line says why the role isn't counted.
     const level = otherSportLevel(r.role ?? "");
-    return [sportLabel(r.sport!), level].filter(Boolean).join(" · ");
+    return [level, namedSport(r.sport) ? "Not counted in football seasons" : "Sport not in source · not counted"].filter(Boolean).join(" · ");
   }
   if (r.roleGroup === "other") return COACHING_TITLE.test(r.role ?? "") ? "Level not in source" : "Football staff, not a coaching role";
   const level = ROLE_GROUP_LABEL[r.roleGroup as RoleGroup] ?? "Coach";
@@ -177,7 +218,18 @@ export function playingLine(r: Pick<SportRow, "role" | "sport">): string {
 }
 
 export type LedgerItem =
-  | { kind: "role"; role: SportRow; range: RangeText; inferred: boolean; reason: string; awayAfter: boolean }
+  | {
+      kind: "role";
+      role: SportRow;
+      /** The title the row shows (roleTitle; the staff directory's title on the current role, as in the header). */
+      title: string;
+      /** The bio's own wording when the row shows a different title: it lives in the Source disclosure only. */
+      bioTitle: string | null;
+      range: RangeText;
+      inferred: boolean;
+      reason: string;
+      awayAfter: boolean;
+    }
   | { kind: "away"; text: string };
 
 export type LedgerGroup = {
@@ -201,8 +253,12 @@ const endOf = (r: SportRow) => (r.isCurrent ? CURRENT_SEASON : (r.endYear ?? r.s
  * Oberlin College" on a dashed rail). Programs with no year at all come last (`dated: false`): the source
  * gives them no place in the order, so the card lists them under their own label.
  */
-export function buildLedger(rows: SportRow[]): LedgerGroup[] {
+export function buildLedger(rows: SportRow[], current?: { orgId: string | null; directoryTitle: string | null }): LedgerGroup[] {
   const coaching = rows.filter((r) => !r.asPlayer && r.roleGroup !== "player");
+  // One current title per page (audit X19): the current role shows the header's title (the staff directory's).
+  const titled = current ? currentStint(rows, current.orgId) : null;
+  const directory = current?.directoryTitle?.trim() || null;
+  const titleOf = (r: SportRow) => (r === titled && directory ? directory : roleTitle(r));
   const order: string[] = [];
   const byOrg = new Map<string, SportRow[]>();
   for (const r of coaching) {
@@ -216,9 +272,12 @@ export function buildLedger(rows: SportRow[]): LedgerGroup[] {
     const roles = byOrg.get(orgId)!;
     const items: LedgerItem[] = [];
     roles.forEach((role, i) => {
+      const title = titleOf(role);
       const item: LedgerItem = {
         kind: "role",
         role,
+        title,
+        bioTitle: role === titled && directory && directory.toLowerCase() !== role.role.trim().toLowerCase() ? role.role.trim() : null,
         range: spanText(role),
         inferred: !role.yearsExplicit && (!!role.startYear || !!role.endYear),
         reason: inferredReason(role.evidence),
@@ -261,14 +320,17 @@ export function buildLedger(rows: SportRow[]): LedgerGroup[] {
 /**
  * The header's current role: the person's current title (the staff directory's words, which the Me menu,
  * the feed and other people's tree rows also use, so a coach reads the same everywhere), else the role of
- * the current coaching stint at the current program. The Experience row keeps the bio's own wording, and
- * its Source shows where that wording comes from.
+ * the current coaching stint at the current program. The Experience row of that stint shows the same
+ * title (buildLedger); the bio's own wording stays in its Source disclosure.
  */
 export function currentHeadline(rows: SportRow[], currentOrgId: string | null, directoryTitle: string | null): string | null {
   if (directoryTitle?.trim()) return directoryTitle.trim();
-  const current = rows.filter((r) => r.isCurrent && isFootballCoaching(r));
-  const here = current.find((r) => !currentOrgId || r.org.id === currentOrgId);
-  return here?.role || null;
+  return currentStint(rows, currentOrgId)?.role || null;
+}
+
+/** The current football coaching stint at the current program: the role the header's title describes. */
+export function currentStint(rows: SportRow[], currentOrgId: string | null): SportRow | null {
+  return rows.find((r) => r.isCurrent && isFootballCoaching(r) && (!currentOrgId || r.org.id === currentOrgId)) ?? null;
 }
 
 /** Football coaching roles whose seasons aren't counted because the source gives no start year. */
@@ -368,10 +430,25 @@ export type TreeContext =
   | { kind: "joined"; text: string; year: { value: number; inferred: boolean; reason: string | null } }
   | { kind: "at"; text: string };
 
-/** A tree link as getProfileTree returns it: its years and any player relationship, checked against the stints. */
-type AnnotatedLink = TreeLink & { years?: LinkYears; player?: { kind: "played_for" | "coached"; years: LinkYears } | null };
+/**
+ * A tree link as getProfileTree returns it: its years (the most recent period), every period's years
+ * (`runs`, oldest first) and any player relationship, checked against the stints.
+ */
+type AnnotatedLink = TreeLink & { years?: LinkYears; runs?: LinkYears[]; player?: { kind: "played_for" | "coached"; years: LinkYears } | null };
 
-export type TreeRowModel = TreeLink & { range: TreeYearsView; context: TreeContext | null };
+/**
+ * A tree row: `range` is the most recent period; `runs` is every period the row shows, oldest first
+ * ("2010–12, 2020–"), with "Current" last for a period on a staff now whose start the source doesn't
+ * give. Empty when the source pins no years.
+ */
+export type TreeRowModel = TreeLink & { range: TreeYearsView; runs: TreeYearsView[]; context: TreeContext | null };
+
+/** Every period's view, oldest first: the dated runs, then "Current" once (never a filled-in season). */
+export function treeRunsView(runs: LinkYears[], nameOf: (personId: string) => string | undefined): TreeYearsView[] {
+  const views = runs.map((y) => treeYearsView(y, nameOf));
+  const dated = views.filter((v) => v.kind === "range");
+  return views.some((v) => v.kind === "current") ? [...dated, { kind: "current" }] : dated;
+}
 
 export type TreeModel = {
   groups: { key: TreeGroupKey; label: string; rows: TreeRowModel[] }[];
@@ -424,7 +501,11 @@ export function buildTree(tree: Tree | { mentors: AnnotatedLink[]; peers: Annota
     }
     return currentOrgSlug && l.org.slug === currentOrgSlug ? null : { kind: "at", text: `At ${l.org.shortName}` };
   };
-  const row = (l: AnnotatedLink, bucket: TreeGroupKey): TreeRowModel => ({ ...l, range: treeYearsView(l.years, nameFor(l)), context: context(l, bucket) });
+  const row = (l: AnnotatedLink, bucket: TreeGroupKey): TreeRowModel => {
+    const range = treeYearsView(l.years, nameFor(l));
+    const runs = l.runs?.length ? treeRunsView(l.runs, nameFor(l)) : range.kind === "none" ? [] : [range];
+    return { ...l, range, runs, context: context(l, bucket) };
+  };
 
   const groups: TreeModel["groups"] = [
     { key: "mentors" as const, label: "Worked under", rows: (tree.mentors as AnnotatedLink[]).map((l) => row(l, "mentors")) },
@@ -435,7 +516,7 @@ export function buildTree(tree: Tree | { mentors: AnnotatedLink[]; peers: Annota
   const inferred = groups.some((g) =>
     g.rows.some(
       (r) =>
-        (r.range.kind === "range" && r.range.inferred) ||
+        r.runs.some((v) => v.kind === "range" && v.inferred) ||
         (r.context?.kind === "joined" && r.context.year.inferred) ||
         (r.context?.kind === "player" && r.context.years.kind === "range" && r.context.years.inferred),
     ),

@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
-import { Button } from "@/components/ui/Button";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { FilterChip } from "@/components/ui/FilterChip";
-import { SearchField } from "@/components/ui/SearchField";
+import { PageSearchField } from "@/components/ui/PageSearchField";
 import type { FacetCount, SearchTotals } from "@/lib/queries/searchx";
 import { parseSearchParams, plural, searchHref } from "./params";
 import type { PopularSearch } from "./popular";
@@ -33,7 +32,7 @@ export function NoQuery({
   return (
     <>
       <Card padding="main">
-        <h1 className="text-title">Search coaches and programs</h1>
+        <h1 className="text-display-sm">Search coaches and programs</h1>
         {/* Demo profiles are counted apart, so the sum matches the unfiltered "2,185 coaches". */}
         <p className="mt-0.5 text-small text-fg-2">
           <span className="num">{fmt(totals.sourced)}</span> coaches from the public staff pages of <span className="num">{fmt(totals.programsRead)}</span> of the{" "}
@@ -45,11 +44,8 @@ export function NoQuery({
           )}
           .
         </p>
-        <form method="get" action="/search" role="search" aria-label="Search coaches and programs" className="mt-4 flex gap-2">
-          <SearchField variant="block" name="q" placeholder="Name, program or conference" aria-label="Search coaches and programs" wrapperClassName="min-w-0 flex-1" enterKeyHint="search" />
-          <Button type="submit" variant="primary" phone="large">
-            Search
-          </Button>
+        <form method="get" action="/search" role="search" aria-label="Search coaches and programs" className="mt-4">
+          <PageSearchField name="q" placeholder="Name, program or conference" aria-label="Search coaches and programs" />
         </form>
         {filters && <div className="mt-3 lg:hidden">{filters}</div>}
       </Card>

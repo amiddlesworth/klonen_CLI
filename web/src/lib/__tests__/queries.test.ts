@@ -211,7 +211,10 @@ describe("getAlumni", () => {
 describe("demo candidates", () => {
   it("fill the seeded pipeline, and no real coach is in it", async (ctx) => {
     if (!dbUp) ctx.skip();
-    const { rows } = await pool.query<{ is_demo: boolean }>("select p.is_demo from shortlist_entries e join people p on p.id = e.person_id");
+    // Seeded searches only: a browser's own copy (demo_scope set) may hold the coaches it added itself.
+    const { rows } = await pool.query<{ is_demo: boolean }>(
+      "select p.is_demo from shortlist_entries e join shortlists s on s.id = e.shortlist_id join people p on p.id = e.person_id where s.demo_scope is null",
+    );
     expect(rows.length).toBeGreaterThan(0);
     expect(rows.every((r) => r.is_demo)).toBe(true);
   });

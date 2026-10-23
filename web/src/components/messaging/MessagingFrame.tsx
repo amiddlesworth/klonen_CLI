@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Card } from "@/components/ui/Card";
+import { PAGE_TITLE } from "@/components/ui/PageHeader";
 import { cn } from "@/lib/cn";
 import { PANE_HEADER_CLASS } from "./classes";
 import { InboxSelectionProvider } from "./InboxSelection";
@@ -50,10 +51,10 @@ export function InboxPane({ hiddenOnPhone, unread, children }: { hiddenOnPhone: 
       className={cn("flex min-h-0 min-w-0 flex-col md:border-r md:border-divider", hiddenOnPhone ? "max-md:hidden" : "max-md:group-data-pending/msg:hidden")}
     >
       <div className={cn(PANE_HEADER_CLASS, "justify-between gap-3 px-4")}>
-        <h1 id="messaging-title" className="text-title">
+        <h1 id="messaging-title" className={PAGE_TITLE}>
           Messaging
         </h1>
-        {unread ? <span className="num text-small text-fg-3">{unread} unread</span> : null}
+        {unread ? <span className="num text-small text-fg-3">{unread.toLocaleString("en-US")} unread</span> : null}
       </div>
       <div className="min-h-0 flex-1 md:overflow-y-auto">{children}</div>
     </section>

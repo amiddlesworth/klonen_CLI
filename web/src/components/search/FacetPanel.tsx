@@ -25,7 +25,7 @@ export type FacetPanelProps = {
   variant: "rail" | "sheet";
   /** id of the <form>, so the sheet's "Show results" button can submit it. */
   formId: string;
-  /** Show the Keywords field (off on the start page, which has its own search box). */
+  /** Show the Keywords field. Off on the start page and the results page, which have the page search field in their header; the query then rides along as a hidden input. */
   keywords?: boolean;
 };
 
@@ -54,7 +54,7 @@ export function FacetPanel({ state, counts, total, allValues, conferenceNames, w
       )}
       {!people && <input type="hidden" name="type" value="programs" />}
 
-      {keywords && (
+      {keywords ? (
         <div className="min-w-0">
           <label htmlFor={`${idPrefix}-q`} className="mb-1 block text-small font-semibold text-fg-1">
             Keywords
@@ -75,6 +75,9 @@ export function FacetPanel({ state, counts, total, allValues, conferenceNames, w
             />
           </div>
         </div>
+      ) : (
+        // The query is edited in the results header's search field (audit X20); facets keep it.
+        state.q && <input type="hidden" name="q" value={state.q} />
       )}
 
       {people && (

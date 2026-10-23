@@ -221,14 +221,15 @@ const TYPEAHEAD: TypeaheadResponse = {
   programs: [{ slug: "fitchburg-state", name: "Fitchburg State University", shortName: "Fitchburg State", meta: "D-III · MASCAC" }],
 };
 
-/** Used only when the demo coach can't be loaded; the gallery normally shows the real demo viewer. */
+/** The fictional viewer of the shell previews (the gallery never loads a live demo session). */
 const FALLBACK_VIEWER: Viewer = {
   role: "coach",
   name: "Avery Falk",
   tintKey: "sample-avery-falk",
   profileSlug: null,
-  title: "Head Football Coach",
-  orgShortName: "Pacific (OR)",
+  // A fictional program too, so the preview never names someone as a real program's coach.
+  title: "Defensive Backs Coach",
+  orgShortName: "Sample College",
   orgSlug: null,
   availability: { open: false, audience: "all_except_current" },
 };
@@ -255,7 +256,7 @@ const STATES = [
 
 export function Specimens({ prefix, accounts, viewer: demoViewer }: { prefix: string; accounts: DemoAccountOption[]; viewer: Viewer | null }) {
   const id = (s: string) => `${prefix}-${s}`;
-  // The real coach demo account, so the gallery shows the same person, tint and program as the live nav.
+  // A fictional sample viewer: never a live demo session, whose private settings the Me menu would show.
   const viewer = demoViewer ?? FALLBACK_VIEWER;
   const keys = tintKeys();
   const options = typeaheadOptions(TYPEAHEAD, "fal");
@@ -693,7 +694,7 @@ export function Specimens({ prefix, accounts, viewer: demoViewer }: { prefix: st
               <MenuItem destructive>Remove from pipeline</MenuItem>
             </MenuSurface>
           </Spec>
-          <Spec label="Me menu (the real items, for the coach demo account)">
+          <Spec label="Me menu (the real items, for a sample coach viewer)">
             <MeMenuPreview viewer={viewer} accounts={accounts} />
           </Spec>
           <div className="flex flex-col gap-6">

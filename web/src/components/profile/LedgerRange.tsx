@@ -30,6 +30,17 @@ function markPiece(piece: string, reason: string | null | undefined): ReactNode 
 }
 
 /**
+ * The first year LedgerRange shows dotted for this range, or null when it dots none: the same rule as
+ * markPiece (the start year of a current range, else the first year of the first piece). The inferred
+ * key quotes it as its sample, so the key never shows a year the card doesn't (audit C03).
+ */
+export function dottedYear(text: RangeText, inferred: boolean): number | null {
+  if (!inferred || text.undated || text.noYear) return null;
+  const year = text.range.split(", ")[0].match(/\d{4}/);
+  return year ? Number(year[0]) : null;
+}
+
+/**
  * Ledger range (§8.3 SeasonRange): two lines right-aligned in a 128px column on md and up (range
  * 13/500 tabular over a 12px --fg-3 count); on phone one line under the title (range 600 · count).
  * The text comes from seasonRange()/seasonRangeMulti() through model.ts, which also words the partial

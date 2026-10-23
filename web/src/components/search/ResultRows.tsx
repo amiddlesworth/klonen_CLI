@@ -1,19 +1,22 @@
 import Link from "next/link";
 import { ProgramBadges, DemoLabel } from "@/components/data/Badges";
 import { PersonRow } from "@/components/data/PersonRow";
-import { UnclaimedChip } from "@/components/ui/Chip";
+import { PersonRowAction } from "@/components/data/PersonRowAction";
+import { keepParen } from "@/components/data/TitleOrg";
+import { AddToPipelineButton } from "@/components/employer/AddToPipelineButton";
 import { OrgMark } from "@/components/ui/OrgMark";
 import type { PersonResult, ProgramResult, TreeContext } from "@/lib/queries/searchx";
-import { ConnectButton } from "./ConnectButton";
 import { FollowButton } from "./FollowButton";
 import { plural, stateName } from "./params";
 import { TreeContextLine } from "./TreeContextLine";
 
 /**
- * Person result (§8.7): avatar 48, name 15/600 + Unclaimed chip, "{Title} at {Program}" 13 --fg-2,
- * division and conference chips, one ContextLine of tree context, Connect icon button. The title is
- * printed as published at every width (§6.3, rule 11) and wraps; the program never breaks. Fictional
- * demo profiles show Demo, never Unclaimed: there is no real person behind them to claim it.
+ * Person result (§8.7): avatar 48, name 15/600, "{Title} at {Program}" 13 --fg-2, division and
+ * conference chips, one ContextLine of tree context, Connect icon button, and "Add to pipeline" under
+ * the text for the athletic director (AddToPipelineButton renders nothing for anyone else). The title
+ * is printed as published at every width (§6.3, rule 11) and wraps; the program never breaks.
+ * Chips (audit X17): the Unclaimed chip lives in the profile header only, not on every row (every
+ * seeded profile is unclaimed, so it said nothing here); a Demo chip sits inline after the name.
  */
 export function PersonResultRow({
   person: p,
@@ -36,10 +39,10 @@ export function PersonResultRow({
     p.org.inRegistry ? (
       // 24px target outside a sentence (§8.1 Link, rule 7): padding-block 4px over the 16px line box.
       <Link href={`/programs/${p.org.slug}`} className="-my-1 whitespace-nowrap py-1 font-medium text-fg-1 underline-offset-2 hover:underline">
-        {p.org.shortName}
+        {keepParen(p.org.shortName)}
       </Link>
     ) : (
-      <span className="whitespace-nowrap font-medium text-fg-1">{p.org.shortName}</span>
+      <span className="whitespace-nowrap font-medium text-fg-1">{keepParen(p.org.shortName)}</span>
     )
   ) : null;
   const title =
@@ -61,7 +64,6 @@ export function PersonResultRow({
         truncate={false}
         chips={
           <>
-            {!p.claimed && !p.isDemo && <UnclaimedChip />}
             {p.isDemo && <DemoLabel />}
             {isViewer && <span className="text-caption text-fg-3">You</span>}
           </>
@@ -74,7 +76,8 @@ export function PersonResultRow({
             <TreeContextLine ctx={context} firstName={p.firstName} mentorNamed={mentorNamed} orgNamed={orgNamed} />
           </>
         }
-        action={isViewer ? undefined : <ConnectButton personId={p.id} slug={p.slug} name={p.fullName} firstName={p.firstName} claimed={p.claimed} isDemo={p.isDemo} />}
+        action={isViewer ? undefined : <PersonRowAction person={p} size="md" />}
+        footer={isViewer ? undefined : <AddToPipelineButton personId={p.id} name={p.fullName} size="sm" phone="large" />}
       />
     </li>
   );

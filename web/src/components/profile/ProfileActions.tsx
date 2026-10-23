@@ -1,10 +1,9 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { Ellipsis, Flag, Forward, LayoutGrid, Lock, Mail, Send, ShieldCheck, UserPlus } from "lucide-react";
 import type { DemoAccountOption } from "@/components/shell/types";
 import { Button, ButtonLink, buttonClasses } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
-import { IconButton } from "@/components/ui/IconButton";
 import { Menu } from "@/components/ui/Menu";
 import { MenuDivider, MenuItem, MenuLink } from "@/components/ui/MenuItems";
 import { useToast } from "@/components/ui/Toast";
@@ -23,6 +22,11 @@ type ProfileActionsProps = {
   connection: "none" | "pending" | "accepted";
   /** A fictional demo candidate: nobody to connect with, message or invite to claim. */
   demo?: boolean;
+  /**
+   * The employer session's "Add to pipeline" control (AddToPipelineButton, rendered on the server). For the
+   * athletic director it takes Connect's place: hiring, not networking, is what that viewer does here.
+   */
+  pipeline?: ReactNode;
   className?: string;
 };
 
@@ -57,7 +61,7 @@ const FLEX = "max-md:flex-1";
  * session, Message goes to /messaging. Visitors get the demo sign-in prompt. The owner view (the
  * coach demo on their own profile) swaps in claim and share affordances.
  */
-export function ProfileActions({ person, viewer, accounts, connection: initialConnection, demo, className }: ProfileActionsProps) {
+export function ProfileActions({ person, viewer, accounts, connection: initialConnection, demo, pipeline, className }: ProfileActionsProps) {
   const toast = useToast();
   const share = useShareProfile(person.fullName);
   const [invite, setInvite] = useState<InviteReason | null>(null);
@@ -128,17 +132,34 @@ export function ProfileActions({ person, viewer, accounts, connection: initialCo
       </Button>
     );
   } else if (demo) {
-    // The athletic director demo arrives here from the hiring pipeline; give them the way back.
-    buttons = (
+    // The athletic director demo arrives here from the hiring pipeline: "In pipeline · {stage}" (or "Add
+    // to pipeline") leads back to the board; without it, a plain way back.
+    buttons = pipeline ?? (
       <ButtonLink href="/employers/pipeline" icon={LayoutGrid} phone="large" className={FLEX}>
         Hiring pipeline
       </ButtonLink>
+    );
+  } else if (viewer === "employer" && pipeline) {
+    // Athletic director: Add to pipeline, then Message (the invite sheet while the profile is unclaimed).
+    buttons = (
+      <>
+        {pipeline}
+        {person.claimed ? (
+          <ButtonLink href="/messaging" icon={Mail} phone="large" className={FLEX}>
+            Message
+          </ButtonLink>
+        ) : (
+          <Button icon={Mail} phone="large" className={FLEX} onClick={gate("message", `Sign in to message ${first}`)}>
+            Message
+          </Button>
+        )}
+      </>
     );
   } else if (viewer === "owner") {
     buttons = (
       <>
         <ButtonLink href={`/claim/${person.slug}`} variant="primary" icon={ShieldCheck} phone="large" className={FLEX}>
-          Claim and edit
+          Claim profile
         </ButtonLink>
         <Button icon={Forward} phone="large" className={FLEX} onClick={share}>
           Share profile
@@ -193,44 +214,5 @@ export function ProfileActions({ person, viewer, accounts, connection: initialCo
       {viewer === "visitor" && <SignInSheet accounts={accounts} title={signIn ?? "Sign in"} open={signIn !== null} onOpenChange={(v) => !v && setSignIn(null)} />}
       {!demo && <ReportSheet person={person} open={report} onOpenChange={setReport} />}
     </div>
-  );
-}
-
-/**
- * Connect icon button for a person row in the rail (§8.4 Same tree). Unclaimed people get the invite
- * sheet, visitors the sign-in prompt. `sm` secondary, 44px hit area on touch.
- */
-export function RowConnectButton({ person, signedIn, accounts }: { person: ProfilePerson; signedIn: boolean; accounts: DemoAccountOption[] }) {
-  const toast = useToast();
-  const [open, setOpen] = useState(false);
-  const [sent, setSent] = useState(false);
-  const [pending, start] = useTransition();
-  const onClick = () => {
-    if (signedIn && person.claimed) {
-      if (sent) return;
-      start(async () => {
-        const res = await requestConnection(person.id);
-        if (res.ok) setSent(true);
-        toast.show(res.ok ? `Connection request sent to ${person.firstName}` : res.error);
-      });
-    } else setOpen(true);
-  };
-  return (
-    <>
-      <IconButton
-        icon={UserPlus}
-        label={`Connect with ${person.fullName}`}
-        variant="secondary"
-        size="sm"
-        loading={pending}
-        pressed={sent ? true : undefined}
-        onClick={onClick}
-      />
-      {person.claimed && signedIn ? null : signedIn ? (
-        <InviteSheet person={person} reason="connect" open={open} onOpenChange={setOpen} />
-      ) : (
-        <SignInSheet accounts={accounts} title={`Sign in to connect with ${person.firstName}`} open={open} onOpenChange={setOpen} />
-      )}
-    </>
   );
 }

@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import { Card } from "@/components/ui/Card";
+import { PAGE_TITLE } from "@/components/ui/PageHeader";
 
-/** The page title, in the same type and place in every state of /employers/pipeline. */
-export const PIPELINE_H1 = "text-display-sm md:text-display";
+/** The page title (PAGE_TITLE, as every non-entity page), in the same place in every state of /employers/pipeline. */
+export const PIPELINE_H1 = PAGE_TITLE;
 
 /**
  * Phone stage tabs at the bottom of the header card (Tabs className; the skeleton draws the same

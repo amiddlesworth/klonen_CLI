@@ -33,12 +33,12 @@ export function useToast(): ToastApi {
 }
 
 /**
- * Toast (§8.1): level 2, radius 8, 13px, max width 400; bottom-left 24px on desktop; on phone 16px
- * above the bottom edge, or above the tab bar when there is one (`aboveTabBar`, set by AppShell when
- * signed in). One line plus an optional "Undo" link. Auto-dismisses after 5s (paused on hover or
- * focus); role="status".
+ * Toast (§8.1): level 2, radius 8, 13px, max width 400; bottom-left 24px on desktop; on phone 12px
+ * above whatever is at the bottom of the screen: the tab bar when the page has one, else the safe
+ * area (`--tabbar-offset`, globals.css §6). One line plus an optional "Undo" link. Auto-dismisses
+ * after 5s (paused on hover or focus); role="status".
  */
-export function ToastProvider({ children, aboveTabBar = false }: { children: ReactNode; aboveTabBar?: boolean }) {
+export function ToastProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState<ToastState | null>(null);
   const [paused, setPaused] = useState(false);
   const seq = useRef(0);
@@ -61,10 +61,7 @@ export function ToastProvider({ children, aboveTabBar = false }: { children: Rea
       <div
         role="status"
         aria-live="polite"
-        className={cn(
-          "pointer-events-none fixed inset-x-4 z-[60] flex md:inset-x-auto md:bottom-6 md:left-6",
-          aboveTabBar ? "bottom-[calc(var(--tabbar-h)+env(safe-area-inset-bottom)+8px)]" : "bottom-[calc(16px+env(safe-area-inset-bottom))]",
-        )}
+        className="pointer-events-none fixed inset-x-4 bottom-[calc(var(--tabbar-offset)+12px)] z-[60] flex md:inset-x-auto md:bottom-6 md:left-6"
       >
         {toast && (
           <ToastCard

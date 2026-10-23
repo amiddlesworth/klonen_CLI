@@ -1,5 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { and, desc, eq, gt, inArray, isNull, like, lt, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
@@ -7,7 +8,8 @@ import { messages, notifications, users } from "@/db/schema";
 import { MAX_MESSAGE_LENGTH } from "@/components/messaging/limits";
 import { ensureDemoScope, readDemoScope, scopedThreadId, SCOPE_SEP } from "@/lib/demo-scope";
 import { notificationKinds, otherUserIn, type NotificationFilter } from "@/lib/queries/messaging";
-import { getSession } from "@/lib/session";
+import { NOTIFICATIONS_SEEN_COOKIE, NOTIFICATIONS_SEEN_MAX_AGE } from "@/lib/notifications-seen";
+import { cookieOptions, getSession } from "@/lib/session";
 
 const SIGNED_OUT = "Pick a demo account in the Me menu to use messaging.";
 
@@ -195,5 +197,17 @@ export async function markAllNotificationsRead(filter: NotificationFilter = "all
     return { ok: false, error: "We couldn't mark your notifications as read. Try again." };
   }
   revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+/**
+ * The viewer opened /notifications: remember it for this browser (lib/notifications-seen.ts), which
+ * clears the Notifications badge. Setting the cookie re-renders the current page and its layouts, so
+ * the nav badge updates at once. The rows' read state is untouched.
+ */
+export async function markNotificationsSeen(): Promise<{ ok: boolean }> {
+  const session = await getSession();
+  if (!session) return { ok: false };
+  (await cookies()).set(NOTIFICATIONS_SEEN_COOKIE, new Date().toISOString(), cookieOptions(NOTIFICATIONS_SEEN_MAX_AGE));
   return { ok: true };
 }

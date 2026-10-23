@@ -19,11 +19,14 @@ function NodeSkeleton({ size = 40 }: { size?: number }) {
  */
 export default function TreeLoading() {
   return (
-    <PageContainer>
-      <SkeletonRegion label="Loading coaching tree" className="flex flex-col gap-2 md:gap-3">
-        <div className="max-md:hidden md:-mt-1">
+    <PageContainer
+      breadcrumb={
+        <div className="max-md:hidden">
           <SkeletonLine width={260} lineHeight={20} />
         </div>
+      }
+    >
+      <SkeletonRegion label="Loading coaching tree" className="flex flex-col gap-2 md:gap-3">
         <Card className="px-4 pt-4 md:px-6 md:pt-5">
           <div className="flex items-start gap-3 md:gap-4">
             <SkeletonAvatar size={56} className="max-md:size-12!" />

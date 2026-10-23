@@ -2,7 +2,7 @@ import "server-only";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { availability, organizations } from "@/db/schema";
-import { buildLedger, buildTree, coachingSeasons, currentHeadline, firstSeason, inferredReason, spanText, undatedRoleCount, type RangeText } from "@/components/profile/model";
+import { buildTree, coachingSeasons, coachingStops, currentHeadline, firstSeason, inferredReason, spanText, undatedRoleCount, type RangeText } from "@/components/profile/model";
 import type { AvailabilityAudience, RoleGroup } from "@/lib/format";
 import type { OrgSummary } from "./people";
 import { getProfileCached, getTreeCached } from "./profile";
@@ -125,7 +125,8 @@ export async function getClaimSubject(slug: string): Promise<ClaimSubject | null
     stats: {
       seasonsCoached: coachingSeasons(rows).length || null,
       seasonsPlus: undatedRoleCount(rows) > 0,
-      stops: buildLedger(rows).length,
+      // The profile header's own count (football coaching programs only), so the preview matches it.
+      stops: coachingStops(rows),
       treeSize: buildTree(tree, firstName, currentOrg?.slug ?? null).unique,
       firstSeason: firstSeason(rows),
     },

@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, gt, isNull, sql } from "drizzle-orm";
 import type { AvailabilityAudience } from "@/lib/format";
 import { db } from "@/db";
 import { availability, messages, notifications, organizations, people, users } from "@/db/schema";
@@ -9,8 +9,10 @@ import { DEMO_USER_ID, type DemoRole } from "@/lib/session";
 /**
  * Unread counts for the nav badges. Messages count only when this browser may see them (seeded, or
  * written in this browser's demo scope), so another visitor's private demo messages never move it.
+ * Notifications count when unread and newer than this browser's last visit to /notifications
+ * (`notificationsSeenAt`, lib/notifications-seen.ts): visiting the page clears the badge.
  */
-export async function getShellCounts(userId: string): Promise<{ unreadMessages: number; newNotifications: number }> {
+export async function getShellCounts(userId: string, notificationsSeenAt: Date | null = null): Promise<{ unreadMessages: number; newNotifications: number }> {
   const scope = await currentDemoScope();
   const [[m], [n]] = await Promise.all([
     db
@@ -20,7 +22,7 @@ export async function getShellCounts(userId: string): Promise<{ unreadMessages: 
     db
       .select({ n: sql<number>`count(*)::int` })
       .from(notifications)
-      .where(and(eq(notifications.userId, userId), isNull(notifications.readAt))),
+      .where(and(eq(notifications.userId, userId), isNull(notifications.readAt), notificationsSeenAt ? gt(notifications.createdAt, notificationsSeenAt) : undefined)),
   ]);
   return { unreadMessages: m?.n ?? 0, newNotifications: n?.n ?? 0 };
 }

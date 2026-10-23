@@ -3,6 +3,8 @@ import { Info, MapPin, ShieldCheck } from "lucide-react";
 import { LevelBadge, ConferenceBadge, DemoLabel } from "@/components/data/Badges";
 import { InferredYear } from "@/components/data/InferredYear";
 import { SourceLink } from "@/components/data/SourceLink";
+import { keepParen } from "@/components/data/TitleOrg";
+import { AddToPipelineButton } from "@/components/employer/AddToPipelineButton";
 import { StatGroup, type Stat } from "@/components/data/StatGroup";
 import type { DemoAccountOption } from "@/components/shell/types";
 import { Avatar } from "@/components/ui/Avatar";
@@ -61,7 +63,7 @@ export function ProfileHeader({ person, currentOrg, viewer, accounts, connection
   const headline = person.headline?.replace(/ \/ /g, "\u00a0/ ") ?? null;
   const statList: Stat[] = [
     {
-      label: "Seasons coached",
+      label: stats.seasons === 1 && !stats.seasonsPlus ? "Season coached" : "Seasons coached",
       value: stats.seasons ? (
         stats.seasonsPlus ? (
           <>
@@ -76,7 +78,7 @@ export function ProfileHeader({ person, currentOrg, viewer, accounts, connection
         <Missing />
       ),
     },
-    { label: "Coaching stops", value: stats.stops },
+    { label: stats.stops === 1 ? "Coaching stop" : "Coaching stops", value: stats.stops },
     { label: "In coaching tree", value: stats.treeSize, href: stats.treeSize > 0 ? `/in/${person.slug}/tree` : undefined },
     {
       label: "First season",
@@ -117,10 +119,10 @@ export function ProfileHeader({ person, currentOrg, viewer, accounts, connection
               {currentOrg &&
                 (programHref ? (
                   <Link href={programHref} className="target-24 font-medium underline-offset-2 hover:underline">
-                    {currentOrg.name}
+                    {keepParen(currentOrg.name)}
                   </Link>
                 ) : (
-                  <span className="font-medium">{currentOrg.name}</span>
+                  <span className="font-medium">{keepParen(currentOrg.name)}</span>
                 ))}
             </p>
           )}
@@ -137,7 +139,15 @@ export function ProfileHeader({ person, currentOrg, viewer, accounts, connection
             </div>
           )}
         </div>
-        <ProfileActions person={person} viewer={viewer} accounts={accounts} connection={connection} demo={person.isDemo} className="[grid-area:act] max-md:w-full" />
+        <ProfileActions
+          person={person}
+          viewer={viewer}
+          accounts={accounts}
+          connection={connection}
+          demo={person.isDemo}
+          pipeline={viewer === "employer" ? <AddToPipelineButton personId={person.id} name={person.fullName} phone="large" className="max-md:flex-1" /> : undefined}
+          className="[grid-area:act] max-md:w-full"
+        />
       </div>
 
       <StatGroup stats={statList} label="Career stats" className="mt-4 md:mt-5" />

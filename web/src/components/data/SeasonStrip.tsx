@@ -24,6 +24,11 @@ const LEVEL_RANK: Record<Level, number> = { h: 3, c: 2, p: 1 };
 const LEVEL_FILL: Record<Level, string> = { h: "bg-lvl-head", c: "bg-lvl-coord", p: "bg-lvl-pos" };
 const LEVEL_LABEL: Record<Level, string> = { h: "Head coach", c: "Coordinator", p: "Position coach" };
 
+/** Generous width of one 12px/500 Inter character, to tell whether a label fits without measuring. */
+const LABEL_CHAR_PX = 6.9;
+/** The strip's width at the narrowest phone (390px less two 16px card gutters). */
+const PHONE_STRIP_PX = 358;
+
 function levelOf(roleGroup: string): Level {
   if (roleGroup === "head_coach") return "h";
   if (roleGroup === "coordinator") return "c";
@@ -101,21 +106,51 @@ export function SeasonStrip({ stints, currentSeason = CURRENT_SEASON, widthHint 
   for (const seg of segments) if (seg.orgId && !programs.includes(seg.orgId)) programs.push(seg.orgId);
   const rowOf = (orgId: string | null, fallback: number) => (orgId ? programs.indexOf(orgId) : fallback);
 
-  // One label per program: its short name if it fits every one of its segments, else its initials.
+  const textW = (t: string) => t.length * LABEL_CHAR_PX + 2;
+  const initialsOf = (st: StripStint) => st.initials ?? orgInitials(st.shortName, st.name);
+
+  // Desktop: one label per program above its segments: its short name if it fits every one of them, else
+  // its initials.
   const unit = (widthHint - (segments.length - 1) * 8) / seasons.length;
   const labelOf = new Map<string, string>();
   for (const orgId of programs) {
     const segs = segments.filter((s) => s.orgId === orgId);
     const st = segs[0].stint!;
     const short = st.shortName;
-    const fits = segs.every((s) => short.length * 6.9 + 2 <= (s.to - s.from + 1) * unit);
-    labelOf.set(orgId, fits ? short : (st.initials ?? orgInitials(st.shortName, st.name)));
+    const fits = segs.every((s) => textW(short) <= (s.to - s.from + 1) * unit);
+    labelOf.set(orgId, fits ? short : initialsOf(st));
   }
 
-  // Axis: first season, each decade start and the current season, without collisions.
-  const axisYears = [first];
-  for (let y = first + 1; y < last; y++) if (y % 10 === 0 && y - first >= 4 && last - y >= 4) axisYears.push(y);
-  if (last > first) axisYears.push(last);
+  // Phone (audit m1): each program has its own row, so its label may run from its first cell to the end of
+  // the strip, measured at the narrowest phone width. The short name when it fits there; else the short
+  // name end-aligned (it runs left over the row's empty columns, ending at the last season); else the
+  // initials the same way; a label that can't fit even as initials is left out.
+  const unitPhone = (PHONE_STRIP_PX - (segments.length - 1) * 8) / seasons.length;
+  const fromCol = (seasonIndex: number) => (seasons.length - seasonIndex) * unitPhone + segments.filter((sg) => sg.from > seasonIndex).length * 8;
+  const phoneLabelOf = new Map<string, { text: string; end: boolean } | null>();
+  for (const orgId of programs) {
+    const seg = segments.find((s) => s.orgId === orgId)!;
+    const st = seg.stint!;
+    const room = fromCol(seg.from);
+    const pick = [st.shortName, initialsOf(st)]
+      .flatMap((text) => [
+        { text, end: false, fits: textW(text) <= room },
+        { text, end: true, fits: textW(text) <= PHONE_STRIP_PX },
+      ])
+      .find((o) => o.fits);
+    phoneLabelOf.set(orgId, pick ? { text: pick.text, end: pick.end } : null);
+  }
+
+  // Axis: first season, each decade start and the current season, without collisions: a decade label is
+  // skipped within 3 columns of either end, and on phone also when its text would touch the end labels.
+  const yearW = textW("2000") + 6;
+  const axisYears: { year: number; phone: boolean }[] = [{ year: first, phone: true }];
+  for (let y = first + 1; y < last; y++) {
+    if (y % 10 !== 0 || y - first <= 3 || last - y <= 3) continue;
+    const phone = (y - first) * unitPhone >= yearW && (last - y + 1) * unitPhone >= 2 * yearW;
+    axisYears.push({ year: y, phone });
+  }
+  if (last > first) axisYears.push({ year: last, phone: true });
 
   const counts: Record<Level, number> = { h: 0, c: 0, p: 0 };
   for (const s of seasons) if (s.level) counts[s.level]++;
@@ -127,19 +162,32 @@ export function SeasonStrip({ stints, currentSeason = CURRENT_SEASON, widthHint 
       <div aria-hidden="true" className="grid items-end gap-x-0.5" style={{ gridTemplateColumns: tracks.join(" ") }}>
         {segments.map((seg, i) => {
           if (!seg.orgId) return null;
-          const dup = segments.findIndex((s) => s.orgId === seg.orgId) !== i;
-          const style = { "--s": seg.startCol, "--e": seg.startCol + (seg.to - seg.from) + 1, "--lr": rowOf(seg.orgId, 0) * 2 + 1 } as CSSProperties;
+          const style = { "--s": seg.startCol, "--e": seg.startCol + (seg.to - seg.from) + 1 } as CSSProperties;
           return (
             <span
               key={`l${i}`}
               style={style}
-              className={cn(
-                "col-start-(--s) col-end-(--e) row-start-1 mb-1.5 min-w-0 overflow-hidden whitespace-nowrap border-b border-border-strong pb-1 text-caption font-medium text-fg-2",
-                "max-md:col-end-[-1] max-md:row-start-(--lr) max-md:mb-0 max-md:overflow-visible max-md:border-b-0 max-md:pb-0.5 max-md:pt-1.5",
-                dup && "max-md:hidden",
-              )}
+              className="col-start-(--s) col-end-(--e) row-start-1 mb-1.5 min-w-0 overflow-hidden whitespace-nowrap border-b border-border-strong pb-1 text-caption font-medium text-fg-2 max-md:hidden"
             >
               {labelOf.get(seg.orgId)}
+            </span>
+          );
+        })}
+        {programs.map((orgId) => {
+          const label = phoneLabelOf.get(orgId);
+          if (!label) return null;
+          const seg = segments.find((s) => s.orgId === orgId)!;
+          const style = { "--s": label.end ? 1 : seg.startCol, "--lr": rowOf(orgId, 0) * 2 + 1 } as CSSProperties;
+          return (
+            <span
+              key={`p${orgId}`}
+              style={style}
+              className={cn(
+                "col-start-(--s) col-end-[-1] row-start-(--lr) min-w-0 whitespace-nowrap pb-0.5 pt-1.5 text-caption font-medium text-fg-2 md:hidden",
+                label.end && "text-right",
+              )}
+            >
+              {label.text}
             </span>
           );
         })}
@@ -159,7 +207,7 @@ export function SeasonStrip({ stints, currentSeason = CURRENT_SEASON, widthHint 
             />
           );
         })}
-        {axisYears.map((y, k) => {
+        {axisYears.map(({ year: y, phone }, k) => {
           const isLast = k === axisYears.length - 1 && y === last && last > first;
           const c = colOfSeason[y - first];
           const style = (
@@ -170,8 +218,9 @@ export function SeasonStrip({ stints, currentSeason = CURRENT_SEASON, widthHint 
               key={y}
               style={{ ...style, "--xr": axisRow } as CSSProperties}
               className={cn(
-                "num col-start-(--a) col-end-(--b) row-start-3 mt-1.5 text-caption text-fg-3 max-md:row-start-(--xr)",
+                "num col-start-(--a) col-end-(--b) row-start-3 mt-1.5 whitespace-nowrap text-caption text-fg-3 max-md:row-start-(--xr)",
                 isLast && "justify-self-end",
+                !phone && "max-md:hidden",
               )}
             >
               {y}

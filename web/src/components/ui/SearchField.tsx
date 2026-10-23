@@ -1,6 +1,7 @@
 import type { ComponentProps, Ref } from "react";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { CONTROL_FOCUS_WITHIN } from "./Field";
 import { Icon } from "./Icon";
 import { Kbd } from "./Kbd";
 
@@ -27,8 +28,8 @@ const WRAPPER = {
 };
 
 /**
- * Search field (§8.1): --hover fill, no border at rest, 1px --border on hover,
- * Iris border + 3px --accent-subtle halo on focus; 16px search icon. The "/" hint hides while the
+ * Search field (§8.1): --hover fill, no border at rest, 1px --border on hover, the 2px --focus ring
+ * of every form control on focus (§9); 16px search icon. The "/" hint hides while the
  * field has focus.
  */
 export function SearchField({
@@ -46,7 +47,8 @@ export function SearchField({
       {...wrapperProps}
       className={cn(
         "group relative flex shrink-0 cursor-text items-center gap-2 rounded-sm border border-transparent bg-hover text-fg-3 transition-colors focus-visible:outline-none",
-        "hover:border-border focus-within:border-accent focus-within:bg-surface focus-within:shadow-[0_0_0_3px_var(--accent-subtle)]",
+        "hover:border-border focus-within:bg-surface",
+        CONTROL_FOCUS_WITHIN,
         WRAPPER[variant],
         wrapperClassName,
       )}

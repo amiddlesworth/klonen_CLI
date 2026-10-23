@@ -93,9 +93,9 @@ function Proof({ proof }: { proof: JobProof }) {
  * title 15/600 (linked), "{short name} · {City, ST} · {Conf} · {type}" 13 --fg-2, chips (the dashed
  * Sample listing or Demo listing first, then role group and division), optional network proof.
  *
- * The arrangement follows the card's own width, not the viewport: wide (34rem and up), Save and View
- * job sit top-right; narrow, they become a row under the chips with View job flexing to fill (44px
- * on phone) and Save 44×44. In the /jobs split at lg, View job gives way to the detail pane and Save
+ * The arrangement follows the card's own width, not the viewport: wide (content 32rem and up, a
+ * card about 34rem across), Save and View job sit top-right; narrow, they become a row under the
+ * chips with View job flexing to fill (44px on phone) and Save 44×44. In the /jobs split at lg, View job gives way to the detail pane and Save
  * stays top-right. Apply lives on the job page only.
  */
 export function JobCard({ job, layout = "list", href, selectHref, selected, meta, proof, preview, owner, headingLevel = "h2", headingId, className }: JobCardProps) {
@@ -144,9 +144,9 @@ export function JobCard({ job, layout = "list", href, selectHref, selected, meta
   ];
 
   // Narrow: View job first and flexing, then Save. Wide: Save, then View job.
-  // The card is narrow below 34rem (phone, the low end of the feed column, the /jobs list, the post-job phone preview).
-  const saveOrder = "order-2 flex @[34rem]:order-1";
-  const viewOrder = "order-1 flex-1 @[34rem]:order-2 @[34rem]:flex-none";
+  // Narrow below a 32rem content width (phone, the low end of the feed column, the /jobs list, the post-job phone preview).
+  const saveOrder = "order-2 flex @[32rem]:order-1";
+  const viewOrder = "order-1 flex-1 @[32rem]:order-2 @[32rem]:flex-none";
 
   return (
     <Root
@@ -159,7 +159,7 @@ export function JobCard({ job, layout = "list", href, selectHref, selected, meta
         className,
       )}
     >
-      <div className={cn("grid grid-cols-[40px_minmax(0,1fr)] items-start gap-x-3 @[34rem]:grid-cols-[40px_minmax(0,1fr)_auto]", split && "lg:grid-cols-[40px_minmax(0,1fr)_auto]")}>
+      <div className={cn("grid grid-cols-[40px_minmax(0,1fr)] items-start gap-x-3 @[32rem]:grid-cols-[40px_minmax(0,1fr)_auto]", split && "lg:grid-cols-[40px_minmax(0,1fr)_auto]")}>
         <OrgMark shortName={job.org.shortName || "?"} name={job.org.name} size={40} />
         <div className="min-w-0">
           {layout === "feed" && (
@@ -176,7 +176,7 @@ export function JobCard({ job, layout = "list", href, selectHref, selected, meta
               )}
             </p>
           )}
-          <H id={headingId} className={cn("text-subtitle font-semibold leading-5 text-fg-1 [text-wrap:balance]", layout === "feed" && "mt-0.5")}>
+          <H id={headingId} className={cn("text-subtitle font-semibold leading-5 text-fg-1", layout === "feed" && "mt-0.5")}>
             {title}
           </H>
           <p className="mt-0.5 text-small text-fg-2">
@@ -212,7 +212,7 @@ export function JobCard({ job, layout = "list", href, selectHref, selected, meta
         <div
           className={cn(
             "relative z-10 col-span-full mt-3 flex gap-2",
-            "@[34rem]:col-span-1 @[34rem]:col-start-3 @[34rem]:row-start-1 @[34rem]:mt-0",
+            "@[32rem]:col-span-1 @[32rem]:col-start-3 @[32rem]:row-start-1 @[32rem]:mt-0",
             split && "lg:col-span-1 lg:col-start-3 lg:row-start-1 lg:mt-0",
             split && owner && "lg:hidden",
           )}

@@ -14,7 +14,8 @@ Friday 2026-10-23. Branch `coach-network-mvp` on [amiddlesworth/klonen_CLI](http
 2. **The app**, Next.js + Postgres, on a design system chosen by a three-way design competition judged on rendered screenshots:
    - Coach profile (season strip, grouped experience, sourced roles, coaching tree preview), coaching-tree explorer, program pages, faceted search, home feed (hires, promotions, milestones, jobs), jobs with post-a-job, claim-your-profile flow, private "Open to opportunities" settings, an athletic director's hiring pipeline, messaging and notifications.
    - Every screen went through two rounds of review by a product designer and a former-AD domain reviewer at desktop and phone widths.
-3. **Three audits**, each with independent verifiers and a skeptic pass before fixes. They found and fixed, among other things: different schools merged by fuzzy name matching, missing tree links for current staff, inflated "seasons coached", non-football jobs counted as football, a critical Next.js/React security advisory, and demo data that implied things about real coaches.
+3. **Three audits and an integration pass**, each with independent verifiers and a skeptic pass before fixes. They found and fixed, among other things: different schools merged by fuzzy name matching, missing tree links for current staff, inflated "seasons coached", non-football jobs counted as football, a critical Next.js/React security advisory (now on Next 15.5.28 / React 19.1.10, with security headers, input validation and per-browser scoping of demo writes), and demo data that implied things about real coaches.
+4. **Final state:** typecheck and lint clean, 307 automated tests passing, all dataset invariants holding, production build verified (dev pages return 404, CSP and frame headers present).
 
 ## Accuracy and coverage
 
@@ -39,7 +40,8 @@ Friday 2026-10-23. Branch `coach-network-mvp` on [amiddlesworth/klonen_CLI](http
 
 - The demo is a static snapshot: menus, search box, filters and forms don't run in it. The local app runs all of them.
 - Auth, payments and email are stubbed (demo account switcher).
-- A final integration pass (security upgrade, cross-screen consistency fixes, demo-honesty fixes) is finishing as I write; the demo will be refreshed when it lands.
+- 26 minor polish items remain from the final design, mobile and security review; they are listed in `docs/POLISH_BACKLOG.md`. None blocks the demo.
+- `npm audit` still lists drizzle-orm below 0.45.2 (not exploitable in how we use it), sharp (fixable with `npm audit fix`), postcss inside Next (needs Next 16) and dev-only vitest dependencies.
 - Recall: a third of bios carry no history. Second sources (other staffs, all-time assistant lists, media guides) would close much of it.
 
 ## What needs your input

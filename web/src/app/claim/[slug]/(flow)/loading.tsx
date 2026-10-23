@@ -1,5 +1,6 @@
 import { SingleColumnLayout } from "@/components/shell/Layouts";
 import { Card } from "@/components/ui/Card";
+import { PAGE_TITLE } from "@/components/ui/PageHeader";
 import { Skeleton, SkeletonAvatar, SkeletonLine, SkeletonRegion, SkeletonText } from "@/components/ui/Skeleton";
 
 /**
@@ -9,13 +10,20 @@ import { Skeleton, SkeletonAvatar, SkeletonLine, SkeletonRegion, SkeletonText } 
  */
 export default function ClaimLoading() {
   return (
-    <SingleColumnLayout>
+    <SingleColumnLayout
+      breadcrumb={
+        // The breadcrumb row's shape: "{Name} › Claim profile" from md, the 44px back link on phone.
+        <div aria-hidden="true" className="flex h-11 items-center px-4 md:h-6 md:px-0">
+          <Skeleton className="h-2.5 w-24 md:w-40" />
+        </div>
+      }
+    >
       <SkeletonRegion label="Loading claim" className="flex flex-col gap-2 md:gap-3">
         <Card padding="none">
           <div className="flex items-start gap-3 p-4 md:px-6 md:pb-4 md:pt-5">
-            <SkeletonAvatar size={48} />
+            <SkeletonAvatar size={56} />
             <span className="flex-1">
-              <h1 className="text-title">Claim your profile</h1>
+              <h1 className={PAGE_TITLE}>Claim your profile</h1>
               <SkeletonLine className="mt-1" width="30%" lineHeight={20} />
               <SkeletonLine className="mt-0.5" width="56%" lineHeight={18} />
             </span>

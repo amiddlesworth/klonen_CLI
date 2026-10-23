@@ -5,6 +5,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { SampleChip } from "@/components/ui/Chip";
 import { Icon } from "@/components/ui/Icon";
+import { STEPPER_BAND } from "@/components/ui/Stepper";
 import { submitClaim } from "@/lib/actions/claim";
 import type { ClaimSubject } from "@/lib/queries/claim";
 import { ClaimStepper, CLAIM_STEPS } from "./ClaimStepper";
@@ -82,7 +83,7 @@ export function ClaimFlow({ subject, identity, notice, mode }: ClaimFlowProps) {
     <>
       <Card padding="none" className="overflow-hidden">
         <div className="p-4 md:px-6 md:pb-4 md:pt-5">{identity}</div>
-        <div className="border-t border-divider px-4 py-3 md:px-6 md:py-4">
+        <div className={STEPPER_BAND}>
           <ClaimStepper current={done ? CLAIM_STEPS.length : step} />
         </div>
         {notice && (

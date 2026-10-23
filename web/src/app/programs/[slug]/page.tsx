@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Briefcase } from "lucide-react";
@@ -41,6 +40,7 @@ import {
   type ProgramOrg,
 } from "@/lib/queries/program";
 import { getSession } from "@/lib/session";
+import { SITE_URL } from "@/lib/site";
 
 type Tab = "staff" | "alumni" | "jobs";
 const TABS: Tab[] = ["staff", "alumni", "jobs"];
@@ -68,11 +68,9 @@ function tabHref(slug: string, tab: Tab) {
   return tab === "staff" ? `/programs/${slug}` : `/programs/${slug}?tab=${tab}`;
 }
 
+/** The configured site origin (lib/site.ts), never the request's Host / X-Forwarded-Host headers. */
 async function siteOrigin() {
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") || host.startsWith("127.") ? "http" : "https");
-  return `${proto}://${host}`;
+  return SITE_URL;
 }
 
 function describe(org: ProgramOrg, counts: ProgramCounts): string {
@@ -159,17 +157,11 @@ export default async function ProgramPage({ params, searchParams }: PageProps) {
     staffRead ? { value: counts.staff, label: "Staff listed" } : { value: <span aria-hidden="true">–</span>, label: STAFF_NOT_READ },
     { value: counts.coached, label: "Alumni coaches" },
     {
-      // Sample listings: the dashed chip sits by the number it qualifies (it fits beside the value at 390px).
-      value:
-        counts.jobs > 0 && counts.sampleJobs === counts.jobs ? (
-          <span className="inline-flex items-center gap-2">
-            {counts.jobs}
-            <SampleChip label="Sample" />
-          </span>
-        ) : (
-          counts.jobs
-        ),
+      // Sample or demo listings among them: the dashed chip right after the label, as in every KV row
+      // and KPI (§8.3 KPIStrip, audit X04).
+      value: counts.jobs,
       label: "Open jobs",
+      adornment: counts.sampleJobs > 0 ? <SampleChip label="Sample" /> : undefined,
     },
     // The fourth column adds what the tabs don't count (§8.6 asks for a founded/restarted year, which the data lacks).
     // Same label as the list it links to (and the light org pages), so it never reads as a second count of

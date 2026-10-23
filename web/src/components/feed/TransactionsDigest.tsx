@@ -9,6 +9,7 @@ import type { FeedMove, FeedOrg } from "@/lib/queries/feedx";
 import { Sep } from "./ItemParts";
 import { MOVE_KIND } from "./MoveCard";
 import { DigestSentence } from "./Sentences";
+import { keepParen } from "@/components/data/TitleOrg";
 
 type TransactionsDigestProps = {
   moves: FeedMove[];
@@ -44,10 +45,10 @@ export function TransactionsDigest({ moves, moreHref, showInferredNote }: Transa
             <p className="flex items-center gap-1.5 text-small font-semibold leading-5">
               {org.inRegistry ? (
                 <Link href={`/programs/${org.slug}`} className="target-24 underline-offset-2 hover:underline">
-                  {org.shortName}
+                  {keepParen(org.shortName)}
                 </Link>
               ) : (
-                org.shortName
+                keepParen(org.shortName)
               )}
               <ConferenceBadge abbr={org.conferenceAbbr} name={org.conference} />
             </p>

@@ -6,8 +6,8 @@ import { Check, ChevronDown } from "lucide-react";
 import { buttonClasses } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Icon } from "@/components/ui/Icon";
+import { PageSearchField } from "@/components/ui/PageSearchField";
 import { Popover } from "@/components/ui/Popover";
-import { SearchField } from "@/components/ui/SearchField";
 import { cn } from "@/lib/cn";
 import type { FacetOption, JobFacets } from "@/lib/queries/jobsx";
 import { hasFilters, jobsHref, type JobsQuery } from "./labels";
@@ -101,22 +101,19 @@ export function JobFilters({ query, facets, showClear = true }: { query: JobsQue
   const any = hasFilters(query);
   return (
     <div className="flex flex-col gap-3">
-      <form action="/jobs" method="get" role="search" aria-label="Search jobs" className="flex gap-2">
-        <SearchField
-          variant="block"
+      <form action="/jobs" method="get" role="search" aria-label="Search jobs">
+        {/* The shared in-page search (audit X20); its button is secondary because Apply is this view's primary. */}
+        <PageSearchField
           name="q"
           defaultValue={query.q}
           key={query.q}
           placeholder="Title, program or conference"
           aria-label="Search jobs by title, program or conference"
-          wrapperClassName="flex-1"
+          buttonVariant="secondary"
         />
         {query.roles.length > 0 && <input type="hidden" name="role" value={query.roles.join(",")} />}
         {query.states.length > 0 && <input type="hidden" name="state" value={query.states.join(",")} />}
         {query.conferences.length > 0 && <input type="hidden" name="conf" value={query.conferences.join(",")} />}
-        <button type="submit" className={cn(buttonClasses({ variant: "secondary", phone: "large" }), "md:h-9")}>
-          Search
-        </button>
       </form>
       <div className="flex flex-wrap items-center gap-2" aria-busy={pending || undefined}>
         <FilterMenu group="roles" label="Role group" options={facets.roles} selected={shown.roles} onChange={onChange} pending={pending} />

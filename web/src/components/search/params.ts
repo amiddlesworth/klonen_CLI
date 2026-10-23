@@ -31,7 +31,7 @@ export const ROLE_FACET_LABEL: Record<string, string> = {
   coordinator: "Coordinator",
   position_coach: "Position coach",
   ga_analyst: "GA / analyst",
-  support: "Support",
+  support: "Support staff", // as lib/format.ts ROLE_GROUP_LABEL, on every screen (audit X18)
 };
 
 /** Plural nouns for headings and popular searches ("Head coaches in the NWC"). */

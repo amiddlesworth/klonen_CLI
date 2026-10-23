@@ -1,23 +1,21 @@
 import { SingleColumnLayout } from "@/components/shell/Layouts";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Card } from "@/components/ui/Card";
+import { PAGE_TITLE } from "@/components/ui/PageHeader";
 import { Skeleton, SkeletonAvatar, SkeletonLine, SkeletonRegion, SkeletonText } from "@/components/ui/Skeleton";
 
 /**
- * Open to opportunities skeleton, matching the form: back link (44px tall on phone), title and its
+ * Open to opportunities skeleton, matching the form: the real breadcrumb, title and its
  * two-line description, the switch row, the privacy band (title and four rows), three radio rows for "Who can see it", chip rows for Roles and Regions, then
  * the footer row with Cancel and Save.
  */
 export default function AvailabilityLoading() {
   return (
-    <SingleColumnLayout>
-      {/* The page's main gap (8 phone, 12 desktop) sits between the back link and the card; the link is 42px on phone (44 tall, -3px margins). */}
+    <SingleColumnLayout breadcrumb={<Breadcrumb items={[{ label: "Settings", href: "/settings" }]} current="Open to opportunities" phone="back" />}>
       <SkeletonRegion label="Loading Open to opportunities" className="flex flex-col gap-2 md:gap-3">
-        <div className="flex items-center max-md:h-[42px] max-md:px-4 max-md:pt-1 md:h-[21px]">
-          <Skeleton className="h-2.5 w-16" />
-        </div>
         <Card padding="none">
           <div className="px-4 pb-4 pt-4 md:px-6 md:pt-5">
-            <h1 className="text-title">Open to opportunities</h1>
+            <h1 className={PAGE_TITLE}>Open to opportunities</h1>
             <SkeletonText className="mt-1 max-w-prose" lines={2} widths={["94%", "36%"]} lineHeight={18} />
             <div className="mt-3 flex min-h-11 items-center justify-between gap-3">
               <SkeletonText className="flex-1" lines={2} widths={["40%", "30%"]} />
