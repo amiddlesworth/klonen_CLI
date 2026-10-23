@@ -1,5 +1,6 @@
 "use client";
 import { useActionState, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Check, CircleAlert, CreditCard, Eye, Lock } from "lucide-react";
 import { ProgramBadges } from "@/components/data/Badges";
 import { Button } from "@/components/ui/Button";
@@ -12,6 +13,7 @@ import { Input } from "@/components/ui/Input";
 import { OrgMark } from "@/components/ui/OrgMark";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
+import { useToast } from "@/components/ui/Toast";
 import { createJob } from "@/lib/actions/jobs";
 import { BRAND } from "@/lib/brand";
 import { cn } from "@/lib/cn";
@@ -19,9 +21,11 @@ import { ROLE_GROUP_LABEL, salaryRange, type RoleGroup } from "@/lib/format";
 import type { JobOrg } from "@/lib/queries/jobsx";
 import { JobCard } from "./JobCard";
 import { JobHeader } from "./JobHeader";
-import { EMPLOYMENT_TYPES, UNIT_LABEL } from "./labels";
+import { EMPLOYMENT_TYPES, UNIT_LABEL, withArticle } from "./labels";
 import {
+  CITY_MAX,
   DESCRIPTION_MAX,
+  HOW_TO_APPLY_MAX,
   POST_ROLE_GROUPS,
   POST_UNITS,
   fieldErrors,
@@ -34,18 +38,21 @@ import {
 
 type Values = Record<PostJobField, string>;
 
-const EMPTY: Values = { title: "", roleGroup: "", unit: "", employmentType: "Full-time", salaryMin: "", salaryMax: "", description: "" };
-const ORDER: PostJobField[] = ["title", "roleGroup", "unit", "employmentType", "salaryMin", "salaryMax", "description"];
+const EMPTY: Values = { title: "", roleGroup: "", unit: "", city: "", employmentType: "Full-time", salaryMin: "", salaryMax: "", description: "", howToApply: "" };
+const ORDER: PostJobField[] = ["title", "roleGroup", "unit", "city", "employmentType", "salaryMin", "salaryMax", "description", "howToApply"];
 
-const OUTLINE = `{program} is hiring a {title} for its football program.
+/** "Start from an outline": plain heading lines and dash bullets, the format the job page reads. */
+function outline(program: string, title: string): string {
+  return `${program} is hiring ${withArticle(title || "coach")} for its football program.
 
-**Responsibilities**
+Responsibilities
 -
 -
 
-**Qualifications**
+Qualifications
 - Bachelor's degree required
 - `;
+}
 
 function Section({ title, children, className }: { title: string; children: ReactNode; className?: string }) {
   return (
@@ -89,9 +96,10 @@ function Stepper({ step }: { step: "edit" | "checkout" }) {
 type PostJobFormProps = { org: JobOrg; posterName: string };
 
 /**
- * Post a job (§8.13): the form (Role, Program, Type, Pay, Description) with a live preview of the
- * JobCard and the detail header, validated with the shared zod schema as you go; then a checkout
- * stub that says payments are disabled in the demo, and Publish listing (server action).
+ * Post a job (§8.13): the form (Role, Program, Location and type, Pay, Description, Application)
+ * with a live preview of the JobCard and the detail header, validated with the shared zod schema
+ * as you go; then a checkout stub that says payments are disabled in the demo, and Publish listing
+ * (server action). On success: a toast ("View listing" opens it) and the hiring pipeline (§8.13).
  */
 export function PostJobForm({ org, posterName }: PostJobFormProps) {
   const [values, setValues] = useState<Values>(EMPTY);
@@ -104,6 +112,36 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
   const editHeading = useRef<HTMLHeadingElement>(null);
   const uid = useId();
   const id = (f: string) => `${uid}-${f}`;
+  const router = useRouter();
+  const toast = useToast();
+  const published = state?.published ?? null;
+
+  // Published: continue to the hiring pipeline (§8.13), once per listing.
+  const announced = useRef<number | null>(null);
+  useEffect(() => {
+    if (!published || announced.current === published.id) return;
+    announced.current = published.id;
+    router.push("/employers/pipeline");
+  }, [published, router]);
+
+  // The success toast shows when the form unmounts, i.e. when the pipeline replaces it, so its five
+  // seconds aren't spent while the next page loads. The provider lives in the root layout and stays.
+  const showToast = toast.show;
+  const latest = useRef(published);
+  useEffect(() => {
+    latest.current = published;
+  }, [published]);
+  useEffect(
+    () => () => {
+      const p = latest.current;
+      if (!p) return;
+      showToast(`Published “${p.title}”`, {
+        actionLabel: "View listing",
+        onAction: () => router.push(`/jobs/${p.id}`),
+      });
+    },
+    [router, showToast],
+  );
 
   const clientErrors = useMemo<PostJobErrors>(() => {
     const r = postJobSchema.safeParse(values);
@@ -146,11 +184,15 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
   const salaryText = salaryRange(salaryMin ?? null, salaryMax ?? null);
   const errorCount = submitted ? ORDER.filter((f) => clientErrors[f]).length : 0;
 
+  const city = values.city.trim();
+  const place = [city || org.city, org.state].filter(Boolean).join(", ");
   const previewJob = {
     id: 0,
     title: values.title.trim() || "Job title",
-    roleGroup: values.roleGroup || "position_coach",
+    // No role group chip until one is chosen: the preview never shows a value the employer didn't pick.
+    roleGroup: values.roleGroup,
     unit: values.unit || null,
+    location: place || null,
     employmentType: values.employmentType || "Full-time",
     salaryMin: salaryMin ?? null,
     salaryMax: salaryMax ?? null,
@@ -184,6 +226,16 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
           <JobHeader job={previewJob} headingLevel="h2" preview />
         )}
       </div>
+    </div>
+  );
+
+  // Below lg the preview is a disclosure inside the form, just before the step's primary action, so
+  // it is checked before continuing (the side preview covers lg and up).
+  const phonePreview = (divider: boolean) => (
+    <div className={cn("py-4 lg:hidden", divider && "border-t border-divider")}>
+      <Disclosure summary={<span className="text-small font-medium text-fg-1">Preview the listing</span>} contentClassName="pt-3">
+        {preview(false)}
+      </Disclosure>
     </div>
   );
 
@@ -234,11 +286,11 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
                 required
                 maxLength={80}
                 autoComplete="off"
-                placeholder="Defensive Backs Coach"
                 value={values.title}
                 onChange={set("title")}
                 onBlur={blur("title")}
                 error={shown("title")}
+                help="As it appears on your staff page, for example Defensive Backs Coach."
               />
               <div className="grid gap-4 md:grid-cols-2">
                 <Select
@@ -280,18 +332,34 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
               <p className="flex items-start gap-1.5 text-caption text-fg-3">
                 <Icon icon={Lock} size={12} className="mt-0.5" />
                 <span>
-                  Posting as {posterName}, athletic director. The program and its location come from your account.
+                  Posting as {posterName}, athletic director. The program and its state come from your account.
                 </span>
               </p>
             </Section>
 
-            <Section title="Employment type">
-              <div className="-mt-2 flex flex-col gap-0.5 md:flex-row md:gap-6">
-                {EMPLOYMENT_TYPES.map((t) => (
-                  <Radio key={t} name="employmentType" value={t} label={t} checked={values.employmentType === t} onChange={set("employmentType")} />
-                ))}
-              </div>
-              {shown("employmentType") && <p className="text-caption text-danger">{shown("employmentType")}</p>}
+            <Section title="Location and type">
+              <Input
+                id={id("city")}
+                name="city"
+                label="City"
+                maxLength={CITY_MAX}
+                autoComplete="address-level2"
+                value={values.city}
+                onChange={set("city")}
+                onBlur={blur("city")}
+                error={shown("city")}
+                help={org.state ? `Optional. The state comes from your program: ${org.state}.` : "Optional."}
+                fieldClassName="md:max-w-80"
+              />
+              <fieldset className="min-w-0">
+                <legend className="mb-1 text-small font-medium text-fg-1">Employment type</legend>
+                <div className="flex flex-col gap-0.5 md:flex-row md:gap-6">
+                  {EMPLOYMENT_TYPES.map((t) => (
+                    <Radio key={t} name="employmentType" value={t} label={t} checked={values.employmentType === t} onChange={set("employmentType")} />
+                  ))}
+                </div>
+                {shown("employmentType") && <p className="text-caption text-danger">{shown("employmentType")}</p>}
+              </fieldset>
             </Section>
 
             <Section title="Pay">
@@ -302,12 +370,11 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
                   label="Minimum salary (USD a year)"
                   inputMode="numeric"
                   autoComplete="off"
-                  placeholder="45,000"
                   value={values.salaryMin}
                   onChange={set("salaryMin")}
                   onBlur={blur("salaryMin")}
                   error={shown("salaryMin")}
-                  help="Optional"
+                  help="Optional. For example, 45,000."
                 />
                 <Input
                   id={id("salaryMax")}
@@ -315,12 +382,11 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
                   label="Maximum salary (USD a year)"
                   inputMode="numeric"
                   autoComplete="off"
-                  placeholder="55,000"
                   value={values.salaryMax}
                   onChange={set("salaryMax")}
                   onBlur={blur("salaryMax")}
                   error={shown("salaryMax")}
-                  help="Optional"
+                  help="Optional. For example, 55,000."
                 />
               </div>
               <p className="text-small text-fg-2" aria-live="polite">
@@ -348,7 +414,7 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
                 error={shown("description")}
                 help={
                   <>
-                    Put **Responsibilities** on its own line to start a section, and start lines with “- ” for bullets.{" "}
+                    Start a section with a line like Responsibilities, and start each bullet with a dash.{" "}
                     <span className="num">
                       {values.description.length.toLocaleString("en-US")} / {DESCRIPTION_MAX.toLocaleString("en-US")}
                     </span>
@@ -363,7 +429,7 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
                     onClick={() =>
                       setValues((cur) => ({
                         ...cur,
-                        description: OUTLINE.replace("{program}", org.name).replace("{title}", cur.title.trim() || "coach"),
+                        description: outline(org.name, cur.title.trim()),
                       }))
                     }
                   >
@@ -372,6 +438,24 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
                 </div>
               )}
             </Section>
+
+            <Section title="Application">
+              <Input
+                id={id("howToApply")}
+                name="howToApply"
+                label="How to apply"
+                maxLength={HOW_TO_APPLY_MAX}
+                inputMode="url"
+                autoComplete="off"
+                value={values.howToApply}
+                onChange={set("howToApply")}
+                onBlur={blur("howToApply")}
+                error={shown("howToApply")}
+                help="Optional. A web address or an email, shown at the end of the listing under How to apply. In the demo, nothing is sent to it."
+              />
+            </Section>
+
+            {phonePreview(true)}
 
             <div className="flex flex-col-reverse gap-3 border-t border-divider pt-4 md:flex-row md:items-center md:justify-between">
               <p className="text-caption text-fg-3">Next: review the listing. Payments are disabled in the demo.</p>
@@ -393,10 +477,12 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
                   <span className="text-fg-2"> · {org.shortName}</span>
                 </Row>
                 <Row label="Role group">{ROLE_GROUP_LABEL[values.roleGroup as RoleGroup]}</Row>
+                <Row label="Location">{place || "Not listed"}</Row>
                 <Row label="Type and pay">
                   {values.employmentType}
                   {salaryText ? <span className="num"> · {salaryText}</span> : " · Salary not listed"}
                 </Row>
+                <Row label="How to apply">{values.howToApply.trim() ? <span className="break-words">{values.howToApply.trim()}</span> : <span className="text-fg-3">Not given</span>}</Row>
                 <Row label="Duration">30 days on Jobs and in the feed</Row>
                 <Row label="Price">
                   <span className="inline-flex flex-wrap items-center gap-2">
@@ -409,14 +495,15 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
                 <Icon icon={CreditCard} size={16} className="mt-0.5 text-fg-2" />
                 <p>
                   <span className="font-medium text-fg-1">Payments are disabled in the demo.</span> Nothing is charged and no card is asked for. Publishing adds this listing to the
-                  demo only, labeled as a sample listing.
+                  demo only, labeled as a sample listing, and takes you to your hiring pipeline.
                 </p>
               </div>
+              {phonePreview(false)}
               <div className="mt-4 flex flex-col-reverse gap-2 md:flex-row md:justify-end">
-                <Button variant="secondary" icon={ArrowLeft} phone="large" onClick={() => setStep("edit")} disabled={pending} className="max-md:w-full">
+                <Button variant="secondary" icon={ArrowLeft} phone="large" onClick={() => setStep("edit")} disabled={pending || !!published} className="max-md:w-full">
                   Back to details
                 </Button>
-                <Button type="submit" variant="primary" phone="large" loading={pending} className="max-md:w-full">
+                <Button type="submit" variant="primary" phone="large" loading={pending || !!published} className="max-md:w-full">
                   Publish listing
                 </Button>
               </div>
@@ -425,7 +512,7 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
         </Card>
       </form>
 
-      {/* Preview: sticky beside the form at lg, a disclosure under it below lg. */}
+      {/* Preview: sticky beside the form at lg; below lg it is a disclosure inside the form (phonePreview). */}
       <aside aria-label="Listing preview" className="hidden lg:sticky lg:top-[calc(var(--nav-h)+20px)] lg:block">
         <h2 className="mb-2 flex items-center gap-1.5 text-body font-semibold">
           <Icon icon={Eye} size={16} className="text-fg-2" />
@@ -433,11 +520,6 @@ export function PostJobForm({ org, posterName }: PostJobFormProps) {
         </h2>
         {preview(true)}
       </aside>
-      <Card padding="rail" className="lg:hidden">
-        <Disclosure summary={<span className="text-small font-medium text-fg-1">Preview the listing</span>} contentClassName="pt-3">
-          {preview(false)}
-        </Disclosure>
-      </Card>
     </div>
   );
 }

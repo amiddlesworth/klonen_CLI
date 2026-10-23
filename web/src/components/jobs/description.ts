@@ -1,7 +1,8 @@
 /*
- * A tiny, safe reader for job descriptions written in "markdown-ish" text: paragraphs, a line that
- * is only **Bold** starts a section, lines starting with "- " are bullets, **bold** inline, and a
- * paragraph wrapped in _underscores_ is a note. It produces plain data; React renders it as text,
+ * A tiny, safe reader for job descriptions written as plain text: paragraphs; a heading line starts
+ * a section (a common heading such as "Responsibilities" on its own line, a short line ending in a
+ * colon, or a line that is only **Bold**); lines starting with a dash are bullets; **bold** inline;
+ * a paragraph wrapped in _underscores_ is a note. It produces plain data; React renders it as text,
  * so no HTML in a description is ever interpreted.
  */
 
@@ -10,6 +11,22 @@ export type Block = { kind: "p"; inlines: Inline[] } | { kind: "ul"; items: Inli
 export type DescriptionSection = { heading: string | null; blocks: Block[] };
 
 const HEADING = /^\*\*([^*]{1,80}?)\*\*:?$/;
+/** Headings people write without any markup, alone on a line (an optional colon is dropped). */
+const PLAIN_HEADING =
+  /^(about the role|about the position|about the program|about us|position summary|summary|responsibilities|key responsibilities|duties|duties and responsibilities|qualifications|required qualifications|minimum qualifications|preferred qualifications|requirements|how to apply|to apply|application|application process|benefits|compensation|salary and benefits|compensation and benefits|what you'll do|what we're looking for)\s*:?$/i;
+/** A short line ending in a colon ("Physical requirements:") reads as a heading too. */
+const COLON_HEADING = /^([A-Z][^.!?:]{1,46}):$/;
+
+function headingOf(line: string): string | null {
+  const m = HEADING.exec(line) ?? PLAIN_HEADING.exec(line) ?? COLON_HEADING.exec(line);
+  if (!m) return null;
+  const text = m[1].trim();
+  // A plain heading keeps the writer's casing, with the first letter capitalized ("responsibilities" -> "Responsibilities").
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/** The line the seed adds to every sample description; the page shows it as a note under the header instead. */
+const SAMPLE_NOTE = /^this is a sample listing\b/i;
 const BULLET = /^\s*[-*•]\s+(.*)$/;
 const NOTE = /^_(.+)_$/;
 
@@ -54,11 +71,11 @@ export function parseDescription(src: string): DescriptionSection[] {
       flushBullets();
       continue;
     }
-    const h = HEADING.exec(line);
+    const h = headingOf(line);
     if (h) {
       flushPara();
       flushBullets();
-      sections.push({ heading: h[1].trim(), blocks: [] });
+      sections.push({ heading: h, blocks: [] });
       continue;
     }
     const b = BULLET.exec(raw);
@@ -73,6 +90,16 @@ export function parseDescription(src: string): DescriptionSection[] {
   flushPara();
   flushBullets();
   return sections.filter((s) => s.blocks.length > 0);
+}
+
+/**
+ * The sections a job page shows: the parsed description without the seed's "This is a sample
+ * listing…" note, which the page states once, in a note band under the header (§6.4).
+ */
+export function jobSections(src: string): DescriptionSection[] {
+  return parseDescription(src)
+    .map((s) => ({ ...s, blocks: s.blocks.filter((b) => !(b.kind === "note" && SAMPLE_NOTE.test(b.inlines.map((i) => i.text).join("")))) }))
+    .filter((s) => s.blocks.length > 0);
 }
 
 /** First paragraph as plain text, for meta descriptions. */

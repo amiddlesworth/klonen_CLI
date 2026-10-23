@@ -8,7 +8,7 @@ import { SingleColumnLayout } from "@/components/shell/Layouts";
 import { Avatar } from "@/components/ui/Avatar";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card, CardHeader } from "@/components/ui/Card";
-import { SampleChip, UnclaimedChip } from "@/components/ui/Chip";
+import { Chip, SampleChip, UnclaimedChip } from "@/components/ui/Chip";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { TextLink } from "@/components/ui/TextLink";
 import { BRAND } from "@/lib/brand";
@@ -72,17 +72,30 @@ export default async function ClaimPage({ params }: Params) {
   }
 
   const headline = [person.currentTitle, currentOrg?.shortName].filter(Boolean).join(" · ");
-  const identity = (
+  // The h1 is text-title in every state of this page (flow, already claimed, not found, error,
+  // athletic director), matching the settings pages, so the type scale never jumps between states.
+  const identityBlock = (done: boolean) => (
     <div className="flex items-start gap-3">
       <Avatar name={person.fullName} tintKey={person.slug} size={48} />
       <div className="min-w-0 flex-1">
-        <h1 className="text-display-sm">Claim your profile</h1>
+        <h1 className="text-title">Claim your profile</h1>
         <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-small">
           <TextLink href={`/in/${person.slug}`} variant="plain" target24 className="font-semibold text-fg-1">
             {person.fullName}
           </TextLink>
-          <UnclaimedChip />
-          {person.isDemo && <SampleChip label="Demo" />}
+          {person.isDemo ? (
+            <>
+              {!done && <UnclaimedChip />}
+              <SampleChip label="Demo" />
+            </>
+          ) : done ? (
+            // The claim is recorded, but the public record stays Unclaimed: say so on the record itself.
+            <Chip kind="sample" title="Your public record stays Unclaimed in this demo">
+              Demo
+            </Chip>
+          ) : (
+            <UnclaimedChip />
+          )}
         </p>
         {headline && <p className="mt-0.5 text-small text-fg-2">{headline}</p>}
       </div>
@@ -102,7 +115,13 @@ export default async function ClaimPage({ params }: Params) {
 
   return (
     <SingleColumnLayout>
-      <ClaimFlow subject={subject} identity={identity} notice={notice} />
+      <ClaimFlow
+        subject={subject}
+        identity={identityBlock(false)}
+        identityDone={identityBlock(true)}
+        notice={notice}
+        saves={!!session && session.user.kind === "coach"}
+      />
     </SingleColumnLayout>
   );
 }

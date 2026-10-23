@@ -5,7 +5,7 @@ import { and, asc, count, eq, ne, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { organizations, people, tenures } from "@/db/schema";
 import { CURRENT_SEASON } from "@/lib/brand";
-import { conferenceShort, type StintSpan } from "@/lib/format";
+import { conferenceShort, seasonSpans, type StintSpan } from "@/lib/format";
 import { getOrg, getOrgJobs } from "./orgs";
 import { personSummaryCols, toSummary, type PersonSummary } from "./people";
 
@@ -70,6 +70,71 @@ export const getProgramCounts = cache(async (orgId: string): Promise<ProgramCoun
  * the ledger can dot exactly the years that are inferred (§6.2; components/program/LedgerRange).
  */
 export type LedgerStint = StintSpan & { yearsExplicit: boolean; evidence: string | null };
+
+/*
+ * Which printed years are inferred (§6.2). The ledger prints the start and end of each merged run of
+ * seasons (seasonSpans, the same runs seasonRangeMulti prints), and a rail prints first–last season
+ * (seasonRangeCompact). A printed year is inferred when every stint that starts (or ends) the run on
+ * that year has yearsExplicit = false; a year one stint states and another infers counts as stated.
+ * components/program/LedgerRange renders these pieces, dotting only the inferred years.
+ */
+export type RangeYear = { year: number; text: string; inferred: boolean; evidence: string | null };
+export type RangePiece = string | RangeYear;
+
+function markYear(stints: LedgerStint[], year: number, edge: "start" | "end", text = String(year)): RangeYear {
+  const hits = stints.filter((s) => {
+    if (edge === "start") return s.startYear ? s.startYear === year : !s.isCurrent && s.endYear === year;
+    const end = s.startYear ? Math.max(s.startYear, s.endYear ?? s.startYear) : s.endYear;
+    return !s.isCurrent && end === year;
+  });
+  const inferred = hits.length > 0 && hits.every((s) => !s.yearsExplicit);
+  return { year, text, inferred, evidence: inferred ? (hits.find((s) => s.evidence)?.evidence ?? null) : null };
+}
+
+/** The ledger range as pieces, spelling exactly what seasonRangeMulti() prints; null when no stint has a start year. */
+export function ledgerRangePieces(stints: LedgerStint[]): RangePiece[] | null {
+  if (!stints.some((s) => s.startYear)) return null;
+  const out: RangePiece[] = [];
+  seasonSpans(stints).forEach((m, i) => {
+    if (i > 0) out.push(", ");
+    if (m.undatedCurrent) out.push("Present");
+    else if (m.isCurrent) out.push(markYear(stints, m.start, "start"), "–Present");
+    else if (m.start === m.end) {
+      const a = markYear(stints, m.start, "start");
+      const b = markYear(stints, m.end, "end");
+      out.push({ ...a, inferred: a.inferred || b.inferred, evidence: a.evidence ?? b.evidence });
+    } else out.push(markYear(stints, m.start, "start"), "–", markYear(stints, m.end, "end"));
+  });
+  return out;
+}
+
+/** First to last dated season, as a rail prints it with seasonRangeCompact() ("2008–11", "2020–"). */
+export function compactSpan(stints: StintSpan[]): { start: number; end: number | null; current: boolean } | null {
+  const dated = stints.filter((s) => s.startYear);
+  if (!dated.length) return null;
+  const current = dated.some((s) => s.isCurrent);
+  const start = Math.min(...dated.map((s) => s.startYear!));
+  const end = current ? null : Math.max(...dated.map((s) => s.endYear ?? s.startYear!));
+  return { start, end, current };
+}
+
+/** The compact (rail) range as pieces, spelling exactly what seasonRangeCompact() prints. */
+export function compactRangePieces(stints: LedgerStint[]): RangePiece[] | null {
+  const span = compactSpan(stints);
+  if (!span) return null;
+  const { start, end, current } = span;
+  if (current) return [markYear(stints, start, "start"), "–"];
+  const last = end ?? start;
+  if (last === start) return [markYear(stints, start, "start")];
+  const short = Math.floor(last / 100) === Math.floor(start / 100) ? String(last).slice(2) : String(last);
+  return [markYear(stints, start, "start"), "–", markYear(stints, last, "end", short)];
+}
+
+/** The first inferred year a range prints, or null (decides whether a page must explain the dotted mark). */
+export function firstInferredYear(stints: LedgerStint[], variant: "ledger" | "compact" = "ledger"): RangeYear | null {
+  const pieces = variant === "compact" ? compactRangePieces(stints) : ledgerRangePieces(stints);
+  return (pieces?.find((p) => typeof p !== "string" && p.inferred) as RangeYear | undefined) ?? null;
+}
 
 /** The last season a set of stints prints in the ledger; null when none has a start year ("Years not in source"). */
 function lastDatedSeason(stints: StintSpan[]): number | null {
@@ -209,6 +274,10 @@ export type AlumniEntry = {
   roleCount: number;
   /** Every stint here, with year provenance (inferred years are dotted, §6.2). */
   stints: LedgerStint[];
+  /** True when a year the ledger prints for these stints is inferred (firstInferredYear). */
+  inferred: boolean;
+  /** Evidence quote behind that year, for the tooltip. */
+  inferredEvidence: string | null;
   /**
    * Last season the ledger prints (current season for an ongoing stint); null when no stint here has a
    * start year, so a row that reads "Years not in source" never sorts by a year it doesn't show.
@@ -257,12 +326,15 @@ async function groupedStints(orgId: string, asPlayer: boolean): Promise<AlumniEn
     // Most recent stint: latest last season; undated stints fall back to the profile order (lower sortOrder = newer).
     const latest = [...list].sort((a, b) => (lastOf(b) ?? -1) - (lastOf(a) ?? -1) || a.sortOrder - b.sortOrder)[0];
     const stints = list.map((t) => ({ startYear: t.startYear, endYear: t.endYear, isCurrent: t.isCurrent, yearsExplicit: t.yearsExplicit, evidence: t.evidence }));
+    const inferredYear = firstInferredYear(stints);
     entries.push({
       person: toSummary(latest),
       currentOrgName: latest.currentOrgName,
       role: latest.role,
       roleCount: new Set(list.map((t) => t.role.trim().toLowerCase())).size,
       stints,
+      inferred: !!inferredYear,
+      inferredEvidence: inferredYear?.evidence ?? null,
       lastSeason: lastDatedSeason(stints),
     });
   }

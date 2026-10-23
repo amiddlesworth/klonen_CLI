@@ -1,8 +1,12 @@
 import { SingleColumnLayout } from "@/components/shell/Layouts";
 import { Card } from "@/components/ui/Card";
-import { Skeleton, SkeletonAvatar, SkeletonRegion, SkeletonText, SkeletonTile } from "@/components/ui/Skeleton";
+import { Skeleton, SkeletonAvatar, SkeletonLine, SkeletonRegion, SkeletonText } from "@/components/ui/Skeleton";
 
-/** Claim flow skeleton: header card (avatar, two lines, three step blocks) and the first step card. */
+/**
+ * Claim flow skeleton (§8.0: matches the final layout, card titles render for real): the header card
+ * (avatar, h1, name, headline, three steps), then step 1 as it renders: title, two description
+ * lines, the email label, the input (36px, 44 on phone), its help line and the Send code button.
+ */
 export default function ClaimLoading() {
   return (
     <SingleColumnLayout>
@@ -10,7 +14,11 @@ export default function ClaimLoading() {
         <Card padding="none">
           <div className="flex items-start gap-3 p-4 md:px-6 md:pb-4 md:pt-5">
             <SkeletonAvatar size={48} />
-            <SkeletonText className="flex-1" lines={3} widths={["44%", "30%", "56%"]} lineHeight={20} />
+            <span className="flex-1">
+              <h1 className="text-title">Claim your profile</h1>
+              <SkeletonLine className="mt-1" width="30%" lineHeight={20} />
+              <SkeletonLine className="mt-0.5" width="56%" lineHeight={18} />
+            </span>
           </div>
           <div className="grid grid-cols-3 gap-2 border-t border-divider px-4 py-3 md:px-6 md:py-4">
             {[0, 1, 2].map((i) => (
@@ -21,15 +29,14 @@ export default function ClaimLoading() {
             ))}
           </div>
         </Card>
+        {/* Step 1, Confirm it's you: title, two description lines, the email label, input, help, Send code. */}
         <Card padding="main">
-          <Skeleton className="h-3 w-40" />
-          <SkeletonText className="mt-3" lines={2} widths={["92%", "64%"]} />
-          <div className="mt-5 flex items-center gap-3">
-            <SkeletonTile size={32} />
-            <SkeletonText className="flex-1" lines={2} widths={["50%", "36%"]} />
-          </div>
-          <Skeleton className="mt-5 h-9 w-full max-w-[400px] rounded-sm" />
-          <Skeleton className="mt-4 h-8 w-28 rounded-sm" />
+          <h2 className="text-title">Confirm it&apos;s you</h2>
+          <SkeletonText className="mt-1 max-w-prose" lines={2} widths={["96%", "58%"]} lineHeight={18} />
+          <SkeletonLine className="mt-4" width={84} lineHeight={18} />
+          <Skeleton className="mt-1.5 h-9 w-full max-w-[400px] rounded-sm max-md:h-11" />
+          <SkeletonLine className="mt-1.5" width="64%" lineHeight={16} />
+          <Skeleton className="mt-4 h-8 w-28 rounded-sm max-md:h-10 max-md:w-full" />
         </Card>
       </SkeletonRegion>
     </SingleColumnLayout>

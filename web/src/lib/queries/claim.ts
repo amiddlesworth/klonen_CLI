@@ -1,26 +1,18 @@
 import "server-only";
-import { asc, eq, or, sql } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { availability, organizations, people, tenures, treeEdges } from "@/db/schema";
-import { seasonCount, type AvailabilityAudience, type RoleGroup } from "@/lib/format";
+import { availability, organizations } from "@/db/schema";
+import { buildLedger, buildTree, coachingSeasons, firstSeason, inferredReason, spanText, type RangeText } from "@/components/profile/model";
+import type { AvailabilityAudience, RoleGroup } from "@/lib/format";
+import type { OrgSummary } from "./people";
+import { getProfileCached, getTreeCached } from "./profile";
 
 /*
  * Claim flow (/claim/[slug]) and Open to opportunities settings (/settings/availability).
  * Reads only: the claim flow never changes a person's record (see lib/actions/claim.ts).
  */
 
-export type ClaimOrg = {
-  id: string;
-  slug: string;
-  name: string;
-  shortName: string;
-  level: string | null;
-  conference: string | null;
-  conferenceAbbr: string | null;
-  city: string | null;
-  state: string | null;
-  inRegistry: boolean;
-};
+export type ClaimOrg = Pick<OrgSummary, "id" | "slug" | "name" | "shortName" | "level" | "conference" | "conferenceAbbr" | "state" | "inRegistry">;
 
 /** One stint as the claim review lists it (serializable: passed to the client flow). */
 export type ClaimStint = {
@@ -35,6 +27,12 @@ export type ClaimStint = {
   evidence: string | null;
   sourceUrl: string | null;
   org: ClaimOrg;
+  /** The profile ledger's words for this stint's years (spanText), so both screens read the same. */
+  range: RangeText;
+  /** A year is shown but the source didn't state it (the profile's rule: dotted underline). */
+  inferred: boolean;
+  /** The profile's plain-words reason, quoting the source ("from the staff bio, which says …"). */
+  inferredReason: string;
 };
 
 export type ClaimSubject = {
@@ -51,79 +49,58 @@ export type ClaimSubject = {
   currentOrg: ClaimOrg | null;
   /** Coaching stints first (newest first, as the profile orders them), then playing stints. */
   stints: ClaimStint[];
-  /** The profile header's numbers, computed the way the profile computes them. */
-  stats: { seasonsCoached: number | null; stops: number; treeSize: number; firstSeason: number | null };
+  /** The profile header's numbers, from the profile's own model functions on the same rows. */
+  stats: {
+    seasonsCoached: number | null;
+    stops: number;
+    treeSize: number;
+    firstSeason: { year: number; inferred: boolean; reason: string } | null;
+  };
 };
 
-const orgCols = {
-  id: organizations.id,
-  slug: organizations.slug,
-  name: organizations.name,
-  shortName: organizations.shortName,
-  level: organizations.level,
-  conference: organizations.conference,
-  conferenceAbbr: organizations.conferenceAbbr,
-  city: organizations.city,
-  state: organizations.state,
-  inRegistry: organizations.inRegistry,
-};
+const pickOrg = (o: OrgSummary): ClaimOrg => ({
+  id: o.id,
+  slug: o.slug,
+  name: o.name,
+  shortName: o.shortName,
+  level: o.level,
+  conference: o.conference,
+  conferenceAbbr: o.conferenceAbbr,
+  state: o.state,
+  inRegistry: o.inRegistry,
+});
 
-/** The profile a visitor is claiming, with every stint to review. Null when the slug is unknown. */
+/**
+ * The profile a visitor is claiming, with every stint to review. Null when the slug is unknown.
+ * Built from the same request-cached reads as /in/[slug] (getProfile, getTree) and the profile's own
+ * model functions, so the step 3 preview shows exactly the numbers and words the profile header shows.
+ */
 export async function getClaimSubject(slug: string): Promise<ClaimSubject | null> {
-  const [person] = await db
-    .select({
-      id: people.id,
-      slug: people.slug,
-      fullName: people.fullName,
-      firstName: people.firstName,
-      currentTitle: people.currentTitle,
-      currentOrgId: people.currentOrgId,
-      claimed: people.claimed,
-      isDemo: people.isDemo,
-      sourceUrl: people.sourceUrl,
-    })
-    .from(people)
-    .where(eq(people.slug, slug))
-    .limit(1);
-  if (!person) return null;
+  const profile = await getProfileCached(slug);
+  if (!profile) return null;
+  const { person, currentOrg, experience, playing } = profile;
+  const tree = await getTreeCached(person.id);
 
-  const [rows, currentOrg, [tree]] = await Promise.all([
-    db
-      .select({
-        id: tenures.id,
-        role: tenures.role,
-        roleGroup: tenures.roleGroup,
-        startYear: tenures.startYear,
-        endYear: tenures.endYear,
-        isCurrent: tenures.isCurrent,
-        asPlayer: tenures.asPlayer,
-        yearsExplicit: tenures.yearsExplicit,
-        evidence: tenures.evidence,
-        sourceUrl: tenures.sourceUrl,
-        org: orgCols,
-      })
-      .from(tenures)
-      .innerJoin(organizations, eq(organizations.id, tenures.orgId))
-      .where(eq(tenures.personId, person.id))
-      .orderBy(asc(tenures.sortOrder), asc(tenures.id)),
-    person.currentOrgId
-      ? db
-          .select(orgCols)
-          .from(organizations)
-          .where(eq(organizations.id, person.currentOrgId))
-          .limit(1)
-          .then((r) => r[0] ?? null)
-      : Promise.resolve(null),
-    db
-      .select({ n: sql<number>`count(distinct case when ${treeEdges.mentorId} = ${person.id} then ${treeEdges.menteeId} else ${treeEdges.mentorId} end)::int` })
-      .from(treeEdges)
-      .where(or(eq(treeEdges.mentorId, person.id), eq(treeEdges.menteeId, person.id))),
-  ]);
+  // The profile page's rows: coaching stints in source order (newest first), then playing stints.
+  const rows = [...experience.flatMap((g) => g.roles), ...playing];
+  const firstName = person.firstName || person.fullName.split(" ")[0];
+  const stints: ClaimStint[] = rows.map((r) => ({
+    id: r.id,
+    role: r.role,
+    roleGroup: r.roleGroup as RoleGroup,
+    startYear: r.startYear,
+    endYear: r.endYear,
+    isCurrent: r.isCurrent,
+    asPlayer: r.asPlayer,
+    yearsExplicit: r.yearsExplicit,
+    evidence: r.evidence,
+    sourceUrl: r.sourceUrl,
+    org: pickOrg(r.org),
+    range: spanText(r),
+    inferred: !r.yearsExplicit && (!!r.startYear || !!r.endYear),
+    inferredReason: inferredReason(r.evidence),
+  }));
 
-  const stints = rows as ClaimStint[];
-  const coaching = stints.filter((s) => !s.asPlayer);
-  const starts = coaching.map((s) => s.startYear).filter((y): y is number => !!y);
-  const firstSeason = starts.length ? Math.min(...starts) : null;
   return {
     person: {
       id: person.id,
@@ -135,13 +112,13 @@ export async function getClaimSubject(slug: string): Promise<ClaimSubject | null
       isDemo: person.isDemo,
       sourceUrl: person.sourceUrl,
     },
-    currentOrg,
-    stints: [...coaching, ...stints.filter((s) => s.asPlayer)],
+    currentOrg: currentOrg ? pickOrg(currentOrg) : null,
+    stints,
     stats: {
-      seasonsCoached: firstSeason ? seasonCount(firstSeason, null, true) : null,
-      stops: new Set(coaching.map((s) => s.org.id)).size,
-      treeSize: tree?.n ?? 0,
-      firstSeason,
+      seasonsCoached: coachingSeasons(rows).length || null,
+      stops: buildLedger(rows).length,
+      treeSize: buildTree(tree, firstName, currentOrg?.slug ?? null).unique,
+      firstSeason: firstSeason(rows),
     },
   };
 }

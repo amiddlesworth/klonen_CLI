@@ -40,6 +40,10 @@ export default async function AvailabilityPage() {
 
   const [settings, programs] = await Promise.all([getAvailabilitySettings(session.person.id), getRegistryPrograms()]);
   const currentOrgId = session.person.currentOrgId;
+  const org = session.org;
+  const currentProgram = org
+    ? { id: org.id, name: org.name, shortName: org.shortName, conferenceAbbr: org.conferenceAbbr, conference: org.conference, level: org.level, state: org.state }
+    : null;
   const regionCounts: Record<string, number> = {};
   for (const p of programs) {
     const r = regionForState(p.state);
@@ -60,7 +64,7 @@ export default async function AvailabilityPage() {
       <AvailabilityForm
         initial={settings}
         programs={programs.filter((p) => p.id !== currentOrgId)}
-        currentProgram={session.org ? { shortName: session.org.shortName, name: session.org.name } : null}
+        currentProgram={currentProgram}
         regionCounts={regionCounts}
       />
     </SingleColumnLayout>

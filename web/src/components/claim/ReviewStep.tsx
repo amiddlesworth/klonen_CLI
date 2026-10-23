@@ -2,7 +2,7 @@
 import { useRef, useState, type RefObject } from "react";
 import { CircleAlert, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Card, CardFooter } from "@/components/ui/Card";
+import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
 import { Textarea } from "@/components/ui/Textarea";
@@ -13,6 +13,8 @@ import { StintReviewRow } from "./StintReviewRow";
 type ReviewStepProps = {
   headingRef: RefObject<HTMLHeadingElement | null>;
   stints: ClaimStint[];
+  /** A fictional demo person: the intro says the roles were invented, and each row has a Demo chip. */
+  isDemo: boolean;
   sourceDetail: string;
   reviews: Record<number, Review>;
   notes: Record<number, string>;
@@ -29,13 +31,22 @@ function plural(n: number, one: string, many: string) {
   return `${n} ${n === 1 ? one : many}`;
 }
 
+/** Bring an element to the middle of the viewport (clear of the sticky footer), then focus it. */
+function reveal(el: HTMLElement | null | undefined) {
+  if (!el) return;
+  el.scrollIntoView({ block: "center" });
+  el.focus({ preventScroll: true });
+}
+
 /**
  * Step 2, Review your career (§8.11): every stint with Correct · Needs a fix and an inline note.
- * Continue checks that every stint was reviewed and every fix has a note, then moves focus to the
- * first one that wasn't.
+ * The footer is sticky at the bottom of the viewport (above the tab bar on phone), so the reviewed
+ * count, "Mark the rest correct", Back and Continue stay in reach on a 20-role career. Continue
+ * checks that every stint was reviewed and every fix has a note, then moves focus to the first one
+ * that wasn't; only that row turns --danger, the other skipped rows get a neutral caption.
  */
 export function ReviewStep(props: ReviewStepProps) {
-  const { headingRef, stints, sourceDetail, reviews, notes, missing, onReview, onNote, onMarkRestCorrect, onMissing, onBack, onContinue } = props;
+  const { headingRef, stints, isDemo, sourceDetail, reviews, notes, missing, onReview, onNote, onMarkRestCorrect, onMissing, onBack, onContinue } = props;
   const [checked, setChecked] = useState(false);
   const toggles = useRef(new Map<number, HTMLDivElement | null>());
 
@@ -43,7 +54,8 @@ export function ReviewStep(props: ReviewStepProps) {
   const playing = stints.filter((s) => s.asPlayer);
   const reviewed = stints.filter((s) => reviews[s.id]).length;
   const unreviewed = stints.length - reviewed;
-  const hasInferred = stints.some((s) => !s.yearsExplicit && s.startYear);
+  const firstSkipped = stints.find((s) => !reviews[s.id])?.id ?? null;
+  const hasInferred = stints.some((s) => s.inferred && !s.range.undated);
 
   function missingNote(s: ClaimStint) {
     return reviews[s.id] === "fix" && !notes[s.id]?.trim();
@@ -60,14 +72,15 @@ export function ReviewStep(props: ReviewStepProps) {
 
   function next() {
     setChecked(true);
-    const skipped = stints.find((s) => !reviews[s.id]);
-    if (skipped) {
-      toggles.current.get(skipped.id)?.querySelector<HTMLButtonElement>('[role="radio"]')?.focus();
+    if (firstSkipped !== null) {
+      const group = toggles.current.get(firstSkipped);
+      group?.scrollIntoView({ block: "center" });
+      group?.querySelector<HTMLButtonElement>('[role="radio"]')?.focus({ preventScroll: true });
       return;
     }
     const noNote = stints.find(missingNote);
     if (noNote) {
-      document.getElementById(`stint-${noNote.id}-note`)?.focus();
+      reveal(document.getElementById(`stint-${noNote.id}-note`));
       return;
     }
     onContinue();
@@ -83,11 +96,12 @@ export function ReviewStep(props: ReviewStepProps) {
           }}
           stint={s}
           sourceDetail={sourceDetail}
+          isDemo={isDemo}
           review={reviews[s.id] ?? null}
           note={notes[s.id] ?? ""}
           onReview={(v) => onReview(s.id, v)}
           onNote={(v) => onNote(s.id, v)}
-          reviewError={checked && !reviews[s.id] ? "Choose Correct or Needs a fix." : null}
+          reviewState={!checked || reviews[s.id] ? null : s.id === firstSkipped ? "error" : "pending"}
           noteError={checked && missingNote(s) ? "Say what needs fixing." : null}
         />
       ))}
@@ -103,7 +117,9 @@ export function ReviewStep(props: ReviewStepProps) {
         <span className="num text-small text-fg-3">{plural(stints.length, "role", "roles")}</span>
       </div>
       <p className="mt-1 max-w-prose text-small text-fg-2">
-        This is what public sources say. Mark each role Correct, or Needs a fix and tell us what&apos;s wrong. Open Source to see the sentence each one came from.
+        {isDemo
+          ? "These roles were invented for the demo; this person isn't real. Mark each role Correct, or Needs a fix and say what's wrong."
+          : "This is what public sources say. Mark each role Correct, or Needs a fix and tell us what's wrong. Open Source to see the sentence each one came from."}
       </p>
 
       {stints.length === 0 ? (
@@ -115,19 +131,8 @@ export function ReviewStep(props: ReviewStepProps) {
         />
       ) : (
         <>
-          <div className="mt-4 flex min-h-8 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-divider pb-3">
-            <p className="num text-small text-fg-2" aria-live="polite">
-              <span className="font-semibold text-fg-1">{reviewed}</span> of {stints.length} reviewed
-            </p>
-            {unreviewed > 0 && stints.length > 1 && (
-              <Button variant="ghost" size="sm" onClick={onMarkRestCorrect}>
-                {reviewed === 0 ? "Mark all correct" : "Mark the rest correct"}
-              </Button>
-            )}
-          </div>
-
           {coaching.length > 0 && (
-            <section aria-labelledby="claim-coaching" className="mt-4">
+            <section aria-labelledby="claim-coaching" className="mt-4 border-t border-divider pt-4">
               <h3 id="claim-coaching" className="text-small font-semibold">
                 Coaching <span className="num font-normal text-fg-3">{coaching.length}</span>
               </h3>
@@ -166,22 +171,44 @@ export function ReviewStep(props: ReviewStepProps) {
         fieldClassName="mt-5"
       />
 
-      <CardFooter className="mt-5 flex flex-col gap-3 pt-4 md:flex-row md:items-center">
-        <div className="min-w-0 flex-1">
-          {summary && (
-            <p role="alert" className="flex items-start gap-1.5 text-small text-danger">
-              <Icon icon={CircleAlert} size={16} className="mt-0.5" />
-              {summary}
-            </p>
-          )}
+      {/*
+        Sticky footer: bleeds to the card edges and replaces the card's bottom padding. Under the
+        screenshot capture aid (§10, html.capture-full) it sits in place, since full-page captures
+        draw sticky elements at their first-viewport position.
+      */}
+      <div className="sticky bottom-[calc(var(--tabbar-h)+env(safe-area-inset-bottom))] z-10 -mx-4 -mb-4 mt-5 border-t border-divider bg-surface px-4 py-3 md:bottom-0 md:-mx-6 md:-mb-5 md:rounded-b-md md:px-6 [.capture-full_&]:static">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
+          <div className="min-w-0 flex-1">
+            <div className="flex min-h-7 items-center justify-between gap-3">
+              <p className="num text-small text-fg-2" aria-live="polite">
+                <span className="font-semibold text-fg-1">{reviewed}</span> of {stints.length} reviewed
+              </p>
+              {unreviewed > 0 && stints.length > 1 && (
+                <Button variant="ghost" size="sm" phone="none" onClick={onMarkRestCorrect} className="-mr-2.5 max-md:before:absolute max-md:before:-inset-2 md:hidden">
+                  {reviewed === 0 ? "Mark all correct" : "Mark the rest correct"}
+                </Button>
+              )}
+            </div>
+            {summary && (
+              <p role="alert" className="mt-0.5 flex items-start gap-1.5 text-small text-danger">
+                <Icon icon={CircleAlert} size={16} className="mt-px" />
+                {summary}
+              </p>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-2 md:flex md:items-center">
+            {unreviewed > 0 && stints.length > 1 && (
+              <Button variant="ghost" onClick={onMarkRestCorrect} className="max-md:hidden">
+                {reviewed === 0 ? "Mark all correct" : "Mark the rest correct"}
+              </Button>
+            )}
+            <Button onClick={onBack}>Back</Button>
+            <Button variant="primary" onClick={next}>
+              Continue
+            </Button>
+          </div>
         </div>
-        <div className="grid grid-cols-2 gap-2 md:flex">
-          <Button onClick={onBack}>Back</Button>
-          <Button variant="primary" onClick={next}>
-            Continue
-          </Button>
-        </div>
-      </CardFooter>
+      </div>
     </Card>
   );
 }

@@ -12,6 +12,14 @@ export const POST_UNITS = ["offense", "defense", "special_teams", "staff"] as co
 export const SALARY_MAX = 500_000;
 export const DESCRIPTION_MIN = 40;
 export const DESCRIPTION_MAX = 5000;
+export const HOW_TO_APPLY_MAX = 200;
+export const CITY_MAX = 60;
+
+/** The heading of the section "How to apply" adds to the end of the description. */
+export const HOW_TO_APPLY_HEADING = "How to apply";
+
+const EMAIL = /^[^\s@<>()]+@[^\s@<>()]+\.[a-z]{2,}$/i;
+const URL_RE = /^https?:\/\/[^\s<>"]+\.[^\s<>"]+$/i;
 
 /** "45,000", "$45000", "45000.00" -> 45000; empty -> undefined. */
 const money = z.preprocess(
@@ -39,6 +47,13 @@ export const postJobSchema = z
       .max(80, "Keep the title under 80 characters."),
     roleGroup: z.enum(POST_ROLE_GROUPS, { errorMap: () => ({ message: "Choose a role group." }) }),
     unit: z.enum(POST_UNITS, { errorMap: () => ({ message: "Choose a unit." }) }),
+    city: z
+      .string()
+      .trim()
+      .max(CITY_MAX, `Keep the city under ${CITY_MAX} characters.`)
+      .refine((v) => !v || /^[\p{L}][\p{L} .'’-]*$/u.test(v), "Enter just the city name, like Forest Grove.")
+      .optional()
+      .default(""),
     employmentType: z.enum(EMPLOYMENT_TYPES, { errorMap: () => ({ message: "Choose an employment type." }) }),
     salaryMin: money,
     salaryMax: money,
@@ -47,6 +62,13 @@ export const postJobSchema = z
       .trim()
       .min(DESCRIPTION_MIN, `Describe the role in at least ${DESCRIPTION_MIN} characters.`)
       .max(DESCRIPTION_MAX, `Keep the description under ${DESCRIPTION_MAX.toLocaleString("en-US")} characters.`),
+    howToApply: z
+      .string()
+      .trim()
+      .max(HOW_TO_APPLY_MAX, `Keep this under ${HOW_TO_APPLY_MAX} characters.`)
+      .refine((v) => !v || EMAIL.test(v) || URL_RE.test(v), "Enter a web address starting with https:// or an email address.")
+      .optional()
+      .default(""),
   })
   .superRefine((v, ctx) => {
     if (v.salaryMin && v.salaryMax && v.salaryMin > v.salaryMax) {
@@ -56,7 +78,7 @@ export const postJobSchema = z
 
 export type PostJobInput = z.input<typeof postJobSchema>;
 export type PostJobValues = z.output<typeof postJobSchema>;
-export type PostJobField = "title" | "roleGroup" | "unit" | "employmentType" | "salaryMin" | "salaryMax" | "description";
+export type PostJobField = "title" | "roleGroup" | "unit" | "city" | "employmentType" | "salaryMin" | "salaryMax" | "description" | "howToApply";
 export type PostJobErrors = Partial<Record<PostJobField, string>>;
 
 /** The first message per field, in form order. */
@@ -75,4 +97,11 @@ export function parseMoney(v: string): number | undefined {
   return r.success ? r.data : undefined;
 }
 
-export type PostJobState = { errors: PostJobErrors; formError?: string } | null;
+export type PostJobState = { errors: PostJobErrors; formError?: string; published?: { id: number; title: string } } | null;
+
+/** The stored description: the text as written, plus a "How to apply" section when one is given. */
+export function composeDescription(description: string, howToApply?: string | null): string {
+  const text = description.trim();
+  const apply = howToApply?.trim();
+  return apply ? `${text}\n\n${HOW_TO_APPLY_HEADING}\n${apply}` : text;
+}

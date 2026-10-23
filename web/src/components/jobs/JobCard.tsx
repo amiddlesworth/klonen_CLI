@@ -9,7 +9,7 @@ import { Icon } from "@/components/ui/Icon";
 import { OrgMark } from "@/components/ui/OrgMark";
 import { cn } from "@/lib/cn";
 import { salaryRange } from "@/lib/format";
-import { isSampleJob, jobSubline, postedLabel, postedTitle, roleGroupLabel } from "./labels";
+import { LISTING_SEASON, hasRealPostedAt, isSampleJob, jobSubline, postedLabel, postedTitle, roleGroupLabel } from "./labels";
 import { SaveJobButton } from "./SaveJobButton";
 
 export type JobCardJob = {
@@ -22,10 +22,17 @@ export type JobCardJob = {
   postedAt: Date | null;
   source: string;
   isDemo: boolean;
+  /** Posted "City, ST" (optional; falls back to the program's place). */
+  location?: string | null;
   org: { shortName: string; name: string; city: string | null; state: string | null; conferenceAbbr: string | null; level: string | null };
 };
 
-export type JobProof = { people: { name: string; slug: string }[]; sentence: string };
+export type JobProof = {
+  people: { name: string; slug: string }[];
+  sentence: string;
+  /** The viewer's own program: "{program} · your program", shown above the sentence (§8.3 ContextStrip). */
+  strip?: { subject: string; reason: string } | null;
+};
 
 type JobCardProps = {
   job: JobCardJob;
@@ -52,7 +59,8 @@ function Chips({ job }: { job: JobCardJob }) {
   return (
     <div className="mt-2.5 flex flex-wrap gap-1.5">
       {isSampleJob(job) && <SampleChip label="Sample listing" />}
-      <Chip>{roleGroupLabel(job.roleGroup)}</Chip>
+      {/* The post-job preview has no role group until one is chosen, so it shows no chip for it. */}
+      {job.roleGroup && <Chip>{roleGroupLabel(job.roleGroup)}</Chip>}
       <LevelBadge level={job.org.level} />
     </div>
   );
@@ -133,14 +141,17 @@ export function JobCard({ job, variant = "row", href, selectHref, selected, meta
         <H className={cn("text-subtitle font-semibold leading-5 text-fg-1", variant === "card" && "mt-0.5")}>{title}</H>
         <p className="mt-0.5 text-small text-fg-2">{jobSubline(job)}</p>
         <Chips job={job} />
-        {variant === "row" && (salary || job.postedAt) && (
+        {variant === "row" && (
           <p className="mt-2 flex flex-wrap gap-x-1.5 text-caption text-fg-3">
             {salary && <span className="num font-medium text-fg-2">{salary}</span>}
-            {salary && job.postedAt && <span aria-hidden="true">·</span>}
-            {job.postedAt && (
+            {salary && <span aria-hidden="true">·</span>}
+            {/* Only a posted listing has a real time; samples read "2026 season" (§6.3, §11 rule 6). */}
+            {hasRealPostedAt(job) ? (
               <time dateTime={job.postedAt.toISOString()} title={postedTitle(job.postedAt)}>
                 {postedLabel(job.postedAt)}
               </time>
+            ) : (
+              <span className="num">{LISTING_SEASON}</span>
             )}
           </p>
         )}

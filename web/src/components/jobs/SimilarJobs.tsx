@@ -16,7 +16,7 @@ export function SimilarJobs({ jobs, roleGroup }: { jobs: JobListItem[]; roleGrou
         size="rail"
         title="Similar jobs"
         action={
-          <TextLink href={jobsHref({ roles: [roleGroup] })} arrow className="text-small">
+          <TextLink href={jobsHref({ roles: [roleGroup] })} arrow target24 className="text-small">
             See all
           </TextLink>
         }

@@ -1,7 +1,12 @@
 import { Card } from "@/components/ui/Card";
 import { Skeleton, SkeletonLine, SkeletonRegion, SkeletonRows, SkeletonText, SkeletonTile } from "@/components/ui/Skeleton";
 
-/** Header card skeleton (§8.0): tile, two text lines, chips, three stat blocks and the tab row. */
+/**
+ * Header card skeleton (§8.0) on the real card's rhythm, so nothing moves when content arrives:
+ * tile, the display line (32px, 28 on phone), the 22px subtitle, 20px chips (mt-2), the stat band
+ * (mt-5; 28px value over a 16px label; four columns, three on phone) and the 44px tab row under
+ * its 1px divider.
+ */
 export function ProgramHeaderSkeleton() {
   return (
     <Card className="px-4 pt-4 md:px-6 md:pt-6">
@@ -9,11 +14,14 @@ export function ProgramHeaderSkeleton() {
         <div className="grid grid-cols-[48px_minmax(0,1fr)] gap-x-3 gap-y-4 md:grid-cols-[56px_minmax(0,1fr)] md:gap-x-5 lg:grid-cols-[56px_minmax(0,1fr)_auto]">
           <SkeletonTile size={56} className="max-md:size-12! max-md:rounded-[10px]!" />
           <div className="min-w-0">
-            {/* text-display line (28 phone / 32 desktop), then the 22px subtitle */}
+            {/* text-display line (28 phone / 32 desktop) */}
             <span className="flex h-7 items-center md:mt-0.5 md:h-8">
               <span className="block h-3 w-[58%] rounded-xs bg-hover" />
             </span>
-            <SkeletonLine width="34%" lineHeight={22} className="mt-0.5" />
+            {/* subtitle: 20px line on phone (text-body), 22px from md (text-subtitle) */}
+            <span className="mt-0.5 flex h-5 items-center md:h-[22px]">
+              <span className="block h-2.5 w-[34%] rounded-xs bg-hover" />
+            </span>
             <span className="mt-2 flex gap-1.5">
               <Skeleton className="h-5 w-11" />
               <Skeleton className="h-5 w-11" />
@@ -25,9 +33,9 @@ export function ProgramHeaderSkeleton() {
             <Skeleton className="size-11 rounded-sm md:size-8" />
           </span>
         </div>
-        <div className="mt-4 grid grid-cols-3 border-t border-divider md:mt-5">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="py-3.5 pr-4 [&+&]:border-l [&+&]:border-divider [&+&]:pl-5 max-md:[&+&]:pl-2.5">
+        <div className="mt-4 grid grid-cols-3 border-t border-divider md:mt-5 md:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className={`py-3.5 pr-4 max-md:py-3 max-md:pr-1 [&+&]:border-l [&+&]:border-divider [&+&]:pl-5 max-md:[&+&]:pl-2.5${i === 3 ? " max-md:hidden" : ""}`}>
               <span className="flex h-7 items-center max-md:h-6">
                 <span className="block h-3 w-9 rounded-xs bg-hover" />
               </span>
@@ -35,7 +43,7 @@ export function ProgramHeaderSkeleton() {
             </div>
           ))}
         </div>
-        <div className="-mx-4 flex h-11 items-center gap-8 border-t border-divider px-4 md:-mx-6 md:px-6">
+        <div className="-mx-4 box-content flex h-11 items-center gap-8 border-t border-divider px-4 md:-mx-6 md:px-6">
           <Skeleton className="h-2.5 w-14" />
           <Skeleton className="h-2.5 w-24" />
           <Skeleton className="h-2.5 w-10" />

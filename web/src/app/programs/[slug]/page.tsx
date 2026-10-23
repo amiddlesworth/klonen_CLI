@@ -163,7 +163,8 @@ export default async function ProgramPage({ params, searchParams }: PageProps) {
       label: "Open jobs",
     },
     // The fourth column adds what the tabs don't count (§8.6 asks for a founded/restarted year, which the data lacks).
-    { value: counts.played, label: "Coaches from here", href: `${tabHref(org.slug, "alumni")}#played`, hideOnPhone: true },
+    // Linked only when the "Played here" list it points to exists.
+    { value: counts.played, label: "Coaches from here", href: counts.played ? `${tabHref(org.slug, "alumni")}#played` : undefined, hideOnPhone: true },
   ];
   const tabs = [
     { href: tabHref(org.slug, "staff"), label: "Staff", count: staffRead ? counts.staff : null, active: tab === "staff" },

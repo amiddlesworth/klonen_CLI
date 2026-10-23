@@ -1,6 +1,6 @@
 "use client";
 import type { RefObject } from "react";
-import { CircleAlert, Info, ShieldCheck } from "lucide-react";
+import { CircleAlert, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardFooter } from "@/components/ui/Card";
 import { SampleChip } from "@/components/ui/Chip";
@@ -17,6 +17,8 @@ type PublishStepProps = {
   notes: Record<number, string>;
   missing: string;
   publishing: boolean;
+  /** False for signed-out visitors: their walk-through isn't saved. */
+  saves: boolean;
   error: string | null;
   onBack: () => void;
   onPublish: () => void;
@@ -26,7 +28,7 @@ type PublishStepProps = {
  * Step 3, Publish (§8.11): the header as it will appear (no banner, no Unclaimed chip), a summary of
  * the review, the demo boundary in plain words, then primary "Publish profile" and secondary Back.
  */
-export function PublishStep({ headingRef, subject, email, reviews, notes, missing, publishing, error, onBack, onPublish }: PublishStepProps) {
+export function PublishStep({ headingRef, subject, email, reviews, notes, missing, publishing, saves, error, onBack, onPublish }: PublishStepProps) {
   const fixes: ClaimStint[] = subject.stints.filter((s) => reviews[s.id] === "fix");
   const correct = subject.stints.length - fixes.length;
   const first = subject.person.firstName ?? subject.person.fullName.split(" ")[0];
@@ -37,7 +39,7 @@ export function PublishStep({ headingRef, subject, email, reviews, notes, missin
         Publish your profile
       </h2>
       <p className="mt-1 max-w-prose text-small text-fg-2">
-        Here&apos;s the top of the profile once it&apos;s claimed: no Unclaimed label and no public-sources banner.
+        Here&apos;s the top of the profile once it&apos;s claimed, with no Unclaimed label and no banner about public sources.
       </p>
 
       <div className="-mx-4 mt-4 border-y border-divider bg-surface-2 px-4 pb-1 pt-4 md:-mx-6 md:px-6">
@@ -80,11 +82,11 @@ export function PublishStep({ headingRef, subject, email, reviews, notes, missin
       </dl>
 
       <div role="note" className="mt-1 flex items-start gap-2 border-t border-divider pt-3 text-small text-fg-2">
-        <Icon icon={Info} size={16} className="mt-0.5 text-fg-2" />
+        <SampleChip label="Demo" className="mt-px" />
         <p className="min-w-0">
-          <SampleChip label="Demo" className="mr-1.5" />
-          In the live product, Publish makes this profile yours: the Unclaimed label and source banner come off and you can edit everything. In this demo it only
-          records your claim. {first}&apos;s public profile and records stay exactly as they are, and correction notes aren&apos;t saved.
+          In the live product, Publish makes this profile yours: the Unclaimed label and source banner come off and you can edit everything.{" "}
+          {saves ? "In this demo it only records your claim." : "In this demo nothing is saved for visitors."} {first}&apos;s public profile and records stay
+          exactly as they are, and correction notes aren&apos;t saved.
         </p>
       </div>
 

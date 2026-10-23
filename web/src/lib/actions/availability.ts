@@ -56,7 +56,12 @@ export async function saveAvailability(input: z.input<typeof AvailabilityInput>)
     return { ok: false, error: "We couldn't save your setting. Try again." };
   }
 
-  // The status line appears in the shell (Me menu), the feed's mini profile and the settings index.
-  revalidatePath("/", "layout");
+  // The status line shows in the Me menu (refreshed with this page's response, since every page is
+  // rendered per request), the feed's mini profile, the settings index and the owner's profile view.
+  // Revalidate just those routes rather than the whole layout tree.
+  revalidatePath("/settings/availability");
+  revalidatePath("/settings");
+  revalidatePath("/feed");
+  if (session.person.slug) revalidatePath(`/in/${session.person.slug}`);
   return { ok: true, updatedAt: values.updatedAt.toISOString() };
 }

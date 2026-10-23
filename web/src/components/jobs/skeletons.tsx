@@ -24,7 +24,10 @@ export function JobHeaderSkeleton() {
   return (
     <div>
       <div className="grid grid-cols-[48px_minmax(0,1fr)] gap-x-3 md:grid-cols-[56px_minmax(0,1fr)] md:gap-x-4">
-        <SkeletonTile size={56} className="max-md:size-12! max-md:rounded-[10px]!" />
+        <div className="flex">
+          <SkeletonTile size={48} className="md:hidden" />
+          <SkeletonTile size={56} className="max-md:hidden" />
+        </div>
         <div>
           <SkeletonLine width="55%" lineHeight={22} />
           <SkeletonLine width="70%" lineHeight={22} />

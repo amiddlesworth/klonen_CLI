@@ -7,6 +7,7 @@ import { Icon } from "@/components/ui/Icon";
 import { OrgMark } from "@/components/ui/OrgMark";
 import { cn } from "@/lib/cn";
 import { conferenceShort } from "@/lib/format";
+import { stateName } from "@/components/profile/model";
 import type { PickerProgram } from "@/lib/queries/claim";
 
 type ProgramPickerProps = {
@@ -15,16 +16,43 @@ type ProgramPickerProps = {
   programs: PickerProgram[];
   selected: string[];
   onChange: (ids: string[]) => void;
-  /** The coach's current program, named in the help text. */
-  excludedName: string | null;
+  /** The coach's current program: named in the help text, and in the list when a search matches it. */
+  excluded: PickerProgram | null;
   error?: string | null;
 };
 
 const MAX_RESULTS = 8;
 
-function matches(p: PickerProgram, terms: string[]) {
-  const hay = `${p.name} ${p.shortName} ${conferenceShort(p.conferenceAbbr) ?? ""} ${p.conference ?? ""} ${p.state ?? ""}`.toLowerCase();
-  return terms.every((t) => hay.includes(t));
+const words = (text: string | null | undefined) => (text ?? "").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+
+/**
+ * Relevance tier for a query (lower is better), or null when the program doesn't match:
+ * 1 name or short name starts with it · 2 a word in the name or short name starts with it ·
+ * 3 conference abbreviation or state (abbreviation or full name) is exactly it · 4 a word in the
+ * conference's full name starts with it. A multi-word query that matches none of these as a whole
+ * still matches (tier 5) when every word matches one of them on its own.
+ */
+function tier(p: PickerProgram, q: string): number | null {
+  const name = p.name.toLowerCase();
+  const short = p.shortName.toLowerCase();
+  if (name.startsWith(q) || short.startsWith(q)) return 1;
+  const nameText = ` ${words(p.name).join(" ")} ${words(p.shortName).join(" ")}`;
+  const qText = words(q).join(" ");
+  if (qText && nameText.includes(` ${qText}`)) return 2;
+  const abbr = (conferenceShort(p.conferenceAbbr) ?? "").toLowerCase();
+  const exact = [abbr, (p.conferenceAbbr ?? "").toLowerCase(), (p.state ?? "").toLowerCase(), (stateName(p.state) ?? "").toLowerCase()];
+  if (exact.includes(q)) return 3;
+  if (qText && ` ${words(p.conference).join(" ")}`.includes(` ${qText}`)) return 4;
+  return null;
+}
+
+function rank(p: PickerProgram, query: string): number | null {
+  const q = query.trim().toLowerCase().replace(/\s+/g, " ");
+  if (!q) return null;
+  const whole = tier(p, q);
+  if (whole !== null) return whole;
+  const terms = q.split(" ");
+  return terms.length > 1 && terms.every((t) => tier(p, t) !== null) ? 5 : null;
 }
 
 /**
@@ -32,7 +60,7 @@ function matches(p: PickerProgram, terms: string[]) {
  * then a search field with a listbox of matches (tile 24, name, conference · state). Keyboard:
  * ↑ ↓ to move, Enter to add, Esc to close; each token has its own remove button.
  */
-export function ProgramPicker({ id, programs, selected, onChange, excludedName, error }: ProgramPickerProps) {
+export function ProgramPicker({ id, programs, selected, onChange, excluded, error }: ProgramPickerProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -41,11 +69,20 @@ export function ProgramPicker({ id, programs, selected, onChange, excludedName, 
   const byId = useMemo(() => new Map(programs.map((p) => [p.id, p])), [programs]);
   const chosen = selected.map((sid) => byId.get(sid)).filter((p): p is PickerProgram => !!p);
 
-  const results = useMemo(() => {
-    const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
-    if (!terms.length) return [];
-    return programs.filter((p) => !selected.includes(p.id) && matches(p, terms)).slice(0, MAX_RESULTS);
-  }, [programs, query, selected]);
+  // Rank every match, alphabetical within a tier, then show the first MAX_RESULTS and say so.
+  const { results, total, excludedMatches } = useMemo(() => {
+    if (!query.trim()) return { results: [], total: 0, excludedMatches: false };
+    const ranked = programs
+      .filter((p) => !selected.includes(p.id))
+      .map((p) => ({ p, t: rank(p, query) }))
+      .filter((r): r is { p: PickerProgram; t: number } => r.t !== null)
+      .sort((a, b) => a.t - b.t || a.p.name.localeCompare(b.p.name));
+    return {
+      results: ranked.slice(0, MAX_RESULTS).map((r) => r.p),
+      total: ranked.length,
+      excludedMatches: !!excluded && rank(excluded, query) !== null,
+    };
+  }, [programs, query, selected, excluded]);
 
   const expanded = open && query.trim().length > 0;
   const helpId = `${id}-help`;
@@ -145,7 +182,7 @@ export function ProgramPicker({ id, programs, selected, onChange, excludedName, 
           hidden={!expanded}
           className="absolute inset-x-0 top-full z-40 mt-1 max-h-80 overflow-y-auto rounded-md bg-surface p-1 shadow-pop"
         >
-          {results.length === 0 ? (
+          {results.length === 0 && !excludedMatches ? (
             <li role="presentation" className="px-2 py-2.5 text-small text-fg-2">
               No programs match &lsquo;{query.trim()}&rsquo;. Try a school, conference or state.
             </li>
@@ -172,6 +209,16 @@ export function ProgramPicker({ id, programs, selected, onChange, excludedName, 
               </li>
             ))
           )}
+          {excludedMatches && excluded && (
+            <li role="presentation" onMouseDown={(e) => e.preventDefault()} className="px-2 py-2 text-caption text-fg-3">
+              <span className="whitespace-nowrap">{excluded.shortName}</span> is your current program, so it can&apos;t be added.
+            </li>
+          )}
+          {total > results.length && (
+            <li role="presentation" onMouseDown={(e) => e.preventDefault()} className="num border-t border-divider px-2 pb-1.5 pt-2 text-caption text-fg-3">
+              Showing {results.length} of {total}. Keep typing to narrow.
+            </li>
+          )}
         </ul>
       </div>
 
@@ -182,7 +229,13 @@ export function ProgramPicker({ id, programs, selected, onChange, excludedName, 
         </p>
       ) : (
         <p id={helpId} className="text-caption text-fg-3">
-          Only people hiring for these programs see it.{excludedName ? ` ${excludedName} can't be added.` : ""}
+          Only people hiring for these programs see it.
+          {excluded && (
+            <>
+              {" "}
+              <span className="whitespace-nowrap">{excluded.shortName}</span> can&apos;t be added.
+            </>
+          )}
         </p>
       )}
     </div>

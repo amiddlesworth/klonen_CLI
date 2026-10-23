@@ -1,15 +1,20 @@
 import { Briefcase } from "lucide-react";
 import { SingleColumnLayout } from "@/components/shell/Layouts";
 import { ButtonLink } from "@/components/ui/Button";
-import { Card, CardHeader } from "@/components/ui/Card";
+import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 
-/** /jobs/[id] for an id that doesn't exist (or isn't a number). */
+/**
+ * /jobs/[id] for an id that doesn't exist or isn't a number (raised by app/jobs/[id]/layout.tsx,
+ * so the response is a real 404). The h1 uses the page-title scale of every jobs route.
+ */
 export default function JobNotFound() {
   return (
     <SingleColumnLayout>
-      <Card padding="main">
-        <CardHeader as="h1" title="Job not found" />
+      <Card padding="main" aria-labelledby="job-not-found">
+        <h1 id="job-not-found" className="text-display-sm md:text-display">
+          Job not found
+        </h1>
         <EmptyState
           icon={Briefcase}
           title="This job isn't listed anymore, or the link is wrong."

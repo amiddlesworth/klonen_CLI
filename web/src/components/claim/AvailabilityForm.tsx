@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState, useTransition, type FormEvent } from "react";
+import { useMemo, useState, useTransition, type FormEvent, type ReactNode } from "react";
 import { Building2, Check, CircleAlert, EyeOff, Lock, ToggleLeft, Users } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -19,7 +19,8 @@ type AvailabilityFormProps = {
   initial: AvailabilitySettings;
   /** Registry programs the coach may choose (the current program is left out). */
   programs: PickerProgram[];
-  currentProgram: { shortName: string; name: string } | null;
+  /** The coach's current program, always left out of the audience. */
+  currentProgram: PickerProgram | null;
   /** Division III programs per region value. */
   regionCounts: Record<string, number>;
 };
@@ -30,6 +31,24 @@ function snapshot(d: Draft) {
 
 function toggle(list: string[], value: string) {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+}
+
+/** A program's short name in running text: never broken across lines ("Pacific / (OR)"). */
+function Program({ children }: { children: ReactNode }) {
+  return <span className="whitespace-nowrap">{children}</span>;
+}
+
+/** availabilityStatus() text with the program's short name kept on one line. */
+function withProgram(text: string, name: string | null): ReactNode {
+  if (!name || !text.includes(name)) return text;
+  const [before, ...rest] = text.split(name);
+  return (
+    <>
+      {before}
+      <Program>{name}</Program>
+      {rest.join(name)}
+    </>
+  );
 }
 
 const SECTION = "py-4 md:py-5";
@@ -50,7 +69,7 @@ export function AvailabilityForm({ initial, programs, currentProgram, regionCoun
 
   const dirty = useMemo(() => snapshot(draft) !== snapshot(saved), [draft, saved]);
   const current = currentProgram?.shortName ?? null;
-  const status = availabilityStatus(draft.open, draft.audience, current);
+  const status = withProgram(availabilityStatus(draft.open, draft.audience, current), current);
 
   function update(patch: Partial<Draft>) {
     setDraft((d) => ({ ...d, ...patch }));
@@ -86,13 +105,19 @@ export function AvailabilityForm({ initial, programs, currentProgram, regionCoun
     setProgramsError(null);
   }
 
-  const audiences: { value: AvailabilityAudience; label: string; description: string }[] = [
+  const audiences: { value: AvailabilityAudience; label: string; description: ReactNode }[] = [
     { value: "search_firms", label: "Search firms", description: "Recruiters running coaching searches for schools" },
     { value: "selected_programs", label: "Specific programs", description: "Only the programs you choose" },
     {
       value: "all_except_current",
       label: "All employers except my current program",
-      description: `Every program hiring on ${BRAND.name}${current ? `, except ${current}` : ""}`,
+      description: current ? (
+        <>
+          Every program hiring on {BRAND.name}, except <Program>{current}</Program>
+        </>
+      ) : (
+        `Every program hiring on ${BRAND.name}`
+      ),
     },
   ];
 
@@ -104,7 +129,13 @@ export function AvailabilityForm({ initial, programs, currentProgram, regionCoun
             Open to opportunities
           </h1>
           <p className="mt-1 max-w-prose text-small text-fg-2">
-            Let the people hiring know you&apos;d consider a new role{current ? `, without anyone at ${current} finding out` : ""}.
+            Let the people hiring know you&apos;d consider a new role
+            {current ? (
+              <>
+                , without anyone at <Program>{current}</Program> finding out
+              </>
+            ) : null}
+            .
           </p>
           <Switch
             className="mt-3 min-h-11"
@@ -119,7 +150,7 @@ export function AvailabilityForm({ initial, programs, currentProgram, regionCoun
           </p>
         </div>
 
-        <section aria-labelledby="availability-privacy" className="border-y border-divider bg-surface-2 px-4 py-3.5 md:px-6">
+        <section aria-labelledby="availability-privacy" className="border-t border-divider bg-surface-2 px-4 py-3.5 md:px-6">
           <h2 id="availability-privacy" className="text-small font-semibold">
             How this stays private
           </h2>
@@ -134,7 +165,7 @@ export function AvailabilityForm({ initial, programs, currentProgram, regionCoun
             <li className="flex items-start gap-2">
               <Icon icon={Building2} size={16} className="mt-0.5" />
               <span>
-                <span className="font-medium text-fg-1">{current ?? "Your current program"} is always left out.</span> Nobody hiring there sees it, whichever
+                <span className="font-medium text-fg-1">{current ? <Program>{current}</Program> : "Your current program"} is always left out.</span> Nobody hiring there sees it, whichever
                 audience you choose.
               </span>
             </li>
@@ -177,7 +208,7 @@ export function AvailabilityForm({ initial, programs, currentProgram, regionCoun
                   programs={programs}
                   selected={draft.selectedOrgIds}
                   onChange={(ids) => update({ selectedOrgIds: ids })}
-                  excludedName={current}
+                  excluded={currentProgram}
                   error={programsError}
                 />
               </div>
@@ -218,14 +249,14 @@ export function AvailabilityForm({ initial, programs, currentProgram, regionCoun
         <div className="flex flex-col gap-3 border-t border-divider px-4 py-3 md:flex-row md:items-center md:px-6">
           <div className="min-w-0 flex-1 text-small">
             <div role="status">
-              {!error && justSaved && !dirty ? (
+              {!error && justSaved && !dirty && !saving ? (
                 <p className="flex items-start gap-1.5 text-fg-1">
                   <Icon icon={Check} size={16} className="mt-0.5" />
                   <span>
-                    <span className="font-medium">Saved.</span> <span className="text-fg-2">{availabilityStatus(saved.open, saved.audience, current)}</span>
+                    <span className="font-medium">Saved.</span> <span className="text-fg-2">{withProgram(availabilityStatus(saved.open, saved.audience, current), current)}</span>
                   </span>
                 </p>
-              ) : !error && dirty ? (
+              ) : !error && dirty && !saving ? (
                 <p className="text-fg-3">You have unsaved changes.</p>
               ) : null}
             </div>

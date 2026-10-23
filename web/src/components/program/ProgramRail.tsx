@@ -10,8 +10,8 @@ import { TextLink } from "@/components/ui/TextLink";
 import { Avatar } from "@/components/ui/Avatar";
 import { BRAND } from "@/lib/brand";
 import { conferenceShort } from "@/lib/format";
-import type { AlumniEntry, PeerProgram } from "@/lib/queries/program";
-import { CompactRange, compactSpan, rangeHasInferred } from "./LedgerRange";
+import { compactSpan, type AlumniEntry, type PeerProgram } from "@/lib/queries/program";
+import { CompactRange, rangeHasInferred } from "./LedgerRange";
 import { displayTitle, jobsCount, peopleCount } from "./text";
 
 /** The same words wherever a registry program's staff page hasn't been read (header stat, peers rail). */
@@ -94,7 +94,7 @@ export function CoachesFromHereCard({
                   <span className="block truncate text-small font-semibold text-fg-1 underline-offset-2 group-hover/row:underline">{e.person.fullName}</span>
                   {(program || title) && (
                     <span className="flex min-w-0 text-caption text-fg-2">
-                      {program && <span className="shrink-0 font-medium">{program}</span>}
+                      {program && <span className="max-w-full shrink-0 truncate font-medium">{program}</span>}
                       {program && title && (
                         <span aria-hidden="true" className="shrink-0 whitespace-pre">
                           {" · "}

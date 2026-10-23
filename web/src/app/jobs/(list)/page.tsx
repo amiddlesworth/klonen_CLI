@@ -10,8 +10,9 @@ import { JobDetailPane } from "@/components/jobs/JobDetailPane";
 import { JobFilters } from "@/components/jobs/JobFilters";
 import { hasFilters, jobsHref, parseJobsQuery, roleGroupLabel } from "@/components/jobs/labels";
 import { proofFor } from "@/components/jobs/ProgramPeople";
+import { isJobOwner, viewerContext } from "@/components/jobs/viewer";
 import { BRAND } from "@/lib/brand";
-import { getJobDetail, getJobFacets, getNetworkProof, getProgramPeople, searchJobs, type JobsFilter } from "@/lib/queries/jobsx";
+import { getJobDetail, getJobFacets, getNetworkProof, getProgramNetwork, searchJobs, type JobsFilter } from "@/lib/queries/jobsx";
 import { getSession } from "@/lib/session";
 
 type PageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -31,22 +32,23 @@ function plural(n: number, one: string, many: string) {
 
 /**
  * Jobs (§8.9): h1 and filters, then the list. At lg and up the list sits left and the selected
- * job (`?id=`, else the first) right; below lg it is the list only and each job opens its page.
+ * job right: `?id=` when that job is on this page of results, else the first, so the pane never
+ * shows a job the list doesn't contain. Below lg it is the list only and each job opens its page.
  */
 export default async function JobsPage({ searchParams }: PageProps) {
   const query = parseJobsQuery(await searchParams);
   const filter: JobsFilter = { roles: query.roles, states: query.states, conferences: query.conferences, q: query.q };
   const [result, facets, session] = await Promise.all([searchJobs(filter, query.page), getJobFacets(filter, roleGroupLabel), getSession().catch(() => null)]);
 
-  // The selected job: the one in the URL if it exists and is open, else the first on this page.
-  const wanted = query.id ? (result.jobs.find((j) => j.id === query.id)?.id ?? query.id) : result.jobs[0]?.id;
-  let selected = wanted ? await getJobDetail(wanted) : null;
-  if (selected && selected.status !== "open" && result.jobs[0]) selected = await getJobDetail(result.jobs[0].id);
-  if (!selected && result.jobs[0]) selected = await getJobDetail(result.jobs[0].id);
+  const selectedId = (result.jobs.find((j) => j.id === query.id) ?? result.jobs[0])?.id;
+  const selected = selectedId ? await getJobDetail(selectedId) : null;
 
-  const viewerPersonId = session?.user.kind === "coach" ? (session.person?.id ?? null) : null;
-  const [staff, proof] = selected
-    ? await Promise.all([getProgramPeople(selected.org.id, 6), viewerPersonId ? getNetworkProof(viewerPersonId, selected.org.id) : Promise.resolve(null)])
+  const { viewerPersonId, viewerOrgId } = viewerContext(session);
+  const [network, proof] = selected
+    ? await Promise.all([
+        getProgramNetwork(selected.org.id, { viewerPersonId }),
+        viewerPersonId ? getNetworkProof(viewerPersonId, selected.org.id) : Promise.resolve(null),
+      ])
     : [null, null];
 
   const filtered = hasFilters(query);
@@ -72,6 +74,12 @@ export default async function JobsPage({ searchParams }: PageProps) {
             </ButtonLink>
           )}
         </div>
+        {isEmployer && (
+          // Phone: the athletic director's way in, full width under the subtitle (44px).
+          <ButtonLink href="/employers/jobs/new" icon={Plus} variant="secondary" phone="large" fullWidth className="-mt-1 mb-4 md:hidden">
+            Post a job
+          </ButtonLink>
+        )}
         <JobFilters query={query} facets={facets} />
       </Card>
 
@@ -124,7 +132,14 @@ export default async function JobsPage({ searchParams }: PageProps) {
               </div>
             )}
           </Card>
-          {selected && staff && <JobDetailPane job={selected} people={staff.people} peopleTotal={staff.total} proof={proofFor(proof, selected.org.shortName)} />}
+          {selected && network && (
+            <JobDetailPane
+              job={selected}
+              network={network}
+              owner={isJobOwner(session, selected)}
+              proof={proofFor(proof, selected.org.shortName, { ownProgram: !!viewerPersonId && viewerOrgId === selected.org.id })}
+            />
+          )}
         </div>
       )}
     </PageContainer>

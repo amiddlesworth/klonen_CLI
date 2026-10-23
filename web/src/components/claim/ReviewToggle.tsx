@@ -1,32 +1,37 @@
 "use client";
 import { forwardRef, useRef, type KeyboardEvent } from "react";
+import { Check } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
 
 export type Review = "correct" | "fix";
 
-const OPTIONS: { value: Review; label: string }[] = [
-  { value: "correct", label: "Correct" },
-  { value: "fix", label: "Needs a fix" },
+const OPTIONS: { value: Review; label: string; width: string }[] = [
+  // Fixed segment widths on desktop (room for the check) so choosing never shifts the row.
+  { value: "correct", label: "Correct", width: "md:w-[92px]" },
+  { value: "fix", label: "Needs a fix", width: "md:w-[116px]" },
 ];
 
 // The SegmentedControl look (§8.1): --hover track with 2px padding, 28px segments (40px with a 44px
 // hit area on phone), selected = --surface + 1px --border ring. Unlike SegmentedControl it starts
-// with nothing selected, so a coach has to look at every stint.
+// with nothing selected, so a coach has to look at every stint. The selected segment also shows a
+// check, so reviewed rows can be scanned down the column.
 const SEGMENT =
-  "relative inline-flex h-7 min-w-0 items-center justify-center whitespace-nowrap rounded-[5px] px-3 text-small font-medium transition-colors " +
+  "relative inline-flex h-7 min-w-0 items-center justify-center gap-1 whitespace-nowrap rounded-[5px] px-2 text-small font-medium transition-colors " +
   "max-md:h-10 max-md:px-1 max-md:before:absolute max-md:before:inset-x-0 max-md:before:-inset-y-0.5";
 
 type ReviewToggleProps = {
   value: Review | null;
   onChange: (value: Review) => void;
-  /** Accessible name: "Review: Head Football Coach, Pacific (OR)". */
+  /** Accessible name: "Review Head Football Coach at Pacific (OR)". */
   label: string;
   invalid?: boolean;
   describedBy?: string;
+  className?: string;
 };
 
 /** Correct · Needs a fix radio pair for one stint. Arrow keys move and select; Tab stops once. */
-export const ReviewToggle = forwardRef<HTMLDivElement, ReviewToggleProps>(function ReviewToggle({ value, onChange, label, invalid, describedBy }, ref) {
+export const ReviewToggle = forwardRef<HTMLDivElement, ReviewToggleProps>(function ReviewToggle({ value, onChange, label, invalid, describedBy, className }, ref) {
   const inner = useRef<HTMLDivElement | null>(null);
 
   function onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
@@ -55,6 +60,7 @@ export const ReviewToggle = forwardRef<HTMLDivElement, ReviewToggleProps>(functi
       className={cn(
         "inline-flex gap-0.5 rounded-sm bg-hover p-0.5 max-md:grid max-md:w-full max-md:grid-cols-2",
         invalid && "shadow-[0_0_0_1px_var(--danger)]",
+        className,
       )}
     >
       {OPTIONS.map((o, i) => {
@@ -68,8 +74,9 @@ export const ReviewToggle = forwardRef<HTMLDivElement, ReviewToggleProps>(functi
             aria-checked={selected}
             tabIndex={tabbable ? 0 : -1}
             onClick={() => onChange(o.value)}
-            className={cn(SEGMENT, selected ? "bg-surface text-fg-1 shadow-[0_0_0_1px_var(--border)]" : "text-fg-2 hover:text-fg-1")}
+            className={cn(SEGMENT, o.width, selected ? "bg-surface text-fg-1 shadow-[0_0_0_1px_var(--border)]" : "text-fg-2 hover:text-fg-1")}
           >
+            {selected && <Icon icon={Check} size={14} />}
             {o.label}
           </button>
         );

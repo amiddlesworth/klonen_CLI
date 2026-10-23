@@ -151,7 +151,11 @@ export function IdentityStep({ headingRef, verifiedEmail, onVerified, onContinue
         <form noValidate onSubmit={verify} className="mt-4">
           <p className="text-small text-fg-1">
             We sent a 6-digit code to <span className="break-words font-medium">{sentTo}</span>.{" "}
-            <button type="button" onClick={changeEmail} className="target-24 font-medium text-link underline-offset-2 hover:underline">
+            <button
+              type="button"
+              onClick={changeEmail}
+              className="target-24 relative font-medium text-link underline-offset-2 hover:underline max-md:before:absolute max-md:before:-inset-x-1 max-md:before:-inset-y-2.5"
+            >
               Change email
             </button>
           </p>
@@ -181,9 +185,13 @@ export function IdentityStep({ headingRef, verifiedEmail, onVerified, onContinue
               Verify
             </Button>
             {resendIn > 0 ? (
-              <p className="num text-small text-fg-3 max-md:text-center">Resend code in {resendLabel(resendIn)}</p>
+              <p className="num text-small text-fg-3 max-md:flex max-md:min-h-11 max-md:items-center max-md:justify-center">Resend code in {resendLabel(resendIn)}</p>
             ) : (
-              <button type="button" onClick={resend} className="target-24 self-center text-small font-medium text-link underline-offset-2 hover:underline md:self-auto">
+              <button
+                type="button"
+                onClick={resend}
+                className="target-24 self-center rounded-xs text-small font-medium text-link underline-offset-2 hover:underline max-md:my-0 max-md:min-h-11 max-md:px-3 md:self-auto"
+              >
                 Resend code
               </button>
             )}

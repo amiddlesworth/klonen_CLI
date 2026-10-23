@@ -1,6 +1,40 @@
-import { Fragment } from "react";
+import { Fragment, type ReactNode } from "react";
+import { ExternalLink } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
 import type { Block, DescriptionSection, Inline } from "./description";
+
+/** Web addresses and email addresses in a description (the "How to apply" line), made into links. */
+const LINKABLE = /(https?:\/\/[^\s<>"]+[^\s<>".,;:!?)'])|([^\s@<>()"]+@[^\s@<>()"]+\.[a-z]{2,})/gi;
+
+/** Plain text with its web and email addresses as links (§8.1 Link: inside prose, always underlined). */
+function Linkified({ text }: { text: string }) {
+  const out: ReactNode[] = [];
+  let last = 0;
+  for (const m of text.matchAll(LINKABLE)) {
+    const at = m.index ?? 0;
+    if (at > last) out.push(text.slice(last, at));
+    const [match, url, email] = m;
+    const cls = "font-medium text-link underline decoration-1 underline-offset-2 hover:decoration-2 break-words";
+    out.push(
+      url ? (
+        // A listing is user-written content: the link opens in a new tab and passes no ranking or referrer.
+        <a key={at} href={url} target="_blank" rel="noopener noreferrer nofollow ugc" className={cn(cls, "inline-flex items-center gap-[3px]")}>
+          {url}
+          <Icon icon={ExternalLink} size={12} />
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+      ) : (
+        <a key={at} href={`mailto:${email}`} className={cls}>
+          {email}
+        </a>
+      ),
+    );
+    last = at + match.length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return <>{out}</>;
+}
 
 function Inlines({ items }: { items: Inline[] }) {
   return (
@@ -11,7 +45,9 @@ function Inlines({ items }: { items: Inline[] }) {
             {i.text}
           </strong>
         ) : (
-          <Fragment key={k}>{i.text}</Fragment>
+          <Fragment key={k}>
+            <Linkified text={i.text} />
+          </Fragment>
         ),
       )}
     </>

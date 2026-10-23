@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Briefcase } from "lucide-react";
 import { PageContainer, SingleColumnLayout } from "@/components/shell/Layouts";
-import { Card, CardHeader } from "@/components/ui/Card";
+import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PostJobForm } from "@/components/jobs/PostJobForm";
 import { SwitchToEmployer } from "@/components/jobs/SwitchToEmployer";
@@ -31,7 +31,10 @@ export default async function PostJobPage() {
     return (
       <SingleColumnLayout>
         <Card padding="main" aria-labelledby="post-job-gate">
-          <CardHeader as="h1" id="post-job-gate" title="Post a job" />
+          {/* The same h1 scale as the form state, so the route's title doesn't jump between states. */}
+          <h1 id="post-job-gate" className="text-display-sm md:text-display">
+            Post a job
+          </h1>
           <EmptyState
             icon={Briefcase}
             title="Posting jobs uses the athletic director demo account."

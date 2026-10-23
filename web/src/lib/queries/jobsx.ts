@@ -339,7 +339,8 @@ export type NetworkProofPerson = PersonSummary & {
   /** They are this organization's current head coach. */
   headCoachHere: boolean;
 };
-export type NetworkProof = { people: NetworkProofPerson[]; total: number };
+/** The closest `limit` people, how many there are in all, and how many of those only played here. */
+export type NetworkProof = { people: NetworkProofPerson[]; total: number; playersOnly: number };
 
 const RELATION_RANK = { mentor: 0, mentee: 1, peer: 2 } as const;
 
@@ -385,7 +386,7 @@ export async function getNetworkProof(viewerPersonId: string, orgId: string, lim
     cur.last = Math.max(cur.last, last);
   }
   const ordered = [...byPerson.values()].sort((a, b) => a.rank - b.rank || b.last - a.last || a.person.fullName.localeCompare(b.person.fullName));
-  return { people: ordered.slice(0, limit).map((o) => o.person), total: ordered.length };
+  return { people: ordered.slice(0, limit).map((o) => o.person), total: ordered.length, playersOnly: ordered.filter((o) => o.person.asPlayer).length };
 }
 
 /** The organization a demo employer posts for (the program card in the post-job form). */
