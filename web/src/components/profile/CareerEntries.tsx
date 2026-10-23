@@ -3,17 +3,17 @@ import { ProgramBadges } from "@/components/data/Badges";
 import { SectionCard } from "@/components/data/SectionCard";
 import { SourceDisclosure } from "@/components/data/SourceDisclosure";
 import { OrgMark } from "@/components/ui/OrgMark";
-import type { TenureRow } from "@/lib/queries/people";
 import type { AlmaMaterOrg } from "@/lib/queries/profile";
 import { LedgerRange } from "./LedgerRange";
 import { OrgName } from "./ExperienceCard";
-import { inferredReason, spanText, stateName } from "./model";
+import { inferredReason, playingLine, spanText, stateName, type SportRow } from "./model";
 
 /**
  * Playing career (§8.4): stints with asPlayer only, in the group-header layout (tile, school +
- * chips, position line, range dotted when inferred). Hidden when empty.
+ * chips, position line, range dotted when inferred). A stint in another sport names it ("Baseball ·
+ * Player (catcher)"). Hidden when empty.
  */
-export function PlayingCard({ rows, personName, explainInferred }: { rows: TenureRow[]; personName: string; explainInferred: boolean }) {
+export function PlayingCard({ rows, personName, explainInferred }: { rows: SportRow[]; personName: string; explainInferred: boolean }) {
   if (!rows.length) return null;
   return (
     <SectionCard id="playing" title="Playing career">
@@ -31,9 +31,9 @@ export function PlayingCard({ rows, personName, explainInferred }: { rows: Tenur
                       <OrgName org={r.org} />
                       <ProgramBadges level={r.org.level} conferenceAbbr={r.org.conferenceAbbr} conference={r.org.conference} />
                     </h3>
-                    <p className="mt-0.5 text-small text-fg-2">{r.role}</p>
+                    <p className="mt-0.5 text-small text-fg-2">{playingLine(r)}</p>
                   </div>
-                  <LedgerRange text={text} inferred={inferred} reason={inferredReason(r.evidence)} />
+                  <LedgerRange text={text} inferred={inferred} reason={inferredReason(r.evidence)} className="md:max-w-[60%]" />
                 </div>
                 <SourceDisclosure evidence={r.evidence} sourceUrl={r.sourceUrl} sourceDetail={`${personName} bio`} className="mt-0.5" />
               </div>

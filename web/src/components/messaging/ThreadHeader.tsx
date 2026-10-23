@@ -6,7 +6,7 @@ import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
 import { titleShort } from "@/lib/format";
 import type { Participant } from "@/lib/queries/messaging";
-import { PANE_HEADER_CLASS } from "./MessagingFrame";
+import { PANE_HEADER_CLASS } from "./classes";
 import { ThreadMenu } from "./ThreadMenu";
 
 /** The parts of a participant the header shows (a new-message target has no account yet). */

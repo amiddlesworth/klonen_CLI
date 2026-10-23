@@ -18,8 +18,8 @@ import type { ProfilePerson } from "./ProfileDialogs";
 
 type ProfileHeaderProps = {
   /**
-   * headline: the current role in the record's own words (the current coaching stint's role, so the
-   * header and the Experience card name the job the same way), else the directory title.
+   * headline: the current title (currentHeadline: the directory title every surface uses, else the
+   * current coaching stint's role).
    */
   person: ProfilePerson & { headline: string | null; isDemo: boolean };
   currentOrg: OrgSummary | null;
@@ -57,6 +57,8 @@ export function ProfileHeader({ person, currentOrg, viewer, accounts, connection
   const first = person.firstName;
   const programHref = currentOrg?.inRegistry ? `/programs/${currentOrg.slug}` : null;
   const place = stateName(currentOrg?.state);
+  // A line may break after a "/" but never before one, so no headline line starts with punctuation (§11.12).
+  const headline = person.headline?.replace(/ \/ /g, "\u00a0/ ") ?? null;
   const statList: Stat[] = [
     {
       label: "Seasons coached",
@@ -109,8 +111,8 @@ export function ProfileHeader({ person, currentOrg, viewer, accounts, connection
             {person.isDemo && <DemoLabel />}
           </h1>
           {(person.headline || currentOrg) && (
-            <p className="mt-0.5 text-body max-md:text-body md:text-subtitle">
-              {person.headline}
+            <p className="balance mt-0.5 text-body max-md:text-body md:text-subtitle">
+              {headline}
               {person.headline && currentOrg && " at "}
               {currentOrg &&
                 (programHref ? (
@@ -147,7 +149,8 @@ export function ProfileHeader({ person, currentOrg, viewer, accounts, connection
 
 /**
  * In place of the source banner on a fictional demo candidate (§6.4, ARCHITECTURE "Demo data honesty"):
- * nothing here comes from a public source, and there is no one to claim the profile.
+ * nothing here comes from a public source, and there is no one to claim the profile. It says everything
+ * the record's own About says, so the page shows no About card for a demo candidate.
  */
 function DemoBanner() {
   return (
@@ -156,7 +159,10 @@ function DemoBanner() {
       className="-mx-4 flex items-start gap-x-3 border-t border-divider bg-surface-2 px-4 py-3 text-small leading-5 text-fg-2 md:-mx-6 md:px-6"
     >
       <SampleChip label="Demo" className="mt-px shrink-0" />
-      <p className="min-w-0 flex-1">Fictional demo candidate: the name and career are invented for the hiring-pipeline demo.</p>
+      <p className="min-w-0 flex-1">
+        Fictional demo candidate: the name and career are invented for the hiring-pipeline demo, and the programs are real schools used only
+        as a setting.
+      </p>
     </div>
   );
 }

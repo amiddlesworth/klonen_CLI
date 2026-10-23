@@ -117,15 +117,23 @@ export function ProfileActions({ person, viewer, accounts, connection: initialCo
   );
 
   let buttons;
-  if (demo) {
-    // A fictional demo candidate: no one can receive a connection, a message or a claim invite.
+  // A fictional demo candidate: no one can receive a connection, a message or a claim invite, and there
+  // is no record to report. Everyone but the athletic director gets one labelled Share button (a lone
+  // "···" with a one-item menu reads like a control that failed to load).
+  const demoShareOnly = demo && viewer !== "employer";
+  if (demoShareOnly) {
+    buttons = (
+      <Button icon={Forward} phone="large" className={FLEX} onClick={share}>
+        Share profile
+      </Button>
+    );
+  } else if (demo) {
     // The athletic director demo arrives here from the hiring pipeline; give them the way back.
-    buttons =
-      viewer === "employer" ? (
-        <ButtonLink href="/employers/pipeline" icon={LayoutGrid} phone="large" className={FLEX}>
-          Hiring pipeline
-        </ButtonLink>
-      ) : null;
+    buttons = (
+      <ButtonLink href="/employers/pipeline" icon={LayoutGrid} phone="large" className={FLEX}>
+        Hiring pipeline
+      </ButtonLink>
+    );
   } else if (viewer === "owner") {
     buttons = (
       <>
@@ -178,7 +186,7 @@ export function ProfileActions({ person, viewer, accounts, connection: initialCo
   return (
     <div className={cn("flex items-start gap-2", className)}>
       {buttons}
-      {more}
+      {!demoShareOnly && more}
       {!person.claimed && !demo && viewer !== "owner" && viewer !== "visitor" && (
         <InviteSheet person={person} reason={invite ?? "invite"} open={invite !== null} onOpenChange={(v) => !v && setInvite(null)} />
       )}

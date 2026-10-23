@@ -147,7 +147,7 @@ export default async function MessagingPage({ searchParams }: Props) {
 
   return (
     <PageContainer footer={!explicit} className={cn(FRAME_PAGE_CLASS, explicit && FRAME_PAGE_THREAD_CLASS)}>
-      <MessagingCard selectedId={thread.id}>
+      <MessagingCard selectedId={thread.id} explicit={explicit}>
         <InboxPane hiddenOnPhone={explicit} unread={unreadTotal}>
           <InboxList threads={threads} selectedId={thread.id} explicit={explicit} now={new Date()} />
         </InboxPane>

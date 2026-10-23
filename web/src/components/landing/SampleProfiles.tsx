@@ -11,9 +11,10 @@ import { TextLink } from "@/components/ui/TextLink";
 import type { SampleProfile } from "@/lib/queries/landing";
 import { SectionHeader } from "./SectionHeader";
 
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
-
-/** "33 seasons · 13 stops · 15 in tree", numbers 600 --fg-1 (the same numbers as the profile header). */
+/**
+ * "33 seasons · 13 stops · 15 in tree", numbers 600 --fg-1 (the same numbers as the profile header).
+ * At md, where the card is a row, the three facts stack in the card's right column.
+ */
 function CareerLine({ p }: { p: SampleProfile }) {
   const parts = [
     p.seasons !== null ? { n: p.seasons, label: p.seasons === 1 ? "season" : "seasons" } : null,
@@ -21,10 +22,10 @@ function CareerLine({ p }: { p: SampleProfile }) {
     { n: p.treeSize, label: "in tree" },
   ].filter((x): x is { n: number; label: string } => !!x);
   return (
-    <p className="text-small text-fg-2">
+    <p className="text-small text-fg-2 md:max-lg:flex md:max-lg:flex-col md:max-lg:gap-0.5">
       {parts.map((x, i) => (
         <span key={x.label} className="whitespace-nowrap">
-          {i > 0 && " · "}
+          {i > 0 && <span className="md:max-lg:hidden"> · </span>}
           <span className="num font-semibold text-fg-1">{x.n}</span> {x.label}
         </span>
       ))}
@@ -35,13 +36,15 @@ function CareerLine({ p }: { p: SampleProfile }) {
 /**
  * Compact profile card (§8.10): avatar 48, name, "{title} at {program}", division and conference
  * chips, Unclaimed chip where true, the most recent earlier stop, then the career numbers. The name
- * is the link and its hit area stretches over the whole card. Below lg: avatar left of the text.
+ * is the link and its hit area stretches over the whole card. Padding matches the other landing
+ * cards (16 on phone, 20/24 from md). Avatar left of the text at every width; the career numbers
+ * sit on the text column (48 avatar + 12 gap) under a divider, except at md, where the cards stack
+ * full width and read as rows: facts left, the career numbers in a right column.
  */
 function SampleProfileCard({ p }: { p: SampleProfile }) {
-  const more = p.previous.length - 1;
   return (
-    <article className="group/card relative flex h-full flex-col border-y border-border bg-surface p-4 md:rounded-md md:border">
-      <div className="flex flex-1 gap-3 lg:flex-col">
+    <article className="group/card relative flex h-full flex-col border-y border-border bg-surface p-4 md:rounded-md md:border md:px-6 md:py-5 md:max-lg:flex-row md:max-lg:items-center md:max-lg:gap-6">
+      <div className="flex min-w-0 flex-1 gap-3">
         <Avatar name={p.fullName} tintKey={p.slug} size={48} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -61,18 +64,16 @@ function SampleProfileCard({ p }: { p: SampleProfile }) {
           </p>
           <ProgramBadges level={p.org.level} conferenceAbbr={p.org.conferenceAbbr} conference={p.org.conference} className="mt-2" />
           {p.previous.length > 0 && (
-            // One line: a long program name truncates (full name in the title); the stop count never does.
+            // The program name gets the line (two at most); the stop count lives in the career numbers.
             <ContextLine className="mt-2">
-              <span className="flex min-w-0" title={p.previous[0]}>
-                <span className="truncate">Previously {p.previous[0]}</span>
-                {more > 0 && <span className="shrink-0 whitespace-nowrap">&nbsp;and {plural(more, "more stop", "more stops")}</span>}
+              <span className="line-clamp-2" title={p.previous[0]}>
+                Previously {p.previous[0]}
               </span>
             </ContextLine>
           )}
         </div>
       </div>
-      {/* Below lg: on the text column (48 avatar + 12 gap), so the card reads as avatar | facts. */}
-      <div className="mt-3 border-t border-divider pt-3 max-lg:ml-15">
+      <div className="ml-15 mt-3 border-t border-divider pt-3 md:max-lg:m-0 md:max-lg:flex md:max-lg:w-36 md:max-lg:shrink-0 md:max-lg:items-center md:max-lg:self-stretch md:max-lg:border-l md:max-lg:border-t-0 md:max-lg:pl-6 md:max-lg:pt-0">
         <CareerLine p={p} />
       </div>
     </article>
@@ -81,7 +82,8 @@ function SampleProfileCard({ p }: { p: SampleProfile }) {
 
 /**
  * Sample profiles (§8.10): three real current head coaches with long careers, linking to their
- * profiles. The same three at every width: three across from lg, a stack of cards below.
+ * profiles. The same three at every width: three across from lg, a stack of row cards at md, a
+ * stack of cards on phone.
  */
 export function SampleProfiles({ profiles }: { profiles: SampleProfile[] | null }) {
   return (

@@ -79,12 +79,15 @@ export function ForEmployers({ example, depth, demoAccount }: ForEmployersProps)
             </DemoStartButton>
           </div>
           {demoAccount && (
-            <p className="mt-3 text-caption text-fg-3">
-              The demo shows the employer view as{" "}
+            // Left-aligned, so it wraps with the default `pretty` (not the hero caption's `balance`).
+            // The chip follows the name, as on any demo record; no punctuation hugs its border. The
+            // 20px line fits the 20px chip, so it never touches the line above when the caption wraps.
+            <p className="mt-3 text-caption leading-5 text-fg-3">
+              The demo shows the employer view as a fictional athletic director,{" "}
               <span className="whitespace-nowrap">
-                {demoAccount.name} <SampleChip className="-my-0.5" />
+                {demoAccount.name} <SampleChip />
+                {demoAccount.org ? ` · ${demoAccount.org}.` : ""}
               </span>
-              , a fictional athletic director{demoAccount.org ? ` at ${demoAccount.org}` : ""}.
             </p>
           )}
         </div>

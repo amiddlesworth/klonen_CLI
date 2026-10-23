@@ -36,6 +36,16 @@ export type LinkYears = {
   inferred: boolean;
   /** Whose stint the inferred year comes from, and its evidence quote (for the tooltip). */
   inferredFrom: { personId: string; evidence: string | null } | null;
+  /**
+   * Per bound: the shown start (or end) year comes from a stint with yearsExplicit = false, so only that
+   * year carries the dotted mark ("2020–", "2016–19" with just the inferred side dotted). Absent on links
+   * built without the bounds (treated as `inferred` on the start).
+   */
+  startInferred?: boolean;
+  endInferred?: boolean;
+  /** The stint each inferred bound comes from (for its own tooltip). */
+  startFrom?: { personId: string; evidence: string | null } | null;
+  endFrom?: { personId: string; evidence: string | null } | null;
 };
 
 /** How the years read in a compact row: a range ("2010–12", "2020–"), "Current" (start not in source), or nothing. */
@@ -140,12 +150,19 @@ export function runYears(a: Side, b: Side, lo: number, hi: number): LinkYears {
   const showStart = start.known && (ongoing || !!end?.known);
   const showEnd = !ongoing && start.known && !!end?.known;
   const inferredBound = [showStart ? start : null, showEnd ? end : null].find((x) => x?.inferred) ?? null;
+  const ref = (b: Bound | null) => (b?.from ? { personId: b.from.personId, evidence: b.from.evidence } : null);
+  const startInferred = showStart && start.inferred;
+  const endInferred = showEnd && !!end?.inferred;
   return {
     ongoing,
     startYear: showStart ? lo : null,
     endYear: showEnd ? hi : null,
     inferred: !!inferredBound,
-    inferredFrom: inferredBound?.from ? { personId: inferredBound.from.personId, evidence: inferredBound.from.evidence } : null,
+    inferredFrom: ref(inferredBound),
+    startInferred,
+    endInferred,
+    startFrom: startInferred ? ref(start) : null,
+    endFrom: endInferred ? ref(end) : null,
   };
 }
 

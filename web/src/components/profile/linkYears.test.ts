@@ -56,6 +56,14 @@ describe("edgeYears", () => {
     const kit = [stint("kit", { startYear: 2021, isCurrent: true }), stint("kit", { startYear: 2018, endYear: 2020 })];
     const y = edgeYears(under("kit", 2020, 2026), [...ian, ...kit]);
     expect(y).toMatchObject({ startYear: 2020, inferred: true, inferredFrom: { personId: "ian" } });
+    // Only the start bound is inferred: an ongoing run has no end to mark.
+    expect(y).toMatchObject({ startInferred: true, endInferred: false, startFrom: { personId: "ian" }, endFrom: null });
+  });
+
+  it("marks only the end when only the end comes from an inferred stint", () => {
+    const amy = [stint("amy", { startYear: 2012, endYear: 2015 }), stint("amy", { startYear: 2016, endYear: 2017, yearsExplicit: false })];
+    const y = edgeYears({ kind: "worked_alongside", mentorId: "ian", menteeId: "amy", orgId: "pacific", startYear: 2012, endYear: 2017 }, [...ian, ...amy]);
+    expect(y).toMatchObject({ startYear: 2012, endYear: 2017, startInferred: false, endInferred: true, endFrom: { personId: "amy" } });
   });
 
   it("is plain when the deciding stint is explicit", () => {

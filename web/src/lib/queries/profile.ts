@@ -1,10 +1,23 @@
 import "server-only";
 import { cache } from "react";
-import { aliasedTable, and, asc, desc, eq, inArray, ne, or, sql } from "drizzle-orm";
+import { aliasedTable, and, asc, desc, eq, inArray, ne, notInArray, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { connections, jobs, organizations, people, tenures, treeEdges } from "@/db/schema";
-import { edgeYears, linkYearsDisplay, playedUnder, type EdgeRef, type LinkYears, type YearStint } from "@/components/profile/linkYears";
-import { aggregateTree, getPeopleSummaries, getProfile, getTree, personSummaryCols, toSummary, type PersonSummary, type TreeLink } from "./people";
+import { edgeYears, playedUnder, type EdgeRef, type LinkYears, type YearStint } from "@/components/profile/linkYears";
+import { byTenure } from "@/components/profile/model";
+import {
+  aggregateTree,
+  getPeopleSummaries,
+  getProfile,
+  getTree,
+  personSummaryCols,
+  toSummary,
+  type ExperienceGroup,
+  type PersonSummary,
+  type Profile,
+  type TenureRow,
+  type TreeLink,
+} from "./people";
 
 export type { ExperienceGroup, PersonSummary, Profile, TenureRow, Tree, TreeLink } from "./people";
 export type { LinkYears } from "@/components/profile/linkYears";
@@ -14,8 +27,35 @@ export type { LinkYears } from "@/components/profile/linkYears";
  * getProfile / getTree in people.ts; this file adds the rail cards and viewer-specific state.
  */
 
-/** getProfile, deduplicated per request (generateMetadata and the page both need it). */
-export const getProfileCached = cache(getProfile);
+/** A stint with its sport ("football", "women's basketball"), so the profile counts football coaching only. */
+export type SportTenureRow = TenureRow & { sport: string };
+
+/** getProfile with every stint's sport attached (the profile's coaching numbers use it). */
+export type ProfileWithSports = Omit<Profile, "experience" | "playing"> & {
+  experience: (Omit<ExperienceGroup, "roles"> & { roles: SportTenureRow[] })[];
+  playing: SportTenureRow[];
+};
+
+/**
+ * getProfile plus each stint's sport. A role in another sport (a women's basketball head coach) is listed
+ * on the profile under its sport and kept out of seasons coached, first season, coaching stops and the
+ * season strip (model.ts isFootballCoaching).
+ */
+async function getProfileWithSports(slug: string): Promise<ProfileWithSports | null> {
+  const profile = await getProfile(slug);
+  if (!profile) return null;
+  const rows = await db.select({ id: tenures.id, sport: tenures.sport }).from(tenures).where(eq(tenures.personId, profile.person.id));
+  const sportOf = new Map(rows.map((r) => [r.id, r.sport]));
+  const withSport = (r: TenureRow): SportTenureRow => ({ ...r, sport: sportOf.get(r.id) ?? "football" });
+  return {
+    ...profile,
+    experience: profile.experience.map((g) => ({ ...g, roles: g.roles.map(withSport) })),
+    playing: profile.playing.map(withSport),
+  };
+}
+
+/** getProfile (with each stint's sport), deduplicated per request (generateMetadata and the page both need it). */
+export const getProfileCached = cache(getProfileWithSports);
 
 /** getTree, deduplicated per request. */
 export const getTreeCached = cache(getTree);
@@ -55,24 +95,6 @@ export type ProfileTreeLink = TreeLink & { years: LinkYears; player: PlayerLink 
 export type ProfileTree = { mentors: ProfileTreeLink[]; mentees: ProfileTreeLink[]; peers: ProfileTreeLink[] };
 
 const NO_YEARS: LinkYears = { ongoing: false, startYear: null, endYear: null, inferred: false, inferredFrom: null };
-
-/**
- * Order inside a tree group: links with a range first, by end (current first), then start (longest-serving
- * first), then name; links whose years the source doesn't pin go last (current first, then name).
- */
-function byTenure(a: ProfileTreeLink, b: ProfileTreeLink): number {
-  const da = linkYearsDisplay(a.years) === "range";
-  const dbb = linkYearsDisplay(b.years) === "range";
-  if (da !== dbb) return da ? -1 : 1;
-  const end = (l: ProfileTreeLink) => (l.years.ongoing ? Infinity : (l.years.endYear ?? l.endYear ?? -Infinity));
-  if (da) {
-    const e = end(b) - end(a);
-    if (e) return e;
-    const s = (a.years.startYear ?? 0) - (b.years.startYear ?? 0);
-    if (s) return s;
-  } else if (a.years.ongoing !== b.years.ongoing) return a.years.ongoing ? -1 : 1;
-  return a.person.fullName.localeCompare(b.person.fullName);
-}
 
 /**
  * The coach's coaching tree for the profile card (§8.4): getTree's buckets, each link annotated with
@@ -285,15 +307,17 @@ function hash(s: string): number {
 }
 
 /**
- * Rail "People also viewed" (§8.4): head coaches in the same conference, excluding the person.
+ * Rail "People also viewed" (§8.4): head coaches in the same conference, excluding the person and anyone
+ * already on the page (`exclude`: the tree card and Same tree), as getSameTree excludes the tree card.
  * There is no view data yet, so the card says what the list is. The order rotates per profile.
  */
-export async function getAlsoViewed(personId: string, personSlug: string, conferenceAbbr: string, limit = 4): Promise<PersonSummary[]> {
+export async function getAlsoViewed(personId: string, personSlug: string, conferenceAbbr: string, exclude: string[] = [], limit = 4): Promise<PersonSummary[]> {
+  const skip = [...new Set([personId, ...exclude])];
   const rows = await db
     .select(personSummaryCols)
     .from(people)
     .innerJoin(organizations, eq(organizations.id, people.currentOrgId))
-    .where(and(eq(people.roleGroup, "head_coach"), eq(organizations.conferenceAbbr, conferenceAbbr), ne(people.id, personId)))
+    .where(and(eq(people.roleGroup, "head_coach"), eq(organizations.conferenceAbbr, conferenceAbbr), notInArray(people.id, skip)))
     .orderBy(asc(organizations.shortName), asc(people.fullName))
     .limit(40);
   if (rows.length <= limit) return rows.map(toSummary);

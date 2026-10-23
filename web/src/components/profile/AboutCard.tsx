@@ -44,7 +44,8 @@ export function AboutCard({ about, excerpt, sourceUrl, firstName, slug, owner }:
           attribution={
             sourceUrl ? (
               <>
-                Quoted from the staff bio · <SourceLink href={sourceUrl} />
+                {/* min-h-6: a 24px target on the 16px caption line (§11.7; target-24's padding alone gives 22px). */}
+                Quoted from the staff bio · <SourceLink href={sourceUrl} className="min-h-6" />
               </>
             ) : (
               "Quoted from the staff bio"

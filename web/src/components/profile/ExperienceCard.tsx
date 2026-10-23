@@ -24,6 +24,10 @@ type ExperienceCardProps = {
   owner: boolean;
   /** Whether an inferred year appears anywhere on the page (the legend explains the mark once). */
   showInferredKey: boolean;
+  /** Roles in other sports: listed here, left out of the season and stop counts (the card says so). */
+  otherSportRoles?: number;
+  /** A fictional demo candidate: its stints have no source, so each says so instead of a Source disclosure. */
+  isDemo?: boolean;
 };
 
 /** Long careers start with the newest programs and a "Show all {n} programs" button (§8.1 ShowMore). */
@@ -54,7 +58,19 @@ export function OrgName({ org }: { org: Pick<OrgSummary, "slug" | "name" | "inRe
  * leads (tile, name, chips, total range); role rows sit on a dot rail and carry their own range
  * only when the program has two or more roles. Every role has a Source disclosure.
  */
-export function ExperienceCard({ groups, strip, seasons, undatedRoles, personName, firstName, slug, owner, showInferredKey }: ExperienceCardProps) {
+export function ExperienceCard({
+  groups,
+  strip,
+  seasons,
+  undatedRoles,
+  personName,
+  firstName,
+  slug,
+  owner,
+  showInferredKey,
+  otherSportRoles = 0,
+  isDemo = false,
+}: ExperienceCardProps) {
   const claimLink = owner ? (
     <TextLink href={`/claim/${slug}`} arrow target24 className="text-small">
       Claim to edit
@@ -82,22 +98,37 @@ export function ExperienceCard({ groups, strip, seasons, undatedRoles, personNam
   const hasPast = roles.some((r) => !r.role.isCurrent);
   const hasAway = items.some((i) => i.kind === "away");
   const meta = [`${groups.length} ${groups.length === 1 ? "program" : "programs"}`, seasons > 0 && seasonsText(seasons, undatedRoles)].filter(Boolean).join(" · ");
-  const item = (g: LedgerGroup) => ({ key: g.org.id, node: <ExperienceGroup group={g} personName={personName} /> });
+  const item = (g: LedgerGroup) => ({ key: g.org.id, node: <ExperienceGroup group={g} personName={personName} isDemo={isDemo} /> });
 
   return (
     // The owner's "Claim to edit" sits in the legend row, so the title row keeps one right-aligned item at every width.
     <SectionCard id="experience" title="Experience" meta={meta}>
-      <SeasonStrip stints={strip} widthHint={760} />
+      {/* overflow-x-clip: a phone strip label that runs past the last column ("Southwestern") can't widen
+          the page (§11.12). clip, not hidden: no scroll container, vertical overflow untouched. */}
+      <div className="overflow-x-clip">
+        <SeasonStrip stints={strip} widthHint={760} />
+      </div>
       <ExperienceList
         dated={groups.filter((g) => g.dated).map(item)}
         undated={groups.filter((g) => !g.dated).map(item)}
         personName={personName}
         limit={groups.length > TRUNCATE_OVER ? SHOW_FIRST : groups.length}
       />
-      {seasons > 0 && undatedRoles > 0 && (
+      {((seasons > 0 && undatedRoles > 0) || otherSportRoles > 0) && (
         <p className="border-t border-divider py-3 text-caption text-fg-3">
-          {seasonsText(seasons, undatedRoles)}: {undatedRoles} {undatedRoles === 1 ? "role has" : "roles have"} no start year in the source, so{" "}
-          {undatedRoles === 1 ? "its seasons aren't" : "their seasons aren't"} counted.
+          {seasons > 0 && undatedRoles > 0 && (
+            <>
+              {seasonsText(seasons, undatedRoles)}: {undatedRoles} {undatedRoles === 1 ? "role has" : "roles have"} no start year in the source, so{" "}
+              {undatedRoles === 1 ? "its seasons aren't" : "their seasons aren't"} counted.
+            </>
+          )}
+          {seasons > 0 && undatedRoles > 0 && otherSportRoles > 0 && " "}
+          {otherSportRoles > 0 && (
+            <>
+              Seasons and coaching stops count football coaching only: {otherSportRoles} {otherSportRoles === 1 ? "role" : "roles"} in other sports{" "}
+              {otherSportRoles === 1 ? "is" : "are"} listed but not counted.
+            </>
+          )}
         </p>
       )}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-divider pt-3 text-caption text-fg-3">
@@ -134,10 +165,13 @@ export function ExperienceCard({ groups, strip, seasons, undatedRoles, personNam
 }
 
 /** One program group's content; ExperienceList wraps it in its list item. */
-function ExperienceGroup({ group, personName }: { group: LedgerGroup; personName: string }) {
+function ExperienceGroup({ group, personName, isDemo }: { group: LedgerGroup; personName: string; isDemo: boolean }) {
   const { org } = group;
   const multi = group.roleCount > 1;
   const place = stateName(org.state);
+  // An undated group sits under the "Years not in source · order unknown" heading: its ranges would only
+  // say that again (on the group and on every role).
+  const showRange = (text: LedgerGroup["range"]) => group.dated || !text.undated;
   return (
     <>
       <OrgMark shortName={org.shortName} name={org.name} size={40} />
@@ -149,7 +183,7 @@ function ExperienceGroup({ group, personName }: { group: LedgerGroup; personName
           </h3>
           {place && <p className="mt-0.5 text-small text-fg-2">{place}</p>}
         </div>
-        <LedgerRange text={group.range} inferred={group.inferred} reason={group.reason} />
+        {showRange(group.range) && <LedgerRange text={group.range} inferred={group.inferred} reason={group.reason} className="md:max-w-[60%]" />}
       </div>
       <ol className="col-span-full mt-2">
         {group.items.map((item, i) => {
@@ -165,6 +199,7 @@ function ExperienceGroup({ group, personName }: { group: LedgerGroup; personName
             );
           }
           const { role } = item;
+          const rowRange = multi && showRange(item.range);
           return (
             <li key={role.id} className="relative grid grid-cols-[40px_minmax(0,1fr)] gap-x-3 py-2 md:grid-cols-[40px_minmax(0,1fr)_128px]">
               <span
@@ -181,21 +216,30 @@ function ExperienceGroup({ group, personName }: { group: LedgerGroup; personName
                 {role.role}
                 {role.isCurrent && <span className="sr-only"> (current role)</span>}
               </p>
-              {multi && (
+              {rowRange && (
                 <LedgerRange
                   text={item.range}
                   inferred={item.inferred}
                   reason={item.reason}
-                  className="col-start-2 row-start-2 md:col-start-3 md:row-span-2 md:row-start-1"
+                  // justify-self-end: a count wider than the 128px column ("Start year not in source") grows
+                  // into the gap on its left instead of past the card edge.
+                  className="col-start-2 row-start-2 md:col-start-3 md:row-span-2 md:row-start-1 md:justify-self-end"
                 />
               )}
-              <p className={cn("col-start-2 text-small text-fg-2", multi ? "row-start-3 md:row-start-2" : "row-start-2")}>{levelLine(role)}</p>
-              <SourceDisclosure
-                evidence={role.evidence}
-                sourceUrl={role.sourceUrl}
-                sourceDetail={`${personName} bio`}
-                className={cn("col-start-2 mt-0.5", multi ? "row-start-4 md:row-start-3" : "row-start-3")}
-              />
+              <p className={cn("col-start-2 text-small text-fg-2", rowRange ? "row-start-3 md:row-start-2" : "row-start-2")}>{levelLine(role)}</p>
+              {isDemo ? (
+                // A demo stint has no source: say so plainly (no quote marks, nothing styled as evidence).
+                <p className={cn("col-start-2 mt-0.5 text-caption text-fg-3", rowRange ? "row-start-4 md:row-start-3" : "row-start-3")}>
+                  Demo record, not from a source
+                </p>
+              ) : (
+                <SourceDisclosure
+                  evidence={role.evidence}
+                  sourceUrl={role.sourceUrl}
+                  sourceDetail={`${personName} bio`}
+                  className={cn("col-start-2 mt-0.5", rowRange ? "row-start-4 md:row-start-3" : "row-start-3")}
+                />
+              )}
             </li>
           );
         })}

@@ -18,6 +18,8 @@ type TreeCardProps = {
   personName: string;
   /** Explain the dotted year here (when no Experience legend on the page does). */
   explainInferred?: boolean;
+  /** A fictional demo candidate: no real coach is linked, and none will be. */
+  isDemo?: boolean;
 };
 
 const PHONE_ROWS = 3;
@@ -30,13 +32,17 @@ const PHONE_ROWS = 3;
  * Counts are unique people; the footnote names anyone listed twice. Empty groups are hidden; a tree
  * with no one in it shows a quiet empty state.
  */
-export function TreeCard({ model, slug, firstName, personName, explainInferred }: TreeCardProps) {
+export function TreeCard({ model, slug, firstName, personName, explainInferred, isDemo }: TreeCardProps) {
   if (!model.groups.length) {
     return (
       <SectionCard
         id="tree"
         title="Coaching tree"
-        empty={{ icon: Network, title: "No coaching tree yet.", description: `It fills in as coaches who worked with ${firstName} are added.` }}
+        empty={
+          isDemo
+            ? { icon: Network, title: "No coaching tree.", description: `${firstName} is a fictional demo candidate, so no real coach is linked.` }
+            : { icon: Network, title: "No coaching tree yet.", description: `It fills in as coaches who worked with ${firstName} are added.` }
+        }
       />
     );
   }
@@ -155,9 +161,10 @@ function TreeContextLine({ context }: { context: TreeContext }) {
       </ContextLine>
     );
   }
+  // A long program name ("University at Buffalo, the State University of New York") stays on one line.
   return (
     <ContextLine icon={Building2} className="mt-0.5">
-      {context.text}
+      <span className="block truncate">{context.text}</span>
     </ContextLine>
   );
 }

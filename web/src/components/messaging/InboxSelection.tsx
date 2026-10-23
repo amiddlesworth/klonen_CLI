@@ -1,29 +1,50 @@
 "use client";
 import Link from "next/link";
 import { createContext, useContext, useState, useSyncExternalStore, type MouseEvent, type ReactNode } from "react";
+import { SkeletonRegion } from "@/components/ui/Skeleton";
 import { cn } from "@/lib/cn";
+import { PHONE_FILL_CLASS } from "./classes";
+import { ThreadSkeleton } from "./ThreadSkeleton";
 
 /*
  * Shows a click on an inbox row at once, before the server render of the new thread arrives: the
  * clicked row takes the selection (aria-current, --hover) and the open thread is dimmed and marked
- * busy until the page catches up.
+ * busy until the page catches up. On the phone inbox, where no thread shows, the inbox (and the
+ * legal footer below the card) give way to a thread-shaped skeleton, so the screen already has the
+ * shape of the conversation page that is loading (§8.0).
  */
 
 type Selection = { pendingId: string | null; choose: (id: string) => void };
 
 const SelectionContext = createContext<Selection>({ pendingId: null, choose: () => {} });
 
-/** Holds the row the viewer just clicked until the server's selection (`selectedId`) changes. */
-export function InboxSelectionProvider({ selectedId, children }: { selectedId: string | null; children: ReactNode }) {
+/**
+ * Holds the row the viewer just clicked until the server's selection (`selectedId`, and whether it
+ * came from the URL) changes. Clicking the implicit selection (the newest thread, open by default on
+ * desktop only) is still a pending navigation: on phone it opens that thread's page.
+ */
+export function InboxSelectionProvider({ selectedId, explicit, children }: { selectedId: string | null; explicit: boolean; children: ReactNode }) {
   const [pendingId, setPendingId] = useState<string | null>(null);
-  const [shownId, setShownId] = useState(selectedId);
+  const serverKey = `${selectedId}:${explicit}`;
+  const [shownKey, setShownKey] = useState(serverKey);
   // The new page arrived: its selection is the truth again.
-  if (shownId !== selectedId) {
-    setShownId(selectedId);
+  if (shownKey !== serverKey) {
+    setShownKey(serverKey);
     setPendingId(null);
   }
+  const pending = pendingId !== null && !(explicit && pendingId === selectedId) ? pendingId : null;
   return (
-    <SelectionContext.Provider value={{ pendingId: pendingId === selectedId ? null : pendingId, choose: setPendingId }}>{children}</SelectionContext.Provider>
+    <SelectionContext.Provider value={{ pendingId: pending, choose: setPendingId }}>
+      {/* display: contents keeps the panes as the card's grid items; data-pending drives the phone swap. */}
+      <div className="group/msg contents" data-pending={pending ? "" : undefined}>
+        {children}
+        {pending && (
+          <SkeletonRegion label="Loading conversation" className={cn("flex flex-col md:hidden", PHONE_FILL_CLASS)}>
+            <ThreadSkeleton backLink />
+          </SkeletonRegion>
+        )}
+      </div>
+    </SelectionContext.Provider>
   );
 }
 
@@ -69,6 +90,8 @@ export function InboxRowLink({ threadId, href, selected, explicit, className, ch
     // A new tab or window leaves this page as it is.
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
     choose(threadId);
+    // Phone: the thread skeleton replaces the inbox at the top of the page.
+    if (!window.matchMedia(DESKTOP).matches) window.scrollTo({ top: 0 });
   }
   return (
     <Link
@@ -104,7 +127,7 @@ export function ThreadPane({ threadId, hiddenOnPhone, fillOnPhone, label, childr
         "flex min-h-0 min-w-0 flex-col",
         hiddenOnPhone && "max-md:hidden",
         // Top bar, the 8px canvas gap and the card's top and bottom borders above; tab bar and safe area below.
-        fillOnPhone && "max-md:min-h-[calc(100dvh-var(--mtop-h)-var(--tabbar-h)-env(safe-area-inset-bottom)-10px)]",
+        fillOnPhone && PHONE_FILL_CLASS,
         loading && "pointer-events-none opacity-60",
       )}
     >

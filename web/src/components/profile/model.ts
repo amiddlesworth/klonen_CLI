@@ -2,12 +2,37 @@
  * Pure view-model helpers for the coach profile (DESIGN.md §8.4). No data access: they shape the
  * rows that getProfile / getTree return into the ledger, ranges and tree groups the cards render.
  */
+import type { StripStint } from "@/components/data/SeasonStrip";
 import type { OrgSummary, TenureRow, Tree, TreeLink } from "@/lib/queries/people";
 import { CURRENT_SEASON } from "@/lib/brand";
 import { ROLE_GROUP_LABEL, YEARS_NOT_IN_SOURCE, seasonRange, seasonRangeMulti, type RoleGroup } from "@/lib/format";
 import { linkYearsDisplay, type LinkYears } from "./linkYears";
 
 export type Span = { startYear: number | null; endYear: number | null; isCurrent: boolean };
+
+/**
+ * A stint as the profile reads it: the tenure row plus its sport (getProfileCached adds it). Callers that
+ * don't pass a sport get the old behavior: the row counts as football.
+ */
+export type SportRow = TenureRow & { sport?: string | null };
+
+/** Football (the sport this network covers), or a row whose sport the caller didn't load. */
+export const isFootball = (r: Pick<SportRow, "sport">) => !r.sport || r.sport === "football";
+
+/**
+ * The one test for "football coaching" behind every coaching number on the profile (seasons coached,
+ * first season, coaching stops, the season strip): a football stint that isn't a playing stint. Football
+ * rows with role group "other" stay in (most are unclassified titles such as "Coach"). Roles in other
+ * sports ("Head Coach" of women's basketball) are listed in Experience under their sport but never
+ * counted, matching the coaching tree (linkYears edgeEligible counts football only).
+ */
+export const isFootballCoaching = (r: Pick<SportRow, "asPlayer" | "roleGroup" | "sport">) => !r.asPlayer && r.roleGroup !== "player" && isFootball(r);
+
+/** "women's basketball" → "Women's basketball" (the sport as the source names it, sentence case). */
+export function sportLabel(sport: string): string {
+  const s = sport.trim();
+  return s ? s[0].toUpperCase() + s.slice(1) : s;
+}
 
 /**
  * A ledger range: the range line, the count line under it, and whether there is no year at all.
@@ -61,38 +86,84 @@ export function inferredReason(evidence: string | null, whose?: string): string 
   return `from ${bio}, which says “${short}”`;
 }
 
-/** Seasons covered by dated coaching stints (the season strip counts the same seasons). */
-export function coachingSeasons(rows: TenureRow[]): number[] {
+/** Seasons covered by dated football coaching stints (the season strip counts the same seasons). */
+export function coachingSeasons(rows: SportRow[]): number[] {
   const years = new Set<number>();
   for (const r of rows) {
-    if (r.asPlayer || r.roleGroup === "player" || !r.startYear) continue;
+    if (!isFootballCoaching(r) || !r.startYear) continue;
     const last = r.isCurrent ? CURRENT_SEASON : (r.endYear ?? r.startYear);
     for (let y = r.startYear; y <= Math.max(r.startYear, last); y++) years.add(y);
   }
   return [...years].sort((a, b) => a - b);
 }
 
-/** The first dated coaching season and whether its year is inferred. */
-export function firstSeason(rows: TenureRow[]): { year: number; inferred: boolean; reason: string } | null {
-  let best: TenureRow | null = null;
+/** The first dated football coaching season and whether its year is inferred. */
+export function firstSeason(rows: SportRow[]): { year: number; inferred: boolean; reason: string } | null {
+  let best: SportRow | null = null;
   for (const r of rows) {
-    if (r.asPlayer || r.roleGroup === "player" || !r.startYear) continue;
+    if (!isFootballCoaching(r) || !r.startYear) continue;
     if (!best || r.startYear < best.startYear! || (r.startYear === best.startYear && r.yearsExplicit)) best = r;
   }
   return best ? { year: best.startYear!, inferred: !best.yearsExplicit, reason: inferredReason(best.evidence) } : null;
 }
 
+/** Coaching stops: programs where the person held a football coaching role (the header stat). */
+export function coachingStops(rows: SportRow[]): number {
+  return new Set(rows.filter(isFootballCoaching).map((r) => r.org.id)).size;
+}
+
+/** Roles in other sports: listed in Experience, left out of every coaching number (the card says so). */
+export function otherSportRoleCount(rows: SportRow[]): number {
+  return rows.filter((r) => !r.asPlayer && r.roleGroup !== "player" && !isFootball(r)).length;
+}
+
+/** The season strip's input: football coaching stints only, so the figure counts what the header counts. */
+export function stripStints(rows: SportRow[]): StripStint[] {
+  return rows.filter(isFootballCoaching).map((r) => ({
+    orgId: r.org.id,
+    shortName: r.org.shortName,
+    name: r.org.name,
+    role: r.role,
+    roleGroup: r.roleGroup,
+    startYear: r.startYear,
+    endYear: r.endYear,
+    isCurrent: r.isCurrent,
+  }));
+}
+
 const UNIT_LABEL: Record<string, string> = { offense: "Offense", defense: "Defense", special_teams: "Special teams" };
 
-/** The level line under a role title: "Coordinator · Special teams". */
-export function levelLine(r: Pick<TenureRow, "roleGroup" | "unit">): string {
+/** The level words a title in another sport implies ("Head Track and Field Coach" → "Head coach"). */
+function otherSportLevel(role: string): string | null {
+  if (/\bhead\b.*\bcoach\b|\bhead coach\b/i.test(role)) return "Head coach";
+  if (/\b(assistant|asst\.?|associate|assoc\.?)\b/i.test(role) && /\bcoach/i.test(role)) return "Assistant coach";
+  if (/\bcoach/i.test(role)) return "Coach";
+  return null;
+}
+
+/**
+ * The level line under a role title: "Coordinator · Special teams". A role in another sport names the
+ * sport first ("Women's basketball · Head coach"), so it never reads as football; a football role the
+ * source doesn't classify says so instead of a bare "Other".
+ */
+export function levelLine(r: Pick<SportRow, "roleGroup" | "unit" | "role" | "sport">): string {
+  if (!isFootball(r)) {
+    const level = otherSportLevel(r.role ?? "");
+    return [sportLabel(r.sport!), level].filter(Boolean).join(" · ");
+  }
+  if (r.roleGroup === "other") return "Level not in source";
   const level = ROLE_GROUP_LABEL[r.roleGroup as RoleGroup] ?? "Coach";
   const unit = r.unit ? UNIT_LABEL[r.unit] : null;
   return unit && r.roleGroup !== "head_coach" ? `${level} · ${unit}` : level;
 }
 
+/** A playing stint's line: the role as published, after the sport when it isn't football ("Baseball · Player (catcher)"). */
+export function playingLine(r: Pick<SportRow, "role" | "sport">): string {
+  return isFootball(r) ? r.role : `${sportLabel(r.sport!)} · ${r.role}`;
+}
+
 export type LedgerItem =
-  | { kind: "role"; role: TenureRow; range: RangeText; inferred: boolean; reason: string; awayAfter: boolean }
+  | { kind: "role"; role: SportRow; range: RangeText; inferred: boolean; reason: string; awayAfter: boolean }
   | { kind: "away"; text: string };
 
 export type LedgerGroup = {
@@ -108,7 +179,7 @@ export type LedgerGroup = {
 };
 
 const yearSpan = (a: number, b: number) => (a === b ? String(a) : `${a}–${b}`);
-const endOf = (r: TenureRow) => (r.isCurrent ? CURRENT_SEASON : (r.endYear ?? r.startYear));
+const endOf = (r: SportRow) => (r.isCurrent ? CURRENT_SEASON : (r.endYear ?? r.startYear));
 
 /**
  * Experience ledger (§8.4): one group per program, in the source's order (newest first), with every
@@ -116,10 +187,10 @@ const endOf = (r: TenureRow) => (r.isCurrent ? CURRENT_SEASON : (r.endYear ?? r.
  * Oberlin College" on a dashed rail). Programs with no year at all come last (`dated: false`): the source
  * gives them no place in the order, so the card lists them under their own label.
  */
-export function buildLedger(rows: TenureRow[]): LedgerGroup[] {
+export function buildLedger(rows: SportRow[]): LedgerGroup[] {
   const coaching = rows.filter((r) => !r.asPlayer && r.roleGroup !== "player");
   const order: string[] = [];
-  const byOrg = new Map<string, TenureRow[]>();
+  const byOrg = new Map<string, SportRow[]>();
   for (const r of coaching) {
     if (!byOrg.has(r.org.id)) {
       byOrg.set(r.org.id, []);
@@ -174,25 +245,43 @@ export function buildLedger(rows: TenureRow[]): LedgerGroup[] {
 }
 
 /**
- * The header's current role, in the same words as the Experience card: the role of the current coaching
- * stint at the current program (from the staff bio), else the staff-directory title.
+ * The header's current role: the person's current title (the staff directory's words, which the Me menu,
+ * the feed and other people's tree rows also use, so a coach reads the same everywhere), else the role of
+ * the current coaching stint at the current program. The Experience row keeps the bio's own wording, and
+ * its Source shows where that wording comes from.
  */
-export function currentHeadline(rows: TenureRow[], currentOrgId: string | null, directoryTitle: string | null): string | null {
-  const current = rows.filter((r) => r.isCurrent && !r.asPlayer && r.roleGroup !== "player");
+export function currentHeadline(rows: SportRow[], currentOrgId: string | null, directoryTitle: string | null): string | null {
+  if (directoryTitle?.trim()) return directoryTitle.trim();
+  const current = rows.filter((r) => r.isCurrent && isFootballCoaching(r));
   const here = current.find((r) => !currentOrgId || r.org.id === currentOrgId);
-  return here?.role || directoryTitle;
+  return here?.role || null;
 }
 
-/** Coaching roles whose seasons aren't counted because the source gives no start year. */
-export function undatedRoleCount(rows: TenureRow[]): number {
-  return rows.filter((r) => !r.asPlayer && r.roleGroup !== "player" && !r.startYear).length;
+/** Football coaching roles whose seasons aren't counted because the source gives no start year. */
+export function undatedRoleCount(rows: SportRow[]): number {
+  return rows.filter((r) => isFootballCoaching(r) && !r.startYear).length;
 }
 
 export type TreeGroupKey = "mentors" | "peers" | "mentees";
 
-/** How a link's shared seasons read in a compact row (linkYears): a range, "Current", or nothing. */
+/**
+ * How a link's shared seasons read in a compact row (linkYears): a range, "Current", or nothing. A range
+ * marks each bound on its own (`startInferred`, `endInferred`), so only the inferred year is dotted;
+ * `inferred` is either one.
+ */
 export type TreeYearsView =
-  | { kind: "range"; startYear: number; endYear: number | null; ongoing: boolean; inferred: boolean; reason: string | null }
+  | {
+      kind: "range";
+      startYear: number;
+      endYear: number | null;
+      ongoing: boolean;
+      inferred: boolean;
+      reason: string | null;
+      startInferred: boolean;
+      endInferred: boolean;
+      startReason: string | null;
+      endReason: string | null;
+    }
   | { kind: "current" }
   | { kind: "none" };
 
@@ -202,8 +291,57 @@ export function treeYearsView(years: LinkYears | undefined, nameOf: (personId: s
   const display = linkYearsDisplay(years);
   if (display === "current") return { kind: "current" };
   if (display === "none" || !years.startYear) return { kind: "none" };
-  const reason = years.inferred && years.inferredFrom ? inferredReason(years.inferredFrom.evidence, nameOf(years.inferredFrom.personId)) : null;
-  return { kind: "range", startYear: years.startYear, endYear: years.ongoing ? null : years.endYear, ongoing: years.ongoing, inferred: years.inferred, reason };
+  const endYear = years.ongoing ? null : years.endYear;
+  // Links built without per-bound status read as before: the mark on the start year.
+  const startInferred = years.startInferred ?? years.inferred;
+  const endInferred = !!endYear && (years.endInferred ?? false);
+  const why = (from: LinkYears["inferredFrom"] | undefined) => (from ? inferredReason(from.evidence, nameOf(from.personId)) : null);
+  const startReason = startInferred ? why(years.startFrom ?? years.inferredFrom) : null;
+  const endReason = endInferred ? why(years.endFrom ?? years.inferredFrom) : null;
+  return {
+    kind: "range",
+    startYear: years.startYear,
+    endYear,
+    ongoing: years.ongoing,
+    inferred: startInferred || endInferred,
+    reason: startReason ?? endReason,
+    startInferred,
+    endInferred,
+    startReason,
+    endReason,
+  };
+}
+
+/** What byTenure reads from a tree link. */
+type TenureOrdered = { years: LinkYears; person: { fullName: string } };
+
+/**
+ * Order inside a tree group, current staff first (a head coach or AD scanning the card wants them before
+ * people who have left):
+ *  1. ongoing links with a start year, longest-serving first;
+ *  2. ongoing links whose start the source doesn't give ("Current"), by name;
+ *  3. past links with a range, most recent end first, then longest-serving;
+ *  4. links whose years the source doesn't pin, by name.
+ */
+export function byTenure(a: TenureOrdered, b: TenureOrdered): number {
+  const rank = (l: TenureOrdered) => {
+    const display = linkYearsDisplay(l.years);
+    if (l.years.ongoing) return display === "range" ? 0 : 1;
+    return display === "range" ? 2 : 3;
+  };
+  const ra = rank(a);
+  const rb = rank(b);
+  if (ra !== rb) return ra - rb;
+  if (ra === 0) {
+    const s = (a.years.startYear ?? 0) - (b.years.startYear ?? 0);
+    if (s) return s;
+  } else if (ra === 2) {
+    const e = (b.years.endYear ?? 0) - (a.years.endYear ?? 0);
+    if (e) return e;
+    const s = (a.years.startYear ?? 0) - (b.years.startYear ?? 0);
+    if (s) return s;
+  }
+  return a.person.fullName.localeCompare(b.person.fullName);
 }
 
 /**
@@ -263,8 +401,11 @@ export function buildTree(tree: Tree | { mentors: AnnotatedLink[]; peers: Annota
       const joined = menteeById.get(l.person.id);
       const start = joined?.years?.startYear;
       if (joined?.years && start) {
-        const inferred = joined.years.inferred && joined.years.inferredFrom ? inferredReason(joined.years.inferredFrom.evidence, nameFor(joined)(joined.years.inferredFrom.personId)) : null;
-        return { kind: "joined", text: `Joined ${firstName}'s staff in`, year: { value: start, inferred: !!inferred, reason: inferred } };
+        // The year shown is the start of the mentee run: only the start bound's status counts.
+        const inferred = joined.years.startInferred ?? joined.years.inferred;
+        const from = joined.years.startFrom ?? joined.years.inferredFrom;
+        const reason = inferred && from ? inferredReason(from.evidence, nameFor(joined)(from.personId)) : null;
+        return { kind: "joined", text: `Joined ${firstName}'s staff in`, year: { value: start, inferred, reason } };
       }
     }
     return currentOrgSlug && l.org.slug === currentOrgSlug ? null : { kind: "at", text: `At ${l.org.shortName}` };

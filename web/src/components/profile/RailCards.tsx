@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { ChevronRight, ExternalLink, Network } from "lucide-react";
 import { ProgramBadges } from "@/components/data/Badges";
@@ -18,19 +19,45 @@ import { stateName, treeYearsView, type TreeYearsView } from "./model";
 import { RowConnectButton } from "./ProfileActions";
 import { InlineYears } from "./TreeYears";
 
-/** Rail rows abbreviate titles sooner than tree rows (§6.3 titleShort), so the program fits beside them. */
-const RAIL_TITLE_MAX = 28;
+/** Every rail row is a football coach: "Head Football Coach" reads "Head Coach" there. */
+const FOOTBALL_IN_TITLE: [RegExp, string][] = [
+  [/\bHead Coach of Football\b/gi, "Head Coach"],
+  [/\bFootball Head Coach\b/gi, "Head Coach"],
+  [/\bFootball (Coach|Coordinator)\b/gi, "$1"],
+];
 
 /**
- * The "Title · Program · Conf" line of a rail person row (§12: truncate the title, keep the context):
- * the title truncates on its own and the program part stays whole.
+ * A title in a rail row: always abbreviated with titleShort() (§6.3, compact rows), not only past its
+ * length limit, so "Offensive Coordinator" reads "OC" instead of being cut to "Offensive C…".
+ */
+export function railTitle(title: string): string {
+  let t = titleShort(title, 0);
+  for (const [re, sub] of FOOTBALL_IN_TITLE) t = t.replace(re, sub);
+  return t;
+}
+
+/** The title keeps at least this much room (or its own width when shorter) before the program takes the rest. */
+const TITLE_KEEP_PX = 90;
+/** Rough width of a 12px Inter character, to tell a short title from a long one without measuring. */
+const CAPTION_CHAR_PX = 6.4;
+
+/**
+ * The "Title · Program" line of a rail person row (§12: truncate the title, keep the context). The title
+ * truncates first; the program stays whole unless it would leave the title less than ~90px (or its own
+ * width when shorter), and only then truncates too.
  */
 function TitleOrg({ title, org }: { title: string | null; org: string | null }) {
-  if (!title) return org ? <span className="block truncate">{org}</span> : null;
+  if (!title || !org) {
+    const only = title ?? org;
+    return only ? <span className="block truncate">{only}</span> : null;
+  }
+  const keep = Math.min(TITLE_KEEP_PX, Math.ceil(title.length * CAPTION_CHAR_PX));
   return (
     <span className="flex min-w-0">
       <span className="min-w-0 truncate">{title}</span>
-      {org && <span className="max-w-[75%] shrink-0 truncate">{`\u00a0·\u00a0${org}`}</span>}
+      <span style={{ "--keep": `${keep}px` } as CSSProperties} className="max-w-[calc(100%-var(--keep))] shrink-0 truncate pl-1">
+        {`·\u00a0${org}`}
+      </span>
     </span>
   );
 }
@@ -114,10 +141,12 @@ export function CurrentProgramCard({ program }: { program: ProgramCard }) {
  */
 function ViaLine({ link: l }: { link: SameTreeLink }) {
   const view: TreeYearsView = treeYearsView(l.years, (id) => (id === l.person.id ? l.person.fullName : id === l.via.id ? l.via.fullName : undefined));
+  // " · " before the years, never ", ": a program name can hold commas ("University of California, Davis").
   const years =
     view.kind === "range" ? (
       <>
-        , <InlineYears view={view} />
+        {" · "}
+        <InlineYears view={view} />
       </>
     ) : null;
   const first = l.person.fullName.split(" ")[0];
@@ -179,7 +208,7 @@ export function SameTreeCard({
                 tintKey={p.slug}
                 avatarSize={36}
                 size="sm"
-                title={<TitleOrg title={p.currentTitle ? titleShort(p.currentTitle, RAIL_TITLE_MAX) : null} org={p.org?.shortName ?? null} />}
+                title={<TitleOrg title={p.currentTitle ? railTitle(p.currentTitle) : null} org={p.org?.shortName ?? null} />}
                 context={
                   <ContextLine icon={Network}>
                     <ViaLine link={l} />
@@ -204,7 +233,8 @@ export function SameTreeCard({
 
 /**
  * Rail: People also viewed (§8.4): head coaches in the same conference (there is no view data yet,
- * so the subtitle says what the list is). Whole row is the link. Dropped on phone.
+ * so the subtitle says what the list is, and the rows don't repeat the conference). Whole row is the
+ * link. Dropped on phone.
  */
 export function AlsoViewedCard({ people, conferenceAbbr }: { people: PersonSummary[]; conferenceAbbr: string }) {
   if (!people.length) return null;
@@ -221,9 +251,8 @@ export function AlsoViewedCard({ people, conferenceAbbr }: { people: PersonSumma
               avatarSize={32}
               size="sm"
               linkRow
-              title={
-                <TitleOrg title={p.currentTitle ? titleShort(p.currentTitle, RAIL_TITLE_MAX) : null} org={[p.org?.shortName, conferenceShort(p.org?.conferenceAbbr)].filter(Boolean).join(" · ") || null} />
-              }
+              // No "· Conf" per row: the subtitle already names the conference.
+              title={<TitleOrg title={p.currentTitle ? railTitle(p.currentTitle) : null} org={p.org?.shortName ?? null} />}
             />
           </li>
         ))}
@@ -232,35 +261,43 @@ export function AlsoViewedCard({ people, conferenceAbbr }: { people: PersonSumma
   );
 }
 
-/** Breadcrumb (§8.4, md and up): "{Program} › Staff › {Name}". */
-export function ProfileBreadcrumb({ name, program }: { name: string; program: { slug: string; shortName: string; inRegistry: boolean } | null }) {
+/**
+ * Breadcrumb (§8.4, md and up): "{Program} › Staff › {Name}". A fictional demo candidate is on no real
+ * staff, so its crumb is "Coaches › {Name}", or "Hiring pipeline › {Name}" for the athletic director demo
+ * (who arrives from the pipeline).
+ */
+export function ProfileBreadcrumb({
+  name,
+  program,
+  demo,
+}: {
+  name: string;
+  program: { slug: string; shortName: string; inRegistry: boolean } | null;
+  /** Set on a fictional demo candidate: who is looking. */
+  demo?: "employer" | "other";
+}) {
   const sep = <Icon icon={ChevronRight} size={14} className="text-fg-3" />;
   const link = "inline-flex min-h-6 items-center rounded-xs underline-offset-2 hover:text-fg-1 hover:underline";
+  const crumb = (href: string, label: string) => (
+    <li className="flex items-center gap-1">
+      <Link href={href} className={link}>
+        {label}
+      </Link>
+      {sep}
+    </li>
+  );
   return (
     <nav aria-label="Breadcrumb">
       <ol className="flex min-w-0 items-center gap-1 text-small leading-6 text-fg-2">
-        {program?.inRegistry ? (
+        {demo === "employer" ? (
+          crumb("/employers/pipeline", "Hiring pipeline")
+        ) : !demo && program?.inRegistry ? (
           <>
-            <li className="flex items-center gap-1">
-              <Link href={`/programs/${program.slug}`} className={link}>
-                {program.shortName}
-              </Link>
-              {sep}
-            </li>
-            <li className="flex items-center gap-1">
-              <Link href={`/programs/${program.slug}?tab=staff`} className={link}>
-                Staff
-              </Link>
-              {sep}
-            </li>
+            {crumb(`/programs/${program.slug}`, program.shortName)}
+            {crumb(`/programs/${program.slug}?tab=staff`, "Staff")}
           </>
         ) : (
-          <li className="flex items-center gap-1">
-            <Link href="/search?type=people" className={link}>
-              Coaches
-            </Link>
-            {sep}
-          </li>
+          crumb("/search?type=people", "Coaches")
         )}
         <li className="min-w-0 truncate">
           <span aria-current="page" className="text-fg-1">
