@@ -1,0 +1,25 @@
+{
+ "programs_in_registry": 244,
+ "programs_with_staff": 14,
+ "people": 151,
+ "excluded_non_coaches": 5,
+ "people_with_prior_stop": 95,
+ "tenures": 634,
+ "coaching_tenures": 497,
+ "coaching_tenures_with_start_year": 343,
+ "organizations": 495,
+ "org_match": {
+  "exact": 394,
+  "new": 177,
+  "new-reused": 50,
+  "fuzzy": 3
+ },
+ "edges_worked_under": 85,
+ "edges_worked_alongside": 341,
+ "bio_quality": {
+  "thin": 40,
+  "full": 68,
+  "none": 43
+ },
+ "current_season": 2026
+}

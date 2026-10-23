@@ -9,7 +9,11 @@ Usage: python3 -I pipeline/crawl_pass2.py   (then rerun bios for new staff)
 """
 import json
 import re
+import sys
+from pathlib import Path
 from urllib.parse import urljoin, urlparse
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from bs4 import BeautifulSoup
 

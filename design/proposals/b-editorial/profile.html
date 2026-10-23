@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ian Falconer · Coach Network</title>
+<meta name="description" content="Coach profile for Ian Falconer, head football coach at Pacific University (Oregon).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   Coach Network / Direction B "Editorial clarity" / shared styles
+   Tokens are the source of truth; see DESIGN.md.
+   ========================================================================== */
+:root {
+  color-scheme: light;
+  --bg: #FFFFFF;
+  --bg-subtle: #F7F7F5;
+  --bg-muted: #EFEFEB;
+  --line: #E5E5E0;
+  --line-strong: #CFCFC8;
+  --control: #87898F;
+  --text: #16171A;
+  --text-2: #45474D;
+  --text-3: #66686E;
+  --accent: #1F4FC9;
+  --accent-hover: #183EA0;
+  --accent-subtle: #EEF2FC;
+  --on-accent: #FFFFFF;
+  --positive: #1D7A4F;
+  --lvl-1: #16171A;
+  --lvl-2: #8E9097;
+  --shadow-pop: 0 1px 2px rgba(22,23,26,.06), 0 8px 24px rgba(22,23,26,.10);
+  --t1-bg:#E3E8EF; --t1-fg:#2C3A4F;
+  --t2-bg:#E1EBE4; --t2-fg:#26402F;
+  --t3-bg:#EFE8DC; --t3-fg:#4A3B22;
+  --t4-bg:#F0E2DD; --t4-fg:#4F2C22;
+  --t5-bg:#E7E4F0; --t5-fg:#352E4F;
+  --t6-bg:#DDE9EE; --t6-fg:#213F4C;
+  --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --r-xs: 2px; --r-sm: 4px; --r-md: 6px; --r-lg: 8px;
+  --shell: 1160px;
+  --nav-h: 56px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:#101113; --bg-subtle:#17181B; --bg-muted:#202125;
+    --line:#2B2D32; --line-strong:#3C3E44; --control:#7A7C82;
+    --text:#ECECE8; --text-2:#B5B7BC; --text-3:#8F9197;
+    --accent:#8DA9FF; --accent-hover:#ABC0FF; --accent-subtle:#1A2442; --on-accent:#0B1533;
+    --positive:#5CC793; --lvl-1:#ECECE8; --lvl-2:#7A7C82;
+    --shadow-pop: 0 0 0 1px #2B2D32, 0 8px 24px rgba(0,0,0,.5);
+    --t1-bg:#26303D; --t1-fg:#C9D5E6; --t2-bg:#25332A; --t2-fg:#C4DCCB;
+    --t3-bg:#3A3226; --t3-fg:#E3D4BA; --t4-bg:#3C2B26; --t4-fg:#E8CBC0;
+    --t5-bg:#2F2B3D; --t5-fg:#D4CDEA; --t6-bg:#22343B; --t6-fg:#C0DAE4;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#101113; --bg-subtle:#17181B; --bg-muted:#202125;
+  --line:#2B2D32; --line-strong:#3C3E44; --control:#7A7C82;
+  --text:#ECECE8; --text-2:#B5B7BC; --text-3:#8F9197;
+  --accent:#8DA9FF; --accent-hover:#ABC0FF; --accent-subtle:#1A2442; --on-accent:#0B1533;
+  --positive:#5CC793; --lvl-1:#ECECE8; --lvl-2:#7A7C82;
+  --shadow-pop: 0 0 0 1px #2B2D32, 0 8px 24px rgba(0,0,0,.5);
+  --t1-bg:#26303D; --t1-fg:#C9D5E6; --t2-bg:#25332A; --t2-fg:#C4DCCB;
+  --t3-bg:#3A3226; --t3-fg:#E3D4BA; --t4-bg:#3C2B26; --t4-fg:#E8CBC0;
+  --t5-bg:#2F2B3D; --t5-fg:#D4CDEA; --t6-bg:#22343B; --t6-fg:#C0DAE4;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 400 14px/20px var(--font-ui);
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3, h4, p, ol, ul, dl, dd, figure { margin: 0; padding: 0; }
+ol, ul { list-style: none; }
+a { color: inherit; text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+svg.i { width: 20px; height: 20px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+svg.i--16 { width: 16px; height: 16px; }
+svg.i--14 { width: 14px; height: 14px; }
+.btn[disabled], .btn[aria-disabled="true"] { opacity: .4; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+.num { font-variant-numeric: tabular-nums lining-nums; font-feature-settings: "tnum" 1, "lnum" 1; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.link { color: var(--accent); font-weight: 500; }
+.link:hover { color: var(--accent-hover); }
+
+/* ---------- Type ---------- */
+.display { font: 600 34px/40px var(--font-display); letter-spacing: -0.012em; font-optical-sizing: auto; }
+.h2 { font: 600 22px/28px var(--font-display); letter-spacing: -0.006em; }
+.h3 { font: 600 16px/22px var(--font-ui); letter-spacing: -0.006em; }
+.kicker { font: 600 11px/16px var(--font-ui); letter-spacing: .07em; text-transform: uppercase; color: var(--text-3); }
+.meta { font-size: 13px; line-height: 18px; color: var(--text-3); }
+.dot::before { content: "\00B7"; margin: 0 6px; color: var(--text-3); }
+
+/* ---------- Shell ---------- */
+.shell { max-width: calc(var(--shell) + 48px); margin: 0 auto; padding: 0 24px; }
+.topnav { position: sticky; top: 0; z-index: 20; height: var(--nav-h); background: var(--bg); border-bottom: 1px solid var(--line); }
+.topnav__inner { height: 100%; display: flex; align-items: center; gap: 20px; }
+.wordmark { font: 600 21px/1 var(--font-display); letter-spacing: -0.015em; color: var(--text); white-space: nowrap; }
+.wordmark:hover { text-decoration: none; }
+.search { display: flex; align-items: center; gap: 8px; width: 288px; height: 36px; padding: 0 12px; border-radius: var(--r-md); background: var(--bg-muted); color: var(--text-3); }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; font: 400 14px/20px var(--font-ui); color: var(--text); outline: none; }
+.search input::placeholder { color: var(--text-3); }
+.search:focus-within { box-shadow: 0 0 0 2px var(--accent); background: var(--bg); }
+.primary { margin-left: auto; display: flex; align-items: stretch; height: 100%; }
+.navitem { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-width: 76px; padding: 0 6px; color: var(--text-3); font-size: 12px; line-height: 16px; white-space: nowrap; }
+.navitem:hover { color: var(--text); text-decoration: none; }
+.navitem.is-active { color: var(--text); }
+.navitem.is-active::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 2px; background: var(--text); }
+.navitem .label { display: inline-flex; align-items: center; gap: 2px; }
+.navitem .badge-count { position: absolute; top: 8px; left: calc(50% + 4px); min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--text); color: var(--bg); font: 600 10px/16px var(--font-ui); text-align: center; }
+.vr { width: 1px; background: var(--line); margin: 12px 8px; }
+
+/* phone top bar + tab bar (hidden on desktop) */
+.mbar, .tabbar { display: none; }
+
+/* ---------- Avatars and logos ---------- */
+.av { display: inline-grid; place-items: center; flex: none; border-radius: 50%; font-weight: 600; letter-spacing: .01em; background: var(--t1-bg); color: var(--t1-fg); user-select: none; }
+.av--24 { width: 24px; height: 24px; font-size: 10px; }
+.av--32 { width: 32px; height: 32px; font-size: 12px; }
+.av--40 { width: 40px; height: 40px; font-size: 14px; }
+.av--48 { width: 48px; height: 48px; font-size: 16px; }
+.av--64 { width: 64px; height: 64px; font-size: 21px; }
+.av--96 { width: 96px; height: 96px; font-size: 32px; letter-spacing: .02em; }
+.tint-1 { background: var(--t1-bg); color: var(--t1-fg); }
+.tint-2 { background: var(--t2-bg); color: var(--t2-fg); }
+.tint-3 { background: var(--t3-bg); color: var(--t3-fg); }
+.tint-4 { background: var(--t4-bg); color: var(--t4-fg); }
+.tint-5 { background: var(--t5-bg); color: var(--t5-fg); }
+.tint-6 { background: var(--t6-bg); color: var(--t6-fg); }
+.logo { display: inline-grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: var(--r-md); background: var(--bg-subtle); border: 1px solid var(--line); color: var(--text-2); font: 600 12px/1 var(--font-ui); letter-spacing: .02em; }
+.logo--32 { width: 32px; height: 32px; font-size: 11px; border-radius: 5px; }
+.logo--48 { width: 48px; height: 48px; font-size: 14px; }
+
+/* ---------- Buttons, chips ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; padding: 0 16px; border-radius: var(--r-md); font: 600 14px/20px var(--font-ui); white-space: nowrap; transition: background-color .12s ease, border-color .12s ease, color .12s ease; }
+.btn:hover { text-decoration: none; }
+.btn--primary { background: var(--accent); color: var(--on-accent); }
+.btn--primary:hover { background: var(--accent-hover); }
+.btn--secondary { background: var(--bg); color: var(--text); box-shadow: inset 0 0 0 1px var(--control); }
+.btn--secondary:hover { background: var(--bg-subtle); box-shadow: inset 0 0 0 1px var(--text-2); }
+.btn--quiet { height: 32px; padding: 0 10px; color: var(--text-2); font-weight: 500; font-size: 13px; }
+.btn--quiet:hover { background: var(--bg-muted); color: var(--text); }
+.btn--sm { height: 30px; padding: 0 12px; font-size: 13px; }
+.btn--icon { width: 36px; padding: 0; }
+.chip { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: var(--r-sm); border: 1px solid var(--line-strong); color: var(--text-2); font: 500 12px/1 var(--font-ui); white-space: nowrap; }
+.chip--sample { border-style: dashed; border-color: var(--control); color: var(--text-2); }
+.chip--plain { border-color: transparent; background: var(--bg-muted); }
+
+/* ---------- Rail modules ---------- */
+.mod { padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--line); }
+.mod:last-child { border-bottom: 0; }
+.mod__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
+.mod__head .h4 { font: 600 15px/20px var(--font-ui); letter-spacing: -0.005em; }
+.prow { display: grid; grid-template-columns: auto minmax(0,1fr) auto; column-gap: 12px; align-items: start; padding: 10px 0; }
+.prow + .prow { border-top: 1px solid var(--line); }
+.prow__name { font-weight: 600; font-size: 14px; line-height: 20px; color: var(--text); }
+.prow__sub { font-size: 13px; line-height: 18px; color: var(--text-2); }
+.prow__ctx { margin-top: 2px; font-size: 12px; line-height: 16px; color: var(--text-3); }
+.prow__end { font-size: 13px; line-height: 20px; color: var(--text-3); text-align: right; white-space: nowrap; }
+.foot { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; line-height: 16px; color: var(--text-3); }
+.foot .brandline { width: 100%; margin-top: 8px; }
+
+/* ---------- Phone (<= 760px) ---------- */
+@media (max-width: 760px) {
+  .topnav { display: none; }
+  .shell { padding: 0 16px; }
+  .mbar { display: flex; position: sticky; top: 0; z-index: 20; height: 52px; align-items: center; gap: 12px; padding: 0 16px; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .mbar .search { flex: 1; width: auto; height: 36px; }
+  .mbar .iconbtn { display: grid; place-items: center; width: 36px; height: 36px; margin-right: -6px; color: var(--text-2); position: relative; }
+  .mbar .iconbtn .pip { position: absolute; top: 7px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--text); box-shadow: 0 0 0 2px var(--bg); }
+  .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; height: calc(56px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--bg); border-top: 1px solid var(--line); }
+  .tab { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--text-3); font-size: 11px; line-height: 14px; font-weight: 500; }
+  .tab svg.i { width: 22px; height: 22px; }
+  .tab.is-active { color: var(--text); }
+  .tab.is-active::before { content: ""; position: absolute; top: -1px; left: 28%; right: 28%; height: 2px; background: var(--text); }
+  .tab .av { width: 22px; height: 22px; font-size: 9px; }
+  body { padding-bottom: 72px; }
+}
+
+/* ---------- Profile page ---------- */
+.page { display: grid; grid-template-columns: minmax(0, 1fr) 300px; padding-top: 32px; padding-bottom: 72px; }
+.main { min-width: 0; padding-right: 40px; border-right: 1px solid var(--line); }
+.rail { min-width: 0; padding-left: 32px; }
+
+.crumbs { display: flex; align-items: center; gap: 6px; margin-bottom: 20px; font-size: 13px; line-height: 18px; color: var(--text-3); }
+.crumbs svg { color: var(--text-3); }
+
+/* header */
+.phead__top { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 24px; align-items: center; }
+.phead .display { color: var(--text); }
+.phead__headline { margin-top: 6px; font-size: 17px; line-height: 24px; color: var(--text); }
+.phead__meta { display: flex; flex-wrap: wrap; align-items: center; row-gap: 6px; margin-top: 8px; font-size: 13px; line-height: 18px; color: var(--text-3); }
+.phead__meta .loc { display: inline-flex; align-items: center; gap: 4px; }
+.phead__meta .chip { margin-left: 10px; }
+.band { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 24px; border-top: 1px solid var(--text); border-bottom: 1px solid var(--line); }
+.stats { display: flex; }
+.stat { padding: 12px 28px 12px 0; }
+.stat + .stat { padding-left: 28px; border-left: 1px solid var(--line); }
+.stat dt { font: 600 11px/16px var(--font-ui); letter-spacing: .07em; text-transform: uppercase; color: var(--text-3); }
+.stat dd { margin-top: 2px; font: 600 28px/32px var(--font-display); font-variant-numeric: lining-nums tabular-nums; color: var(--text); }
+.actions { display: flex; gap: 8px; }
+
+/* source banner */
+.source { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 12px; align-items: start; margin-top: 24px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--bg-subtle); }
+.source > svg { margin-top: 2px; color: var(--text-2); }
+.source__title { font-weight: 600; font-size: 14px; line-height: 20px; color: var(--text); }
+.source__body { margin-top: 2px; font-size: 13px; line-height: 18px; color: var(--text-2); }
+.source__links { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 0; margin-top: 6px; font-size: 13px; line-height: 18px; color: var(--text-3); }
+.source__links a { display: inline-flex; align-items: center; gap: 4px; color: var(--accent); font-weight: 500; }
+.source__claim { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; text-align: right; }
+.source__claim .q { font-size: 13px; line-height: 18px; color: var(--text-2); }
+
+/* sections */
+.sec { padding-top: 32px; margin-top: 32px; border-top: 1px solid var(--line); }
+.sec__head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.sec__aside { font-size: 13px; line-height: 18px; color: var(--text-3); }
+.sec__aside a { display: inline-flex; align-items: center; gap: 2px; }
+.about { max-width: 64ch; font-size: 15px; line-height: 24px; color: var(--text); }
+.provenance { margin-top: 10px; font-size: 12px; line-height: 16px; color: var(--text-3); }
+
+/* season strip */
+.strip { margin: 4px 0 28px; }
+.strip__row { display: grid; grid-template-columns: repeat(25, minmax(0, 1fr)); column-gap: 3px; }
+.strip__orgs span { padding-bottom: 5px; margin-bottom: 6px; border-bottom: 1px solid var(--line-strong); font-size: 11px; line-height: 14px; font-weight: 500; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: clip; }
+.strip__cells span { height: 16px; border-radius: var(--r-xs); }
+.s1 { background: var(--lvl-1); }
+.s2 { background: var(--lvl-2); }
+.s3 { background: var(--bg); box-shadow: inset 0 0 0 1px var(--lvl-2); }
+.strip__axis { margin-top: 6px; font-size: 11px; line-height: 14px; color: var(--text-3); }
+.strip__axis span:last-child { text-align: right; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; line-height: 16px; color: var(--text-3); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
+
+/* experience: box-score table */
+.xp__cols, .xg__org, .role { display: grid; grid-template-columns: minmax(0, 1fr) 128px 44px; column-gap: 12px; }
+.xp__cols { padding-bottom: 8px; border-bottom: 1px solid var(--text); }
+.xp__cols span:nth-child(n+2) { text-align: right; }
+.xg { padding: 18px 0 16px; border-bottom: 1px solid var(--line); }
+.xg:last-child { border-bottom: 0; }
+.xg__org { align-items: start; }
+.xg__id { display: flex; gap: 16px; min-width: 0; }
+.xg__name { min-width: 0; padding-top: 1px; }
+.xg__name .h3 a:hover { text-decoration: underline; }
+.xg__range, .xg__n { font-size: 14px; line-height: 22px; font-weight: 600; color: var(--text); text-align: right; white-space: nowrap; }
+.xg__roles { position: relative; margin-top: 10px; }
+.xg__roles::before { content: ""; position: absolute; left: 19.5px; top: 0; bottom: 18px; width: 1px; background: var(--line-strong); }
+.xg__roles.single::before { display: none; }
+.role { position: relative; padding: 7px 0; }
+.role__body { position: relative; padding-left: 56px; min-width: 0; }
+.role__body::before { content: ""; position: absolute; left: 16px; top: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--bg); box-shadow: inset 0 0 0 1.5px var(--lvl-2); }
+.role.is-current .role__body::before { background: var(--text); box-shadow: none; }
+.role__title { font-size: 14px; line-height: 20px; font-weight: 500; color: var(--text); }
+.role__note { margin-top: 1px; font-size: 13px; line-height: 18px; color: var(--text-3); }
+.role .range, .role .n { font-size: 14px; line-height: 20px; color: var(--text-2); text-align: right; white-space: nowrap; }
+.role .n { color: var(--text-3); }
+.role .range-m { display: none; }
+.xg__roles.single .role .range, .xg__roles.single .role .n { visibility: hidden; }
+.source__links .checked::before { content: "\00B7"; margin: 0 6px; }
+.srcref { display: inline-flex; align-items: center; gap: 3px; color: var(--text-3); }
+.srcref:hover { color: var(--accent); }
+
+/* tree preview */
+.tree { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); border-top: 1px solid var(--text); }
+.tree__col { padding: 12px 24px 0 0; min-width: 0; }
+.tree__col + .tree__col { padding: 12px 0 0 24px; border-left: 1px solid var(--line); }
+.tree__grp + .tree__grp { margin-top: 18px; }
+.tree .kicker { display: flex; justify-content: space-between; margin-bottom: 2px; }
+.tree .kicker b { font-weight: 600; color: var(--text); font-size: 12px; letter-spacing: 0; }
+.tree__grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; }
+.tree .prow { grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 10px; padding: 9px 0; border-top: 0; border-bottom: 1px solid var(--line); }
+.tree__grp .prow:last-child, .tree__grid .prow:nth-last-child(-n+2) { border-bottom: 0; }
+.tree .prow__name { font-size: 14px; }
+.tree .prow__sub { font-size: 12px; line-height: 16px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tree .prow__end { font-size: 12px; line-height: 20px; }
+.tree__more { display: inline-flex; align-items: center; gap: 2px; margin-top: 8px; font-size: 13px; line-height: 18px; }
+.tree__note { margin-top: 16px; font-size: 12px; line-height: 16px; color: var(--text-3); }
+
+/* two-up bottom sections */
+.twoup { display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px; }
+.twoup .sec { margin-top: 32px; }
+.entry { display: flex; gap: 14px; }
+.entry__title { font-size: 15px; line-height: 22px; font-weight: 600; color: var(--text); }
+.entry__sub { font-size: 14px; line-height: 20px; color: var(--text-2); }
+.entry__meta { margin-top: 2px; font-size: 13px; line-height: 18px; color: var(--text-3); }
+
+/* rail */
+.rail .mod__head .h4 { font-family: var(--font-ui); }
+.rail .note { font-size: 12px; line-height: 16px; color: var(--text-3); margin: -8px 0 6px; }
+
+/* ---------- Tablet ---------- */
+@media (max-width: 1100px) {
+  .page { grid-template-columns: minmax(0, 1fr); }
+  .main { padding-right: 0; border-right: 0; }
+  .rail { padding-left: 0; margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px; }
+}
+
+/* ---------- Phone ---------- */
+@media (max-width: 760px) {
+  .page { padding-top: 20px; }
+  .crumbs { display: none; }
+  .phead__top { grid-template-columns: 1fr; row-gap: 14px; }
+  .av--96 { width: 72px; height: 72px; font-size: 24px; }
+  .display { font-size: 28px; line-height: 34px; }
+  .phead__headline { font-size: 16px; line-height: 22px; margin-top: 4px; }
+  .phead__meta .chip { margin-left: 0; }
+  .phead__meta .lvl::after { content: ""; flex-basis: 100%; }
+  .band { flex-direction: column; align-items: stretch; gap: 0; border-bottom: 0; margin-top: 20px; }
+  .stats { border-bottom: 1px solid var(--line); }
+  .stat { flex: 1; padding: 10px 12px 10px 0; }
+  .stat + .stat { padding-left: 12px; }
+  .stat dd { font-size: 24px; line-height: 28px; }
+  .actions { padding-top: 16px; }
+  .actions .btn--primary, .actions .btn--secondary:not(.btn--icon) { flex: 1; }
+  .source { grid-template-columns: auto minmax(0, 1fr); margin-top: 20px; }
+  .source__claim { grid-column: 2; flex-direction: row; align-items: center; justify-content: space-between; margin-top: 12px; text-align: left; }
+  .sec { padding-top: 24px; margin-top: 24px; }
+  .h2 { font-size: 20px; line-height: 26px; }
+  .sec__head .legend { display: none; }
+  .strip__orgs { display: none; }
+  .strip__cells span { height: 14px; }
+  .strip { margin-bottom: 8px; }
+  .legend--m { display: flex; margin-bottom: 20px; }
+  .xp__cols { display: none; }
+  .xg { padding: 16px 0 12px; }
+  .xg:first-of-type { border-top: 1px solid var(--line); }
+  .xg__org, .role { grid-template-columns: minmax(0, 1fr); }
+  .xg__range { display: none; }
+  .xg__n { display: none; }
+  .xg__name .meta .tot { display: inline; }
+  .role .range, .role .n { display: none; }
+  .role .range-m { display: block; margin-top: 2px; font-size: 13px; line-height: 18px; color: var(--text-2); }
+  .tree { grid-template-columns: 1fr; }
+  .tree__col, .tree__col + .tree__col { padding: 12px 0 4px; border-left: 0; }
+  .tree__col + .tree__col { margin-top: 12px; border-top: 1px solid var(--line); }
+  .tree__grid { grid-template-columns: 1fr; }
+  .tree__grid .prow:nth-last-child(2) { border-bottom: 1px solid var(--line); }
+  .stat dt .lg { display: none; }
+  .source__links { flex-direction: column; align-items: flex-start; }
+  .source__links .checked::before { display: none; }
+  .xg .logo { width: 36px; height: 36px; font-size: 11px; }
+  .xg__id { gap: 14px; }
+  .xg__roles::before { left: 17.5px; }
+  .role__body { padding-left: 50px; }
+  .role__body::before { left: 14.5px; }
+  .xg:has(.single) .tot { display: none; }
+  .twoup { grid-template-columns: 1fr; }
+  .rail { grid-template-columns: 1fr; margin-top: 24px; padding-top: 24px; }
+}
+@media (min-width: 761px) { .legend--m { display: none; } .xg__name .meta .tot { display: none; } }
+
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <!-- Icons: Lucide (ISC License), 24x24 grid, 1.75 stroke. -->
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4.2-4.2"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-briefcase" viewBox="0 0 24 24"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></symbol>
+  <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+  <symbol id="i-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-tree" viewBox="0 0 24 24"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></symbol>
+  <symbol id="i-thumbs-up" viewBox="0 0 24 24"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="m16 6-4-4-4 4"/><path d="M12 2v13"/></symbol>
+  <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+</svg>
+
+<header class="topnav">
+  <div class="shell topnav__inner">
+    <a class="wordmark" href="feed.html" data-brand>Coach Network</a>
+    <label class="search">
+      <svg class="i i--16"><use href="#i-search"/></svg>
+      <span class="sr">Search</span>
+      <input type="search" placeholder="Search coaches and programs">
+    </label>
+    <nav class="primary" aria-label="Primary">
+      <a class="navitem" href="feed.html"><svg class="i"><use href="#i-home"/></svg><span class="label">Home</span></a>
+      <a class="navitem" href="#"><svg class="i"><use href="#i-users"/></svg><span class="label">Network</span></a>
+      <a class="navitem" href="#"><svg class="i"><use href="#i-briefcase"/></svg><span class="label">Jobs</span></a>
+      <a class="navitem" href="#"><svg class="i"><use href="#i-message"/></svg><span class="label">Messaging</span></a>
+      <a class="navitem" href="#"><svg class="i"><use href="#i-bell"/></svg><span class="badge-count num">3</span><span class="label">Notifications</span></a>
+      <a class="navitem" href="#"><span class="av av--24 tint-6" style="width:22px;height:22px;font-size:9px">JL</span><span class="label">Me<svg class="i i--14"><use href="#i-chevron-down"/></svg></span></a>
+      <span class="vr" aria-hidden="true"></span>
+      <a class="navitem" href="#"><svg class="i"><use href="#i-grid"/></svg><span class="label">For employers<svg class="i i--14"><use href="#i-chevron-down"/></svg></span></a>
+    </nav>
+  </div>
+</header>
+<header class="mbar">
+  <span class="av av--32 tint-6" aria-label="Me">JL</span>
+  <label class="search"><svg class="i i--16"><use href="#i-search"/></svg><span class="sr">Search</span><input type="search" placeholder="Search coaches, programs"></label>
+  <a class="iconbtn" href="#" aria-label="Messaging"><svg class="i"><use href="#i-message"/></svg><span class="pip"></span></a>
+</header>
+
+<main class="shell page">
+  <div class="main">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="#">Pacific (OR)</a><svg class="i i--14"><use href="#i-chevron-right"/></svg><a href="#">Staff</a><svg class="i i--14"><use href="#i-chevron-right"/></svg><span>Ian Falconer</span>
+    </nav>
+
+    <!-- Header -->
+    <section class="phead" aria-labelledby="name">
+      <div class="phead__top">
+        <span class="av av--96 tint-2" aria-hidden="true">IF</span>
+        <div>
+          <h1 class="display" id="name">Ian Falconer</h1>
+          <p class="phead__headline">Head Football Coach, Pacific University (Oregon)</p>
+          <p class="phead__meta">
+            <span class="loc"><svg class="i i--14"><use href="#i-pin"/></svg>Forest Grove, Oregon</span>
+            <span class="dot lvl">NCAA Division III</span>
+            <span class="chip" title="Northwest Conference">Northwest Conference</span>
+          </p>
+        </div>
+      </div>
+      <div class="band">
+        <dl class="stats">
+          <div class="stat"><dt><span class="lg">Coaching </span>stops</dt><dd>4</dd></div>
+          <div class="stat"><dt>Seasons<span class="lg"> coached</span></dt><dd>25</dd></div>
+          <div class="stat"><dt><span class="lg">Coaching </span>tree</dt><dd>12</dd></div>
+        </dl>
+        <div class="actions">
+          <a class="btn btn--primary" href="#"><svg class="i i--16"><use href="#i-user-plus"/></svg>Connect</a>
+          <a class="btn btn--secondary" href="#"><svg class="i i--16"><use href="#i-send"/></svg>Message</a>
+          <button class="btn btn--secondary btn--icon" aria-label="More actions"><svg class="i i--16"><use href="#i-more"/></svg></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Unclaimed source banner -->
+    <aside class="source" aria-label="Profile source">
+      <svg class="i i--16"><use href="#i-info"/></svg>
+      <div>
+        <p class="source__title">This profile was built from public sources</p>
+        <p class="source__body">Ian has not claimed or reviewed it yet. Every stint below links to the sentence it came from.</p>
+        <p class="source__links">
+          <a href="https://goboxers.com/sports/football/roster/coaches/ian-falconer/1740">goboxers.com &middot; staff bio<svg class="i i--14"><use href="#i-external"/></svg></a>
+          <span class="checked">Checked Oct 2026</span>
+        </p>
+      </div>
+      <div class="source__claim">
+        <span class="q">Is this you?</span>
+        <a class="btn btn--secondary btn--sm" href="#">Claim this profile</a>
+      </div>
+    </aside>
+
+    <!-- About -->
+    <section class="sec" aria-labelledby="about">
+      <div class="sec__head"><h2 class="h2" id="about">About</h2></div>
+      <p class="about">Head football coach at Pacific University since 2020, after ten seasons as the Boxers&rsquo; offensive line coach that began with the program&rsquo;s restart in 2010. Earlier stops at Lewis &amp; Clark, where he was offensive coordinator, and Oberlin. Played center at Portland State.</p>
+      <p class="provenance">Summary written from the source bio. Ian can edit it after claiming.</p>
+    </section>
+
+    <!-- Experience -->
+    <section class="sec" aria-labelledby="exp">
+      <div class="sec__head">
+        <h2 class="h2" id="exp">Experience</h2>
+        <div class="legend" aria-hidden="true">
+          <span><i class="s1"></i>Head coach</span><span><i class="s2"></i>Coordinator or AHC</span><span><i class="s3"></i>Position coach</span>
+        </div>
+      </div>
+
+      <figure class="strip" aria-label="Season-by-season career strip, 2002 to 2026">
+        <div class="strip__row strip__orgs" aria-hidden="true">
+          <span style="grid-column:1/2" title="West Linn High School">WL</span>
+          <span style="grid-column:2/3" title="Lewis &amp; Clark College">L&amp;C</span>
+          <span style="grid-column:3/5">Oberlin</span>
+          <span style="grid-column:5/9">Lewis &amp; Clark</span>
+          <span style="grid-column:9/26">Pacific (OR)</span>
+        </div>
+        <div class="strip__row strip__cells">
+          <span class="s3" title="2002 &middot; West Linn HS &middot; Assistant offensive line"></span>
+          <span class="s3" title="2003 &middot; Lewis &amp; Clark &middot; Tight ends"></span>
+          <span class="s2" title="2004 &middot; Oberlin &middot; Offensive line, assistant head coach"></span>
+          <span class="s2" title="2005 &middot; Oberlin &middot; Offensive line, assistant head coach"></span>
+          <span class="s2" title="2006 &middot; Lewis &amp; Clark &middot; Offensive coordinator"></span>
+          <span class="s2" title="2007 &middot; Lewis &amp; Clark &middot; Offensive coordinator"></span>
+          <span class="s2" title="2008 &middot; Lewis &amp; Clark &middot; Offensive coordinator"></span>
+          <span class="s2" title="2009 &middot; Lewis &amp; Clark &middot; Offensive coordinator"></span>
+          <span class="s3" title="2010 &middot; Pacific &middot; Offensive line"></span>
+          <span class="s3" title="2011 &middot; Pacific &middot; Offensive line"></span>
+          <span class="s3" title="2012 &middot; Pacific &middot; Offensive line"></span>
+          <span class="s3" title="2013 &middot; Pacific &middot; Offensive line"></span>
+          <span class="s3" title="2014 &middot; Pacific &middot; Offensive line"></span>
+          <span class="s3" title="2015 &middot; Pacific &middot; Offensive line"></span>
+          <span class="s3" title="2016 &middot; Pacific &middot; Offensive line"></span>
+          <span class="s3" title="2017 &middot; Pacific &middot; Offensive line"></span>
+          <span class="s3" title="2018 &middot; Pacific &middot; Offensive line"></span>
+          <span class="s3" title="2019 &middot; Pacific &middot; Offensive line"></span>
+          <span class="s1" title="2020 &middot; Pacific &middot; Head coach"></span>
+          <span class="s1" title="2021 &middot; Pacific &middot; Head coach"></span>
+          <span class="s1" title="2022 &middot; Pacific &middot; Head coach"></span>
+          <span class="s1" title="2023 &middot; Pacific &middot; Head coach"></span>
+          <span class="s1" title="2024 &middot; Pacific &middot; Head coach"></span>
+          <span class="s1" title="2025 &middot; Pacific &middot; Head coach"></span>
+          <span class="s1" title="2026 &middot; Pacific &middot; Head coach"></span>
+        </div>
+        <div class="strip__row strip__axis num" aria-hidden="true">
+          <span style="grid-column:1/5">2002</span>
+          <span style="grid-column:9/13">2010</span>
+          <span style="grid-column:19/22">2020</span>
+          <span style="grid-column:23/26">2026</span>
+        </div>
+      </figure>
+      <div class="legend legend--m" aria-hidden="true">
+        <span><i class="s1"></i>Head coach</span><span><i class="s2"></i>Coordinator or AHC</span><span><i class="s3"></i>Position coach</span>
+      </div>
+
+      <div class="xp">
+        <div class="xp__cols kicker" aria-hidden="true"><span>Program and role</span><span>Seasons</span><span>Yrs</span></div>
+
+        <article class="xg">
+          <div class="xg__org">
+            <div class="xg__id">
+              <span class="logo" aria-hidden="true">PU</span>
+              <div class="xg__name">
+                <h3 class="h3"><a href="#">Pacific University (Oregon)</a></h3>
+                <p class="meta">NCAA D-III<span class="dot">Northwest Conference</span><span class="dot">Forest Grove, OR</span><span class="tot dot num">17 seasons</span></p>
+              </div>
+            </div>
+            <span class="xg__range num">2010&ndash;Present</span>
+            <span class="xg__n num">17</span>
+          </div>
+          <ol class="xg__roles">
+            <li class="role is-current">
+              <div class="role__body">
+                <p class="role__title">Head Football Coach</p>
+                <p class="role__note">Succeeded Keith Buckley, now Pacific&rsquo;s athletic director, after the 2019 season.</p>
+                <p class="range-m num">2020&ndash;Present &middot; 7 seasons</p>
+              </div>
+              <span class="range num">2020&ndash;Present</span><span class="n num">7</span>
+            </li>
+            <li class="role">
+              <div class="role__body">
+                <p class="role__title">Assistant Coach, Offensive Line</p>
+                <p class="role__note">On the original staff when the program restarted in 2010.</p>
+                <p class="range-m num">2010&ndash;2019 &middot; 10 seasons</p>
+              </div>
+              <span class="range num">2010&ndash;2019</span><span class="n num">10</span>
+            </li>
+          </ol>
+        </article>
+
+        <article class="xg">
+          <div class="xg__org">
+            <div class="xg__id">
+              <span class="logo" aria-hidden="true">LC</span>
+              <div class="xg__name">
+                <h3 class="h3"><a href="#">Lewis &amp; Clark College</a></h3>
+                <p class="meta">NCAA D-III<span class="dot">Northwest Conference</span><span class="dot">Portland, OR</span><span class="tot dot num">5 seasons</span></p>
+              </div>
+            </div>
+            <span class="xg__range num">2003, 2006&ndash;2009</span>
+            <span class="xg__n num">5</span>
+          </div>
+          <ol class="xg__roles">
+            <li class="role">
+              <div class="role__body">
+                <p class="role__title">Offensive Coordinator and Offensive Line Coach</p>
+                <p class="role__note">Returned after two seasons at Oberlin.</p>
+                <p class="range-m num">2006&ndash;2009 &middot; 4 seasons</p>
+              </div>
+              <span class="range num">2006&ndash;2009</span><span class="n num">4</span>
+            </li>
+            <li class="role">
+              <div class="role__body">
+                <p class="role__title">Tight Ends Coach and Recruiting Coordinator</p>
+                <p class="range-m num">2003 &middot; 1 season</p>
+              </div>
+              <span class="range num">2003</span><span class="n num">1</span>
+            </li>
+          </ol>
+        </article>
+
+        <article class="xg">
+          <div class="xg__org">
+            <div class="xg__id">
+              <span class="logo" aria-hidden="true">OC</span>
+              <div class="xg__name">
+                <h3 class="h3"><a href="#">Oberlin College</a></h3>
+                <p class="meta">NCAA D-III<span class="dot">North Coast Athletic Conference</span><span class="dot">Oberlin, OH</span><span class="tot dot num">2 seasons</span></p>
+              </div>
+            </div>
+            <span class="xg__range num">2004&ndash;2005</span>
+            <span class="xg__n num">2</span>
+          </div>
+          <ol class="xg__roles single">
+            <li class="role">
+              <div class="role__body">
+                <p class="role__title">Offensive Line Coach and Assistant Head Coach</p>
+                <p class="role__note">Also strength and conditioning coach and recruiting coordinator.</p>
+                <p class="range-m num">2004&ndash;2005 &middot; 2 seasons</p>
+              </div>
+              <span class="range num">2004&ndash;2005</span><span class="n num">2</span>
+            </li>
+          </ol>
+        </article>
+
+        <article class="xg">
+          <div class="xg__org">
+            <div class="xg__id">
+              <span class="logo" aria-hidden="true">WL</span>
+              <div class="xg__name">
+                <h3 class="h3"><a href="#">West Linn High School</a></h3>
+                <p class="meta">High school<span class="dot">West Linn, OR</span><span class="tot dot num">1 season</span></p>
+              </div>
+            </div>
+            <span class="xg__range num">2002</span>
+            <span class="xg__n num">1</span>
+          </div>
+          <ol class="xg__roles single">
+            <li class="role">
+              <div class="role__body">
+                <p class="role__title">Assistant Offensive Line Coach</p>
+                <p class="range-m num">2002 &middot; 1 season</p>
+              </div>
+              <span class="range num">2002</span><span class="n num">1</span>
+            </li>
+          </ol>
+        </article>
+      </div>
+    </section>
+
+    <!-- Coaching tree -->
+    <section class="sec" aria-labelledby="tree">
+      <div class="sec__head">
+        <h2 class="h2" id="tree">Coaching tree</h2>
+        <span class="sec__aside"><a class="link" href="#">Explore the full tree<svg class="i i--16"><use href="#i-chevron-right"/></svg></a></span>
+      </div>
+      <div class="tree">
+        <div class="tree__col">
+          <div class="tree__grp">
+            <p class="kicker">Worked under <b class="num">1</b></p>
+            <a class="prow" href="#"><span class="av av--32 tint-3">KB</span><span><span class="prow__name">Keith Buckley</span><span class="prow__sub" style="display:block">Head coach, Pacific (OR)</span></span><span class="prow__end num">2010&ndash;19</span></a>
+          </div>
+          <div class="tree__grp">
+            <p class="kicker">Worked alongside <b class="num">2</b></p>
+            <a class="prow" href="#"><span class="av av--32 tint-1">JC</span><span><span class="prow__name">Jim Craft</span><span class="prow__sub" style="display:block">Assistant, Pacific (OR)</span></span><span class="prow__end num">2010&ndash;12</span></a>
+            <a class="prow" href="#"><span class="av av--32 tint-5">KT</span><span><span class="prow__name">Kit Taura</span><span class="prow__sub" style="display:block">OL assistant, Pacific (OR)</span></span><span class="prow__end num">2018&ndash;19</span></a>
+          </div>
+        </div>
+        <div class="tree__col">
+          <p class="kicker">Coached under him <b class="num">11</b></p>
+          <div class="tree__grid">
+            <a class="prow" href="#"><span class="av av--32 tint-1">JC</span><span><span class="prow__name">Jim Craft</span><span class="prow__sub" style="display:block">Assoc. head coach, OC</span></span><span class="prow__end num">2020&ndash;</span></a>
+            <a class="prow" href="#"><span class="av av--32 tint-4">JB</span><span><span class="prow__name">John Bates</span><span class="prow__sub" style="display:block">Defensive coordinator</span></span><span class="prow__end num">2025&ndash;</span></a>
+            <a class="prow" href="#"><span class="av av--32 tint-5">KT</span><span><span class="prow__name">Kit Taura</span><span class="prow__sub" style="display:block">Offensive line, S&amp;C</span></span><span class="prow__end num">2020&ndash;</span></a>
+            <a class="prow" href="#"><span class="av av--32 tint-2">NB</span><span><span class="prow__name">Nic Brockhoff</span><span class="prow__sub" style="display:block">Defensive line</span></span><span class="prow__end num">2025&ndash;</span></a>
+            <a class="prow" href="#"><span class="av av--32 tint-6">JL</span><span><span class="prow__name">Justin Leatherman</span><span class="prow__sub" style="display:block">Special teams, DBs</span></span><span class="prow__end num">2023&ndash;</span></a>
+            <a class="prow" href="#"><span class="av av--32 tint-3">RM</span><span><span class="prow__name">Rylan Ma&rsquo;ae</span><span class="prow__sub" style="display:block">Defensive assistant intern</span></span><span class="prow__end num">2026&ndash;</span></a>
+          </div>
+          <a class="tree__more link" href="#">Show all 11<svg class="i i--16"><use href="#i-chevron-right"/></svg></a>
+        </div>
+      </div>
+      <p class="tree__note">Derived from seasons on the same staff. &ldquo;Worked under&rdquo; means he was an assistant while they were head coach.</p>
+    </section>
+
+    <div class="twoup">
+      <section class="sec" aria-labelledby="playing">
+        <div class="sec__head"><h2 class="h2" id="playing">Playing career</h2></div>
+        <div class="entry">
+          <span class="logo" aria-hidden="true">PS</span>
+          <div>
+            <p class="entry__title">Portland State University</p>
+            <p class="entry__sub">Offensive line, center</p>
+            <p class="entry__meta">NCAA D-I FCS<span class="dot">Four seasons; years not in source</span></p>
+          </div>
+        </div>
+      </section>
+      <section class="sec" aria-labelledby="edu">
+        <div class="sec__head"><h2 class="h2" id="edu">Education</h2></div>
+        <div class="entry">
+          <span class="logo" aria-hidden="true">PS</span>
+          <div>
+            <p class="entry__title">Portland State University</p>
+            <p class="entry__sub num">Class of 2000</p>
+            <p class="entry__meta">Degree not listed in source</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <aside class="rail" aria-label="Related coaches">
+    <section class="mod">
+      <div class="mod__head"><h2 class="h4">Same tree</h2></div>
+      <p class="note">Also worked under Keith Buckley at Pacific</p>
+      <a class="prow" href="#">
+        <span class="av av--40 tint-1">JC</span>
+        <span><span class="prow__name" style="display:block">Jim Craft</span><span class="prow__sub" style="display:block">Assoc. Head Coach and OC, Pacific (OR)</span></span>
+        <span></span>
+      </a>
+      <a class="prow" href="#">
+        <span class="av av--40 tint-5">KT</span>
+        <span><span class="prow__name" style="display:block">Kit Taura</span><span class="prow__sub" style="display:block">Offensive Line Coach, Pacific (OR)</span></span>
+        <span></span>
+      </a>
+    </section>
+    <section class="mod">
+      <div class="mod__head"><h2 class="h4">People also viewed</h2></div>
+      <a class="prow" href="#">
+        <span class="av av--40 tint-4">JS</span>
+        <span><span class="prow__name" style="display:block">Josh Sylvester</span><span class="prow__sub" style="display:block">Head Coach, UMass Dartmouth</span><span class="prow__ctx" style="display:block">Promoted from offensive coordinator, 2022</span></span>
+        <span></span>
+      </a>
+      <a class="prow" href="#">
+        <span class="av av--40 tint-3">BB</span>
+        <span><span class="prow__name" style="display:block">Brian Bubna</span><span class="prow__sub" style="display:block">Head Coach, MIT</span><span class="prow__ctx" style="display:block">Promoted from defensive coordinator, 2018</span></span>
+        <span></span>
+      </a>
+      <a class="prow" href="#">
+        <span class="av av--40 tint-6">DG</span>
+        <span><span class="prow__name" style="display:block">Dan Garrett</span><span class="prow__sub" style="display:block">Head Coach, Kean</span><span class="prow__ctx" style="display:block">Promoted from defensive coordinator, 2006</span></span>
+        <span></span>
+      </a>
+      <a class="prow" href="#">
+        <span class="av av--40 tint-2">AD</span>
+        <span><span class="prow__name" style="display:block">Austin Dickinson</span><span class="prow__sub" style="display:block">Head Football Coach, Buena Vista</span><span class="prow__ctx" style="display:block">Returned to his alma mater, 2023</span></span>
+        <span></span>
+      </a>
+    </section>
+    <footer class="mod foot">
+      <a href="#">About</a><a href="#">Accessibility</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Data sources</a>
+      <span class="brandline"><span data-brand>Coach Network</span> &copy; 2026</span>
+    </footer>
+  </aside>
+</main>
+
+<nav class="tabbar" aria-label="Primary">
+  <a class="tab" href="feed.html"><svg class="i"><use href="#i-home"/></svg>Home</a>
+  <a class="tab" href="#"><svg class="i"><use href="#i-users"/></svg>Network</a>
+  <a class="tab" href="#"><svg class="i"><use href="#i-briefcase"/></svg>Jobs</a>
+  <a class="tab" href="#"><svg class="i"><use href="#i-bell"/></svg>Alerts</a>
+  <a class="tab" href="#"><span class="av tint-6">JL</span>Me</a>
+</nav>
+<script>
+  /* The product name lives in one place. In the app: BRAND.name in web/src/lib/brand.ts */
+  const BRAND = { name: "Coach Network" };
+  document.querySelectorAll("[data-brand]").forEach((el) => { el.textContent = BRAND.name; });
+  document.title = document.title.replace("Coach Network", BRAND.name);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Home · Coach Network</title>
+<meta name="description" content="Signed-in home feed: coaching moves, jobs and milestones.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   Coach Network / Direction B "Editorial clarity" / shared styles
+   Tokens are the source of truth; see DESIGN.md.
+   ========================================================================== */
+:root {
+  color-scheme: light;
+  --bg: #FFFFFF;
+  --bg-subtle: #F7F7F5;
+  --bg-muted: #EFEFEB;
+  --line: #E5E5E0;
+  --line-strong: #CFCFC8;
+  --control: #87898F;
+  --text: #16171A;
+  --text-2: #45474D;
+  --text-3: #66686E;
+  --accent: #1F4FC9;
+  --accent-hover: #183EA0;
+  --accent-subtle: #EEF2FC;
+  --on-accent: #FFFFFF;
+  --positive: #1D7A4F;
+  --lvl-1: #16171A;
+  --lvl-2: #8E9097;
+  --shadow-pop: 0 1px 2px rgba(22,23,26,.06), 0 8px 24px rgba(22,23,26,.10);
+  --t1-bg:#E3E8EF; --t1-fg:#2C3A4F;
+  --t2-bg:#E1EBE4; --t2-fg:#26402F;
+  --t3-bg:#EFE8DC; --t3-fg:#4A3B22;
+  --t4-bg:#F0E2DD; --t4-fg:#4F2C22;
+  --t5-bg:#E7E4F0; --t5-fg:#352E4F;
+  --t6-bg:#DDE9EE; --t6-fg:#213F4C;
+  --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --r-xs: 2px; --r-sm: 4px; --r-md: 6px; --r-lg: 8px;
+  --shell: 1160px;
+  --nav-h: 56px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:#101113; --bg-subtle:#17181B; --bg-muted:#202125;
+    --line:#2B2D32; --line-strong:#3C3E44; --control:#7A7C82;
+    --text:#ECECE8; --text-2:#B5B7BC; --text-3:#8F9197;
+    --accent:#8DA9FF; --accent-hover:#ABC0FF; --accent-subtle:#1A2442; --on-accent:#0B1533;
+    --positive:#5CC793; --lvl-1:#ECECE8; --lvl-2:#7A7C82;
+    --shadow-pop: 0 0 0 1px #2B2D32, 0 8px 24px rgba(0,0,0,.5);
+    --t1-bg:#26303D; --t1-fg:#C9D5E6; --t2-bg:#25332A; --t2-fg:#C4DCCB;
+    --t3-bg:#3A3226; --t3-fg:#E3D4BA; --t4-bg:#3C2B26; --t4-fg:#E8CBC0;
+    --t5-bg:#2F2B3D; --t5-fg:#D4CDEA; --t6-bg:#22343B; --t6-fg:#C0DAE4;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#101113; --bg-subtle:#17181B; --bg-muted:#202125;
+  --line:#2B2D32; --line-strong:#3C3E44; --control:#7A7C82;
+  --text:#ECECE8; --text-2:#B5B7BC; --text-3:#8F9197;
+  --accent:#8DA9FF; --accent-hover:#ABC0FF; --accent-subtle:#1A2442; --on-accent:#0B1533;
+  --positive:#5CC793; --lvl-1:#ECECE8; --lvl-2:#7A7C82;
+  --shadow-pop: 0 0 0 1px #2B2D32, 0 8px 24px rgba(0,0,0,.5);
+  --t1-bg:#26303D; --t1-fg:#C9D5E6; --t2-bg:#25332A; --t2-fg:#C4DCCB;
+  --t3-bg:#3A3226; --t3-fg:#E3D4BA; --t4-bg:#3C2B26; --t4-fg:#E8CBC0;
+  --t5-bg:#2F2B3D; --t5-fg:#D4CDEA; --t6-bg:#22343B; --t6-fg:#C0DAE4;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 400 14px/20px var(--font-ui);
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3, h4, p, ol, ul, dl, dd, figure { margin: 0; padding: 0; }
+ol, ul { list-style: none; }
+a { color: inherit; text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+svg.i { width: 20px; height: 20px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+svg.i--16 { width: 16px; height: 16px; }
+svg.i--14 { width: 14px; height: 14px; }
+.btn[disabled], .btn[aria-disabled="true"] { opacity: .4; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+.num { font-variant-numeric: tabular-nums lining-nums; font-feature-settings: "tnum" 1, "lnum" 1; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.link { color: var(--accent); font-weight: 500; }
+.link:hover { color: var(--accent-hover); }
+
+/* ---------- Type ---------- */
+.display { font: 600 34px/40px var(--font-display); letter-spacing: -0.012em; font-optical-sizing: auto; }
+.h2 { font: 600 22px/28px var(--font-display); letter-spacing: -0.006em; }
+.h3 { font: 600 16px/22px var(--font-ui); letter-spacing: -0.006em; }
+.kicker { font: 600 11px/16px var(--font-ui); letter-spacing: .07em; text-transform: uppercase; color: var(--text-3); }
+.meta { font-size: 13px; line-height: 18px; color: var(--text-3); }
+.dot::before { content: "\00B7"; margin: 0 6px; color: var(--text-3); }
+
+/* ---------- Shell ---------- */
+.shell { max-width: calc(var(--shell) + 48px); margin: 0 auto; padding: 0 24px; }
+.topnav { position: sticky; top: 0; z-index: 20; height: var(--nav-h); background: var(--bg); border-bottom: 1px solid var(--line); }
+.topnav__inner { height: 100%; display: flex; align-items: center; gap: 20px; }
+.wordmark { font: 600 21px/1 var(--font-display); letter-spacing: -0.015em; color: var(--text); white-space: nowrap; }
+.wordmark:hover { text-decoration: none; }
+.search { display: flex; align-items: center; gap: 8px; width: 288px; height: 36px; padding: 0 12px; border-radius: var(--r-md); background: var(--bg-muted); color: var(--text-3); }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; font: 400 14px/20px var(--font-ui); color: var(--text); outline: none; }
+.search input::placeholder { color: var(--text-3); }
+.search:focus-within { box-shadow: 0 0 0 2px var(--accent); background: var(--bg); }
+.primary { margin-left: auto; display: flex; align-items: stretch; height: 100%; }
+.navitem { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-width: 76px; padding: 0 6px; color: var(--text-3); font-size: 12px; line-height: 16px; white-space: nowrap; }
+.navitem:hover { color: var(--text); text-decoration: none; }
+.navitem.is-active { color: var(--text); }
+.navitem.is-active::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 2px; background: var(--text); }
+.navitem .label { display: inline-flex; align-items: center; gap: 2px; }
+.navitem .badge-count { position: absolute; top: 8px; left: calc(50% + 4px); min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--text); color: var(--bg); font: 600 10px/16px var(--font-ui); text-align: center; }
+.vr { width: 1px; background: var(--line); margin: 12px 8px; }
+
+/* phone top bar + tab bar (hidden on desktop) */
+.mbar, .tabbar { display: none; }
+
+/* ---------- Avatars and logos ---------- */
+.av { display: inline-grid; place-items: center; flex: none; border-radius: 50%; font-weight: 600; letter-spacing: .01em; background: var(--t1-bg); color: var(--t1-fg); user-select: none; }
+.av--24 { width: 24px; height: 24px; font-size: 10px; }
+.av--32 { width: 32px; height: 32px; font-size: 12px; }
+.av--40 { width: 40px; height: 40px; font-size: 14px; }
+.av--48 { width: 48px; height: 48px; font-size: 16px; }
+.av--64 { width: 64px; height: 64px; font-size: 21px; }
+.av--96 { width: 96px; height: 96px; font-size: 32px; letter-spacing: .02em; }
+.tint-1 { background: var(--t1-bg); color: var(--t1-fg); }
+.tint-2 { background: var(--t2-bg); color: var(--t2-fg); }
+.tint-3 { background: var(--t3-bg); color: var(--t3-fg); }
+.tint-4 { background: var(--t4-bg); color: var(--t4-fg); }
+.tint-5 { background: var(--t5-bg); color: var(--t5-fg); }
+.tint-6 { background: var(--t6-bg); color: var(--t6-fg); }
+.logo { display: inline-grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: var(--r-md); background: var(--bg-subtle); border: 1px solid var(--line); color: var(--text-2); font: 600 12px/1 var(--font-ui); letter-spacing: .02em; }
+.logo--32 { width: 32px; height: 32px; font-size: 11px; border-radius: 5px; }
+.logo--48 { width: 48px; height: 48px; font-size: 14px; }
+
+/* ---------- Buttons, chips ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; padding: 0 16px; border-radius: var(--r-md); font: 600 14px/20px var(--font-ui); white-space: nowrap; transition: background-color .12s ease, border-color .12s ease, color .12s ease; }
+.btn:hover { text-decoration: none; }
+.btn--primary { background: var(--accent); color: var(--on-accent); }
+.btn--primary:hover { background: var(--accent-hover); }
+.btn--secondary { background: var(--bg); color: var(--text); box-shadow: inset 0 0 0 1px var(--control); }
+.btn--secondary:hover { background: var(--bg-subtle); box-shadow: inset 0 0 0 1px var(--text-2); }
+.btn--quiet { height: 32px; padding: 0 10px; color: var(--text-2); font-weight: 500; font-size: 13px; }
+.btn--quiet:hover { background: var(--bg-muted); color: var(--text); }
+.btn--sm { height: 30px; padding: 0 12px; font-size: 13px; }
+.btn--icon { width: 36px; padding: 0; }
+.chip { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: var(--r-sm); border: 1px solid var(--line-strong); color: var(--text-2); font: 500 12px/1 var(--font-ui); white-space: nowrap; }
+.chip--sample { border-style: dashed; border-color: var(--control); color: var(--text-2); }
+.chip--plain { border-color: transparent; background: var(--bg-muted); }
+
+/* ---------- Rail modules ---------- */
+.mod { padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--line); }
+.mod:last-child { border-bottom: 0; }
+.mod__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
+.mod__head .h4 { font: 600 15px/20px var(--font-ui); letter-spacing: -0.005em; }
+.prow { display: grid; grid-template-columns: auto minmax(0,1fr) auto; column-gap: 12px; align-items: start; padding: 10px 0; }
+.prow + .prow { border-top: 1px solid var(--line); }
+.prow__name { font-weight: 600; font-size: 14px; line-height: 20px; color: var(--text); }
+.prow__sub { font-size: 13px; line-height: 18px; color: var(--text-2); }
+.prow__ctx { margin-top: 2px; font-size: 12px; line-height: 16px; color: var(--text-3); }
+.prow__end { font-size: 13px; line-height: 20px; color: var(--text-3); text-align: right; white-space: nowrap; }
+.foot { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; line-height: 16px; color: var(--text-3); }
+.foot .brandline { width: 100%; margin-top: 8px; }
+
+/* ---------- Phone (<= 760px) ---------- */
+@media (max-width: 760px) {
+  .topnav { display: none; }
+  .shell { padding: 0 16px; }
+  .mbar { display: flex; position: sticky; top: 0; z-index: 20; height: 52px; align-items: center; gap: 12px; padding: 0 16px; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .mbar .search { flex: 1; width: auto; height: 36px; }
+  .mbar .iconbtn { display: grid; place-items: center; width: 36px; height: 36px; margin-right: -6px; color: var(--text-2); position: relative; }
+  .mbar .iconbtn .pip { position: absolute; top: 7px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--text); box-shadow: 0 0 0 2px var(--bg); }
+  .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; height: calc(56px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--bg); border-top: 1px solid var(--line); }
+  .tab { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--text-3); font-size: 11px; line-height: 14px; font-weight: 500; }
+  .tab svg.i { width: 22px; height: 22px; }
+  .tab.is-active { color: var(--text); }
+  .tab.is-active::before { content: ""; position: absolute; top: -1px; left: 28%; right: 28%; height: 2px; background: var(--text); }
+  .tab .av { width: 22px; height: 22px; font-size: 9px; }
+  body { padding-bottom: 72px; }
+}
+
+/* ---------- Home feed ---------- */
+.page { display: grid; grid-template-columns: 236px minmax(0, 1fr) 300px; padding-top: 28px; padding-bottom: 72px; }
+.lrail { min-width: 0; padding-right: 28px; border-right: 1px solid var(--line); }
+.feed { min-width: 0; padding: 0 32px; }
+.rrail { min-width: 0; padding-left: 28px; border-left: 1px solid var(--line); }
+
+/* mini profile */
+.mini__name { margin-top: 14px; font: 600 20px/26px var(--font-display); letter-spacing: -0.008em; }
+.mini__title { margin-top: 4px; font-size: 13px; line-height: 18px; color: var(--text-2); }
+.mini__org { margin-top: 2px; font-size: 13px; line-height: 18px; color: var(--text-3); }
+.mini__stats { margin-top: 16px; border-top: 1px solid var(--text); }
+.mini__stats div { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; line-height: 18px; color: var(--text-2); }
+.mini__stats dd { font-weight: 600; color: var(--text); }
+.mini__period { margin-top: 6px; font-size: 12px; line-height: 16px; color: var(--text-3); }
+.otp { margin-top: 18px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-lg); }
+.otp__row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; line-height: 18px; font-weight: 600; }
+.state { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; color: var(--text-2); }
+.state::before { content: ""; width: 8px; height: 8px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--control); }
+.otp__help { display: flex; gap: 6px; margin-top: 6px; font-size: 12px; line-height: 16px; color: var(--text-3); }
+.otp__help svg { margin-top: 1px; }
+.otp .link { display: inline-block; margin-top: 8px; font-size: 13px; line-height: 18px; }
+.shortcuts { margin-top: 24px; }
+.shortcuts a { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 13px; line-height: 18px; color: var(--text-2); font-weight: 500; }
+.shortcuts a + a { border-top: 1px solid var(--line); }
+.shortcuts a span:last-child { color: var(--text-3); font-weight: 400; }
+.shortcuts a:hover { color: var(--text); }
+
+/* feed bar */
+.feedbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); }
+.tabs { display: flex; gap: 24px; }
+.tabs a { position: relative; padding: 10px 0 12px; font-size: 14px; line-height: 20px; font-weight: 500; color: var(--text-3); white-space: nowrap; }
+.tabs a:hover { color: var(--text); text-decoration: none; }
+.tabs a.is-active { color: var(--text); font-weight: 600; }
+.tabs a.is-active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--text); }
+.filter { display: inline-flex; align-items: center; gap: 4px; height: 30px; padding: 0 8px 0 10px; border-radius: var(--r-md); font-size: 13px; line-height: 18px; font-weight: 500; color: var(--text-2); }
+.filter:hover { background: var(--bg-muted); }
+.mtracker { display: none; }
+
+/* feed items */
+.item { padding: 20px 0 14px; border-bottom: 1px solid var(--line); }
+.item__kicker { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+.item__kicker .kicker .sep { margin: 0 6px; color: var(--line-strong); }
+.item__when { font-size: 12px; line-height: 16px; color: var(--text-3); }
+.item__grid { display: grid; grid-template-columns: 48px minmax(0, 1fr); column-gap: 14px; }
+.item__head { font-size: 15px; line-height: 22px; color: var(--text); }
+.item__head b, .item__head a { font-weight: 600; }
+.nw { white-space: nowrap; }
+.item__ctx { margin-top: 10px; font-size: 13px; line-height: 18px; color: var(--text-3); }
+.item__actions { display: flex; gap: 2px; margin: 8px 0 0 -10px; }
+.item__actions .btn--quiet svg { color: var(--text-3); }
+
+/* transaction record: a small box score of the move */
+.tx { --yr: 64px; position: relative; margin-top: 12px; padding: 4px 0; }
+.tx li { position: relative; display: grid; grid-template-columns: var(--yr) 14px minmax(0, 1fr); align-items: start; padding: 5px 0; }
+.tx li:not(:last-child)::after { content: ""; position: absolute; left: calc(var(--yr) + 5px); top: 20px; bottom: -11px; width: 1px; background: var(--line-strong); }
+.tx .yr { font-size: 13px; line-height: 20px; color: var(--text-3); white-space: nowrap; }
+.tx .mk { position: relative; height: 20px; }
+.tx .mk::before { content: ""; position: absolute; z-index: 1; left: 2px; top: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--bg); box-shadow: inset 0 0 0 1.5px var(--lvl-2); }
+.tx li.is-new .mk::before { background: var(--text); box-shadow: none; }
+.tx .what { min-width: 0; font-size: 14px; line-height: 20px; color: var(--text-2); }
+.tx .what span { color: var(--text-3); }
+.tx li.is-new .what { color: var(--text); font-weight: 500; }
+.tx li.is-new .what span { font-weight: 400; }
+
+/* grouped move */
+.group { margin-top: 12px; border-top: 1px solid var(--line); }
+.group .prow { grid-template-columns: auto minmax(0, 1fr); padding: 12px 0; }
+.group .prow + .prow { border-top: 1px solid var(--line); }
+.group .prow__sub { color: var(--text); }
+
+/* job card */
+.job { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 14px; align-items: start; padding: 16px; border: 1px solid var(--line); border-radius: var(--r-lg); }
+.job__title { font-size: 16px; line-height: 22px; font-weight: 600; }
+.job__org { font-size: 14px; line-height: 20px; color: var(--text); }
+.job__meta { margin-top: 2px; font-size: 13px; line-height: 18px; color: var(--text-3); }
+.job__fit { display: inline-flex; align-items: center; gap: 4px; margin-top: 10px; font-size: 13px; line-height: 18px; color: var(--text-2); }
+.job__fit svg { color: var(--positive); }
+.job__act { display: flex; gap: 6px; }
+
+/* milestone figures */
+.figs { display: flex; margin-top: 12px; border-top: 1px solid var(--text); border-bottom: 1px solid var(--line); }
+.figs .stat { padding: 10px 24px 10px 0; }
+.figs .stat + .stat { padding-left: 24px; border-left: 1px solid var(--line); }
+.figs dt .sm { display: none; }
+.figs dt { white-space: nowrap; font: 600 11px/16px var(--font-ui); letter-spacing: .07em; text-transform: uppercase; color: var(--text-3); }
+.figs dd { margin-top: 2px; font: 600 26px/30px var(--font-display); font-variant-numeric: lining-nums tabular-nums; }
+
+/* transactions digest (agate) */
+.agate { margin-top: 4px; }
+.agate li { padding: 10px 0; font-size: 14px; line-height: 20px; color: var(--text-2); }
+.agate li + li { border-top: 1px solid var(--line); }
+.agate .prog { font: 600 12px/20px var(--font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--text); }
+.agate .conf { margin: 0 6px 0 4px; font-size: 12px; color: var(--text-3); }
+.agate b { font-weight: 600; color: var(--text); }
+.item--digest .h3 { font-family: var(--font-display); font-size: 19px; line-height: 24px; }
+.more { display: flex; justify-content: center; padding: 18px 0 0; }
+
+/* right rail: tracker */
+.rstats { display: flex; border-top: 1px solid var(--text); border-bottom: 1px solid var(--line); }
+.rstats .stat { flex: 1; padding: 8px 0; }
+.rstats .stat + .stat { padding-left: 14px; border-left: 1px solid var(--line); }
+.rstats dt { font: 600 10.5px/14px var(--font-ui); letter-spacing: .07em; text-transform: uppercase; color: var(--text-3); }
+.rstats dd { margin-top: 2px; font: 600 24px/28px var(--font-display); font-variant-numeric: lining-nums tabular-nums; }
+.conf-t { width: 100%; margin-top: 14px; border-collapse: collapse; font-size: 13px; line-height: 18px; }
+.conf-t caption { text-align: left; padding-bottom: 6px; }
+.conf-t th { padding: 0 0 6px; font: 600 10.5px/14px var(--font-ui); letter-spacing: .07em; text-transform: uppercase; color: var(--text-3); text-align: right; border-bottom: 1px solid var(--line); }
+.conf-t th:first-child { text-align: left; }
+.conf-t td { padding: 6px 0; border-bottom: 1px solid var(--line); text-align: right; color: var(--text); }
+.conf-t td:first-child { text-align: left; color: var(--text-2); }
+.conf-t td.z { color: var(--text-3); }
+.conf-t td.bar { width: 64px; padding-left: 10px; padding-right: 6px; }
+.conf-t td.bar i { display: block; height: 6px; border-radius: 1px; background: var(--lvl-2); }
+.conf-t th.n, .conf-t td.n { width: 44px; }
+.rnote { margin-top: 8px; font-size: 12px; line-height: 16px; color: var(--text-3); }
+.jobrow { display: block; padding: 10px 0; }
+.jobrow + .jobrow { border-top: 1px solid var(--line); }
+.jobrow__t { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--text); }
+.jobrow__o { font-size: 13px; line-height: 18px; color: var(--text-3); }
+.pymk .prow { grid-template-columns: auto minmax(0, 1fr); }
+.pymk .btn { margin-top: 8px; }
+
+/* ---------- Tablet ---------- */
+@media (max-width: 1100px) {
+  .page { grid-template-columns: minmax(0, 1fr) 300px; }
+  .lrail { display: none; }
+  .feed { padding-left: 0; }
+}
+
+/* ---------- Phone ---------- */
+@media (max-width: 760px) {
+  .page { grid-template-columns: minmax(0, 1fr); padding-top: 0; }
+  .rrail { display: none; }
+  .feed { padding: 0; }
+  .feedbar { margin: 0 -16px; padding: 0 16px; }
+  .tabs { gap: 20px; overflow-x: auto; scrollbar-width: none; }
+  .filter { display: none; }
+  .mtracker { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-lg); }
+  .mtracker:hover { text-decoration: none; }
+  .mtracker .k { display: block; }
+  .mtracker .v { display: block; margin-top: 2px; font-size: 13px; line-height: 18px; color: var(--text); }
+  .mtracker .v b { font-weight: 600; }
+  .mtracker svg { margin-left: auto; color: var(--text-3); }
+  .item { padding-top: 18px; }
+  .item__grid { grid-template-columns: 40px minmax(0, 1fr); column-gap: 12px; }
+  .item__grid > .av--48 { width: 40px; height: 40px; font-size: 14px; }
+  .item__grid > .logo--48 { width: 40px; height: 40px; font-size: 12px; }
+  .item__head { font-size: 15px; line-height: 22px; }
+  .tx { --yr: 60px; }
+  .item__grid > div > .tx, .item__grid > div > .group, .item__grid > div > .figs,
+  .item__grid > div > .item__ctx, .item__grid > div > .item__actions { margin-left: -52px; }
+  .item__grid > div > .item__actions { margin-left: -60px; }
+  .item__grid > div > .group .prow { grid-template-columns: auto minmax(0, 1fr); }
+  .page { padding-bottom: 16px; }
+  .item__actions .btn--quiet { padding: 0 8px; }
+  .job { grid-template-columns: auto minmax(0, 1fr); row-gap: 12px; padding: 14px; }
+  .job__act { grid-column: 1 / -1; }
+  .job__act .btn--secondary:not(.btn--icon) { flex: 1; }
+  .figs .stat { padding-right: 14px; }
+  .figs .stat + .stat { padding-left: 14px; }
+  .figs dt .lg { display: none; }
+  .figs dt .sm { display: inline; }
+}
+
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <!-- Icons: Lucide (ISC License), 24x24 grid, 1.75 stroke. -->
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4.2-4.2"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-briefcase" viewBox="0 0 24 24"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></symbol>
+  <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+  <symbol id="i-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-tree" viewBox="0 0 24 24"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></symbol>
+  <symbol id="i-thumbs-up" viewBox="0 0 24 24"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="m16 6-4-4-4 4"/><path d="M12 2v13"/></symbol>
+  <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+</svg>
+
+<header class="topnav">
+  <div class="shell topnav__inner">
+    <a class="wordmark" href="feed.html" data-brand>Coach Network</a>
+    <label class="search">
+      <svg class="i i--16"><use href="#i-search"/></svg>
+      <span class="sr">Search</span>
+      <input type="search" placeholder="Search coaches and programs">
+    </label>
+    <nav class="primary" aria-label="Primary">
+      <a class="navitem is-active" href="feed.html"><svg class="i"><use href="#i-home"/></svg><span class="label">Home</span></a>
+      <a class="navitem" href="#"><svg class="i"><use href="#i-users"/></svg><span class="label">Network</span></a>
+      <a class="navitem" href="#"><svg class="i"><use href="#i-briefcase"/></svg><span class="label">Jobs</span></a>
+      <a class="navitem" href="#"><svg class="i"><use href="#i-message"/></svg><span class="label">Messaging</span></a>
+      <a class="navitem" href="#"><svg class="i"><use href="#i-bell"/></svg><span class="badge-count num">3</span><span class="label">Notifications</span></a>
+      <a class="navitem" href="#"><span class="av av--24 tint-6" style="width:22px;height:22px;font-size:9px">JL</span><span class="label">Me<svg class="i i--14"><use href="#i-chevron-down"/></svg></span></a>
+      <span class="vr" aria-hidden="true"></span>
+      <a class="navitem" href="#"><svg class="i"><use href="#i-grid"/></svg><span class="label">For employers<svg class="i i--14"><use href="#i-chevron-down"/></svg></span></a>
+    </nav>
+  </div>
+</header>
+<header class="mbar">
+  <span class="av av--32 tint-6" aria-label="Me">JL</span>
+  <label class="search"><svg class="i i--16"><use href="#i-search"/></svg><span class="sr">Search</span><input type="search" placeholder="Search coaches, programs"></label>
+  <a class="iconbtn" href="#" aria-label="Messaging"><svg class="i"><use href="#i-message"/></svg><span class="pip"></span></a>
+</header>
+
+<main class="shell page">
+  <!-- Left rail: mini profile -->
+  <aside class="lrail" aria-label="Your profile">
+    <section class="mini">
+      <span class="av av--64 tint-6" aria-hidden="true">JL</span>
+      <h2 class="mini__name"><a href="#">Justin Leatherman</a></h2>
+      <p class="mini__title">Special Teams Coordinator and Defensive Backs Coach</p>
+      <p class="mini__org">Pacific University (Oregon)</p>
+      <dl class="mini__stats num">
+        <div><dt>Profile views</dt><dd>48</dd></div>
+        <div><dt>Search appearances</dt><dd>19</dd></div>
+      </dl>
+      <p class="mini__period">Past 90 days</p>
+      <div class="otp">
+        <p class="otp__row"><span>Open to opportunities</span><span class="state">Off</span></p>
+        <p class="otp__help"><svg class="i i--14"><use href="#i-eye-off"/></svg><span>Only you see this. It never appears on your public profile.</span></p>
+        <a class="link" href="#">Set preferences</a>
+      </div>
+    </section>
+    <nav class="shortcuts" aria-label="Shortcuts">
+      <a href="#"><span>Your coaching tree</span><span class="num">11</span></a>
+      <a href="#"><span>Saved jobs</span><span class="num">2</span></a>
+      <a href="#"><span>Programs you follow</span><span class="num">4</span></a>
+    </nav>
+  </aside>
+
+  <!-- Center: feed -->
+  <div class="feed">
+    <div class="feedbar">
+      <nav class="tabs" aria-label="Feed filter">
+        <a class="is-active" href="#">All</a><a href="#">Moves</a><a href="#">Jobs</a><a href="#">Milestones</a>
+      </nav>
+      <button class="filter">NCAA Division III<svg class="i i--16"><use href="#i-chevron-down"/></svg></button>
+    </div>
+
+    <a class="mtracker" href="#">
+      <span><span class="kicker k">Carousel tracker &middot; 2026</span><span class="v num"><b>15</b> hires<span class="dot"><b>6</b> promotions</span><span class="dot"><b>3</b> open jobs</span></span></span>
+      <svg class="i i--16"><use href="#i-chevron-right"/></svg>
+    </a>
+
+    <!-- 1. Hire -->
+    <article class="item">
+      <header class="item__kicker"><span class="kicker">Hire<span class="sep">/</span>USA South</span><span class="item__when num">2026 season</span></header>
+      <div class="item__grid">
+        <span class="av av--48 tint-4" aria-hidden="true">JH</span>
+        <div>
+          <p class="item__head"><a href="#">Jarren Horton</a> joined <a href="#">Brevard College</a> as associate head coach for defense and defensive coordinator.</p>
+          <ol class="tx num">
+            <li><span class="yr">2022&ndash;24</span><span class="mk"></span><span class="what">Defensive coordinator <span>&middot; Pittsburgh Maulers, USFL</span></span></li>
+            <li><span class="yr">2025</span><span class="mk"></span><span class="what">Defensive coordinator <span>&middot; Memphis Showboats, UFL</span></span></li>
+            <li class="is-new"><span class="yr">2026</span><span class="mk"></span><span class="what">Associate head coach, defensive coordinator <span>&middot; Brevard College</span></span></li>
+          </ol>
+          <p class="item__ctx">Portland State alum, like you</p>
+          <div class="item__actions">
+            <button class="btn btn--quiet"><svg class="i i--16"><use href="#i-thumbs-up"/></svg>Congratulate</button>
+            <button class="btn btn--quiet"><svg class="i i--16"><use href="#i-message"/></svg>Comment</button>
+            <button class="btn btn--quiet"><svg class="i i--16"><use href="#i-share"/></svg>Share</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 2. Promotion -->
+    <article class="item">
+      <header class="item__kicker"><span class="kicker">Promotion<span class="sep">/</span>USA South</span><span class="item__when num">2026 season</span></header>
+      <div class="item__grid">
+        <span class="av av--48 tint-1" aria-hidden="true">ZD</span>
+        <div>
+          <p class="item__head"><a href="#">Zac Dysert</a> was promoted to associate head coach for offense at <a href="#">Brevard College</a>, his third title in three seasons there.</p>
+          <ol class="tx num">
+            <li><span class="yr">2024</span><span class="mk"></span><span class="what">Senior offensive analyst, assistant quarterbacks</span></li>
+            <li><span class="yr">2025</span><span class="mk"></span><span class="what">Pass game coordinator, quarterbacks</span></li>
+            <li class="is-new"><span class="yr">2026</span><span class="mk"></span><span class="what">Associate head coach for offense, quarterbacks</span></li>
+          </ol>
+          <p class="item__ctx">NFL quarterback, <span class="nw">2013&ndash;2017</span><span class="dot">Miami (Ohio) alum</span></p>
+          <div class="item__actions">
+            <button class="btn btn--quiet"><svg class="i i--16"><use href="#i-thumbs-up"/></svg>Congratulate</button>
+            <button class="btn btn--quiet"><svg class="i i--16"><use href="#i-message"/></svg>Comment</button>
+            <button class="btn btn--quiet"><svg class="i i--16"><use href="#i-share"/></svg>Share</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 3. Grouped hires -->
+    <article class="item">
+      <header class="item__kicker"><span class="kicker">Hires<span class="sep">/</span>NEWMAC</span><span class="item__when num">2026 season</span></header>
+      <div class="item__grid">
+        <span class="logo logo--48" aria-hidden="true">NU</span>
+        <div>
+          <p class="item__head"><a href="#">Norwich University</a> named two assistant head coaches for 2026.</p>
+          <div class="group">
+            <a class="prow" href="#">
+              <span class="av av--40 tint-2">RH</span>
+              <span><span class="prow__name" style="display:block">Ryan Heasley</span><span class="prow__sub" style="display:block">Assistant head coach for offense, offensive coordinator, offensive line</span><span class="prow__ctx num" style="display:block">From St. John Fisher, offensive coordinator <span class="nw">2022&ndash;2024</span></span></span>
+            </a>
+            <a class="prow" href="#">
+              <span class="av av--40 tint-5">KE</span>
+              <span><span class="prow__name" style="display:block">Keith Emery</span><span class="prow__sub" style="display:block">Assistant head coach for defense, defensive coordinator, inside linebackers</span><span class="prow__ctx" style="display:block">Former head coach at Western New England</span></span>
+            </a>
+          </div>
+          <div class="item__actions">
+            <button class="btn btn--quiet"><svg class="i i--16"><use href="#i-thumbs-up"/></svg>Congratulate</button>
+            <button class="btn btn--quiet"><svg class="i i--16"><use href="#i-message"/></svg>Comment</button>
+            <button class="btn btn--quiet"><svg class="i i--16"><use href="#i-share"/></svg>Share</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 4. Job (sample) -->
+    <article class="item">
+      <header class="item__kicker"><span class="kicker">Job<span class="sep">/</span>Northwest Conference</span><span class="chip chip--sample">Sample listing</span></header>
+      <div class="job">
+        <span class="logo logo--48" aria-hidden="true">WU</span>
+        <div>
+          <p class="job__title"><a href="#">Defensive Backs Coach</a></p>
+          <p class="job__org">Whitworth University</p>
+          <p class="job__meta">Spokane, WA<span class="dot">Full-time</span><span class="dot num">Starts 2027 season</span></p>
+          <p class="job__fit"><svg class="i i--14"><use href="#i-check"/></svg>Matches your position group</p>
+        </div>
+        <div class="job__act">
+          <a class="btn btn--secondary btn--sm" href="#">View job</a>
+          <button class="btn btn--secondary btn--sm btn--icon" style="width:30px" aria-label="Save job"><svg class="i i--16"><use href="#i-bookmark"/></svg></button>
+        </div>
+      </div>
+    </article>
+
+    <!-- 5. Milestone -->
+    <article class="item">
+      <header class="item__kicker"><span class="kicker">Milestone<span class="sep">/</span>NJAC</span><span class="item__when num">2026 season</span></header>
+      <div class="item__grid">
+        <span class="av av--48 tint-6" aria-hidden="true">DG</span>
+        <div>
+          <p class="item__head"><a href="#">Dan Garrett</a> begins his 21st season as head coach at <a href="#">Kean University</a>.</p>
+          <dl class="figs">
+            <div class="stat"><dt><span class="lg">Seasons as HC</span><span class="sm">Head coach</span></dt><dd>21</dd></div>
+            <div class="stat"><dt><span class="lg">Seasons </span>at Kean</dt><dd>24</dd></div>
+            <div class="stat"><dt><span class="lg">Seasons </span>coaching</dt><dd>30</dd></div>
+          </dl>
+          <p class="item__ctx num">Kean defensive coordinator <span class="nw">2003&ndash;2005</span><span class="dot">Montclair State alum</span></p>
+          <div class="item__actions">
+            <button class="btn btn--quiet"><svg class="i i--16"><use href="#i-thumbs-up"/></svg>Congratulate</button>
+            <button class="btn btn--quiet"><svg class="i i--16"><use href="#i-message"/></svg>Comment</button>
+            <button class="btn btn--quiet"><svg class="i i--16"><use href="#i-share"/></svg>Share</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 6. Hire -->
+    <article class="item">
+      <header class="item__kicker"><span class="kicker">Hire<span class="sep">/</span>NEWMAC</span><span class="item__when num">2026 season</span></header>
+      <div class="item__grid">
+        <span class="av av--48 tint-3" aria-hidden="true">TK</span>
+        <div>
+          <p class="item__head"><a href="#">Tanner Kingsley</a> joined <a href="#">MIT</a> as offensive coordinator and quarterbacks coach.</p>
+          <ol class="tx num">
+            <li><span class="yr">2021&ndash;24</span><span class="mk"></span><span class="what">Offensive coordinator, quarterbacks <span>&middot; Anna Maria College</span></span></li>
+            <li><span class="yr">2025</span><span class="mk"></span><span class="what">Head coach <span>&middot; Anna Maria College</span></span></li>
+            <li class="is-new"><span class="yr">2026</span><span class="mk"></span><span class="what">Offensive coordinator, quarterbacks <span>&middot; MIT</span></span></li>
+          </ol>
+          <div class="item__actions">
+            <button class="btn btn--quiet"><svg class="i i--16"><use href="#i-thumbs-up"/></svg>Congratulate</button>
+            <button class="btn btn--quiet"><svg class="i i--16"><use href="#i-message"/></svg>Comment</button>
+            <button class="btn btn--quiet"><svg class="i i--16"><use href="#i-share"/></svg>Share</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 7. Transactions digest -->
+    <article class="item item--digest">
+      <header class="item__kicker"><span class="kicker">Transactions<span class="sep">/</span>Division III</span><span class="item__when num">2026 season</span></header>
+      <h3 class="h3">More staff moves</h3>
+      <ol class="agate">
+        <li><span class="prog">Buena Vista</span><span class="conf">ARC</span>Named <b>Adrian Saterstad</b> offensive line coach; was assistant defensive line coach at Michigan Tech.</li>
+        <li><span class="prog">Buena Vista</span><span class="conf">ARC</span>Promoted <b>Jacob Kriewald</b> from student coach to assistant coach, offensive line and tight ends.</li>
+        <li><span class="prog">Grinnell</span><span class="conf">MWC</span>Named <b>Owen Tuckey</b> offensive line coach; coached the lines at Gogebic High School in Michigan.</li>
+        <li><span class="prog">Kean</span><span class="conf">NJAC</span>Named <b>Sean Reda</b> offensive quality control and assistant wide receivers coach; was a student defensive analyst at Delaware.</li>
+        <li><span class="prog">Pacific (OR)</span><span class="conf">NWC</span>Named <b>Rylan Ma&rsquo;ae</b> defensive assistant intern; Boxers linebacker in 2024 and 2025.</li>
+        <li><span class="prog">UMass Dartmouth</span><span class="conf">MASCAC</span>Named <b>Ralph Clark</b> linebackers coach and the program&rsquo;s first women&rsquo;s flag football head coach; was defensive coordinator at Millersville.</li>
+      </ol>
+    </article>
+    <div class="more"><a class="btn btn--secondary btn--sm" href="#">Show more moves</a></div>
+  </div>
+
+  <!-- Right rail -->
+  <aside class="rrail" aria-label="Carousel and suggestions">
+    <section class="mod">
+      <div class="mod__head"><h2 class="h4">Carousel tracker</h2><span class="meta num">2026 &middot; D-III</span></div>
+      <dl class="rstats">
+        <div class="stat"><dt>Hires</dt><dd>15</dd></div>
+        <div class="stat"><dt>Promotions</dt><dd>6</dd></div>
+        <div class="stat"><dt>Open jobs</dt><dd>3</dd></div>
+      </dl>
+      <table class="conf-t num">
+        <thead><tr><th>By conference</th><th></th><th class="n">Hires</th><th class="n">Prom.</th></tr></thead>
+        <tbody>
+          <tr><td>USA South</td><td class="bar"><i style="width:100%"></i></td><td class="n">5</td><td class="n">5</td></tr>
+          <tr><td>NEWMAC</td><td class="bar"><i style="width:60%"></i></td><td class="n">3</td><td class="n z">0</td></tr>
+          <tr><td>NJAC</td><td class="bar"><i style="width:60%"></i></td><td class="n">3</td><td class="n z">0</td></tr>
+          <tr><td>ARC</td><td class="bar"><i style="width:20%"></i></td><td class="n">1</td><td class="n">1</td></tr>
+          <tr><td>MASCAC</td><td class="bar"><i style="width:20%"></i></td><td class="n">1</td><td class="n z">0</td></tr>
+          <tr><td>MWC</td><td class="bar"><i style="width:20%"></i></td><td class="n">1</td><td class="n z">0</td></tr>
+          <tr><td>NWC</td><td class="bar"><i style="width:20%"></i></td><td class="n">1</td><td class="n z">0</td></tr>
+        </tbody>
+      </table>
+      <p class="rnote">From 11 programs with published 2026 staffs.</p>
+    </section>
+
+    <section class="mod">
+      <div class="mod__head"><h2 class="h4">Open jobs</h2><span class="chip chip--sample">Sample listings</span></div>
+      <a class="jobrow" href="#"><span class="jobrow__t" style="display:block">Defensive Backs Coach</span><span class="jobrow__o" style="display:block">Whitworth University &middot; Spokane, WA</span></a>
+      <a class="jobrow" href="#"><span class="jobrow__t" style="display:block">Offensive Line Coach</span><span class="jobrow__o" style="display:block">Linfield University &middot; McMinnville, OR</span></a>
+      <a class="jobrow" href="#"><span class="jobrow__t" style="display:block">Graduate Assistant, Defense</span><span class="jobrow__o" style="display:block">George Fox University &middot; Newberg, OR</span></a>
+      <a class="link" href="#" style="display:inline-flex;align-items:center;gap:2px;margin-top:6px;font-size:13px;line-height:18px">All jobs<svg class="i i--16"><use href="#i-chevron-right"/></svg></a>
+    </section>
+
+    <section class="mod pymk">
+      <div class="mod__head"><h2 class="h4">People you may know</h2></div>
+      <div class="prow">
+        <span class="av av--40 tint-4">JB</span>
+        <span><a class="prow__name" style="display:block" href="#">John Bates</a><span class="prow__sub" style="display:block">Defensive Coordinator, Pacific (OR)</span><span class="prow__ctx" style="display:block">Coached at George Fox in 2014, your first season there</span><a class="btn btn--secondary btn--sm" href="#"><svg class="i i--16"><use href="#i-user-plus"/></svg>Connect</a></span>
+      </div>
+      <div class="prow">
+        <span class="av av--40 tint-4">JH</span>
+        <span><a class="prow__name" style="display:block" href="#">Jarren Horton</a><span class="prow__sub" style="display:block">Assoc. Head Coach and DC, Brevard</span><span class="prow__ctx" style="display:block">Portland State alum, like you</span><a class="btn btn--secondary btn--sm" href="#"><svg class="i i--16"><use href="#i-user-plus"/></svg>Connect</a></span>
+      </div>
+      <div class="prow">
+        <span class="av av--40 tint-2">IF</span>
+        <span><a class="prow__name" style="display:block" href="profile.html">Ian Falconer</a><span class="prow__sub" style="display:block">Head Football Coach, Pacific (OR)</span><span class="prow__ctx" style="display:block">Your head coach &middot; profile not claimed yet</span><a class="btn btn--secondary btn--sm" href="#"><svg class="i i--16"><use href="#i-send"/></svg>Invite to claim</a></span>
+      </div>
+    </section>
+
+    <footer class="mod foot">
+      <a href="#">About</a><a href="#">Accessibility</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Data sources</a>
+      <span class="brandline"><span data-brand>Coach Network</span> &copy; 2026</span>
+    </footer>
+  </aside>
+</main>
+
+<nav class="tabbar" aria-label="Primary">
+  <a class="tab is-active" href="feed.html"><svg class="i"><use href="#i-home"/></svg>Home</a>
+  <a class="tab" href="#"><svg class="i"><use href="#i-users"/></svg>Network</a>
+  <a class="tab" href="#"><svg class="i"><use href="#i-briefcase"/></svg>Jobs</a>
+  <a class="tab" href="#"><svg class="i"><use href="#i-bell"/></svg>Alerts</a>
+  <a class="tab" href="#"><span class="av tint-6">JL</span>Me</a>
+</nav>
+<script>
+  /* The product name lives in one place. In the app: BRAND.name in web/src/lib/brand.ts */
+  const BRAND = { name: "Coach Network" };
+  document.querySelectorAll("[data-brand]").forEach((el) => { el.textContent = BRAND.name; });
+  document.title = document.title.replace("Coach Network", BRAND.name);
+</script>
+
+</body>
+</html>

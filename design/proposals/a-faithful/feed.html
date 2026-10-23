@@ -1,0 +1,747 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Home | {brand}</title>
+<meta name="description" content="Signed-in home feed mockup, Direction A (LinkedIn-faithful).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   Direction A, "LinkedIn-faithful" — design tokens + components
+   Every value below is documented in DESIGN.md. Do not add one-off values.
+   ========================================================================== */
+:root {
+  color-scheme: light;
+  /* Neutrals */
+  --canvas: #F3F2EF;
+  --surface: #FFFFFF;
+  --surface-2: #F7F6F3;
+  --hover: #EFEEEA;
+  --pressed: #E6E5E0;
+  --border: #E0DFDA;
+  --divider: #EBEAE6;
+  --border-strong: #8C9094;
+  --cover: #E4E8E5;
+  /* Text */
+  --text-1: #191C1F;
+  --text-2: #55595D;
+  --text-3: #646A6E;
+  /* Accent: Evergreen */
+  --accent: #0B6B53;
+  --accent-hover: #08533F;
+  --accent-tint: #E3EFEA;
+  --on-accent: #FFFFFF;
+  /* Semantic (rare) */
+  --sample-bg: #FBF1DE;
+  --sample-fg: #7A4B00;
+  --danger: #B42318;
+  /* Identity tints: people (circles) */
+  --av-1-bg: #E2E8EE; --av-1-fg: #2C3E50;
+  --av-2-bg: #EDE6DA; --av-2-fg: #5B4424;
+  --av-3-bg: #DFEAE3; --av-3-fg: #2D4B3B;
+  --av-4-bg: #F0E2DC; --av-4-fg: #6B3324;
+  --av-5-bg: #E6E4F0; --av-5-fg: #3E3868;
+  --av-6-bg: #DCE8EE; --av-6-fg: #21485A;
+  /* Identity: programs (squares, always neutral) */
+  --org-bg: #ECEBE7; --org-fg: #3C4044;
+  /* Elevation */
+  --shadow-pop: 0 4px 12px rgba(0, 0, 0, .08), 0 0 0 1px rgba(0, 0, 0, .06);
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  /* Shape */
+  --r-card: 8px; --r-pill: 999px; --r-badge: 4px; --r-logo: 6px; --r-field: 6px;
+  /* Type */
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Shell */
+  --nav-h: 52px; --tab-h: 56px; --shell-max: 1128px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --canvas: #0E1012; --surface: #181B1E; --surface-2: #202427; --hover: #262A2E; --pressed: #2E3337;
+    --border: #2E3337; --divider: #262A2E; --border-strong: #6B7277; --cover: #22282A;
+    --text-1: #E8EAEB; --text-2: #AEB4B9; --text-3: #959CA2;
+    --accent: #4CC09C; --accent-hover: #6FD0B1; --accent-tint: #173229; --on-accent: #06140F;
+    --sample-bg: #33280F; --sample-fg: #F2C879; --danger: #F97066;
+    --av-1-bg: #26313B; --av-1-fg: #C9D6E2; --av-2-bg: #352D22; --av-2-fg: #E3D2B6;
+    --av-3-bg: #213229; --av-3-fg: #BFDCCB; --av-4-bg: #3A2722; --av-4-fg: #EDC6B9;
+    --av-5-bg: #2B2940; --av-5-fg: #CFCBEF; --av-6-bg: #1F323B; --av-6-fg: #BAD9E6;
+    --org-bg: #2A2E31; --org-fg: #D4D8DB;
+    --shadow-pop: 0 4px 16px rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .06);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #0E1012; --surface: #181B1E; --surface-2: #202427; --hover: #262A2E; --pressed: #2E3337;
+  --border: #2E3337; --divider: #262A2E; --border-strong: #6B7277; --cover: #22282A;
+  --text-1: #E8EAEB; --text-2: #AEB4B9; --text-3: #959CA2;
+  --accent: #4CC09C; --accent-hover: #6FD0B1; --accent-tint: #173229; --on-accent: #06140F;
+  --sample-bg: #33280F; --sample-fg: #F2C879; --danger: #F97066;
+  --av-1-bg: #26313B; --av-1-fg: #C9D6E2; --av-2-bg: #352D22; --av-2-fg: #E3D2B6;
+  --av-3-bg: #213229; --av-3-fg: #BFDCCB; --av-4-bg: #3A2722; --av-4-fg: #EDC6B9;
+  --av-5-bg: #2B2940; --av-5-fg: #CFCBEF; --av-6-bg: #1F323B; --av-6-fg: #BAD9E6;
+  --org-bg: #2A2E31; --org-fg: #D4D8DB;
+  --shadow-pop: 0 4px 16px rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .06);
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--canvas); color: var(--text-1);
+  font: 400 14px/20px var(--font);
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv05" 1; /* Inter: open lowercase l for name legibility */
+}
+h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+input { font: inherit; color: inherit; }
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: 4px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.num, .yr { font-variant-numeric: tabular-nums; }
+
+/* Icons: Lucide, 1.75 stroke for calm weight */
+.i { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75;
+     stroke-linecap: round; stroke-linejoin: round; }
+.i-16 { width: 16px; height: 16px; stroke-width: 2; }
+.i-24 { width: 24px; height: 24px; }
+
+/* ---------- Type scale ---------- */
+.t-name     { font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.012em; }
+.t-title    { font-size: 20px; line-height: 28px; font-weight: 600; letter-spacing: -0.008em; }
+.t-subtitle { font-size: 16px; line-height: 22px; font-weight: 600; }
+.t-lead     { font-size: 16px; line-height: 24px; font-weight: 400; }
+.t-body     { font-size: 14px; line-height: 20px; }
+.t-strong   { font-size: 14px; line-height: 20px; font-weight: 600; }
+.t-meta     { font-size: 14px; line-height: 20px; color: var(--text-2); }
+.t-caption  { font-size: 12px; line-height: 16px; color: var(--text-2); }
+.muted { color: var(--text-2); }
+.sep { color: var(--text-3); padding: 0 5px; }
+.hide-phone { }
+.show-phone { display: none; }
+.link { color: var(--accent); font-weight: 600; }
+.link:hover { color: var(--accent-hover); text-decoration: underline; }
+.link-quiet:hover { color: var(--accent); text-decoration: underline; }
+.inferred { text-decoration: underline dotted var(--text-3); text-underline-offset: 3px; cursor: help; }
+
+/* ---------- Shell ---------- */
+.container { width: 100%; max-width: calc(var(--shell-max) + 48px); margin: 0 auto; padding: 0 24px; }
+.shell { display: grid; gap: 24px; align-items: start; padding-top: 24px; padding-bottom: 48px; }
+.shell--feed { grid-template-columns: 225px minmax(0, 1fr) 300px; }
+.shell--profile { grid-template-columns: minmax(0, 1fr) 300px; }
+.stack { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+/* ---------- Top nav (desktop) ---------- */
+.topnav { position: sticky; top: 0; z-index: 20; background: var(--surface); border-bottom: 1px solid var(--border); }
+.topnav-inner { height: var(--nav-h); display: flex; align-items: center; gap: 8px; }
+.brand { display: flex; align-items: center; gap: 8px; margin-right: 8px; flex: none; }
+.brand-mark { width: 32px; height: 32px; border-radius: var(--r-logo); background: var(--accent); color: var(--on-accent);
+              display: grid; place-items: center; }
+.brand-mark .i { width: 20px; height: 20px; stroke-width: 2; }
+.brand-name { font-size: 16px; line-height: 20px; font-weight: 700; letter-spacing: -0.015em; white-space: nowrap; }
+.search { display: flex; align-items: center; gap: 8px; width: 280px; height: 34px; padding: 0 12px;
+          background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-field); color: var(--text-2); }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: 14px; color: var(--text-1); }
+.search input::placeholder { color: var(--text-2); }
+.search:focus-within { border-color: var(--text-1); background: var(--surface); }
+.nav { margin-left: auto; display: flex; align-items: stretch; height: 100%; }
+.nav-item { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-width: 76px; padding: 0 4px; gap: 2px; color: var(--text-2); font-size: 12px; line-height: 16px; white-space: nowrap; }
+.nav-item:hover { color: var(--text-1); }
+.nav-item .i { width: 24px; height: 24px; }
+.nav-item.is-active { color: var(--text-1); }
+.nav-item.is-active::after { content: ""; position: absolute; left: 4px; right: 4px; bottom: -1px; height: 2px; background: var(--text-1); }
+.nav-item .lbl { display: inline-flex; align-items: center; gap: 2px; }
+.nav-item .lbl .i { width: 14px; height: 14px; stroke-width: 2; }
+.nav-dot { position: absolute; top: 5px; left: calc(50% + 3px); min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px;
+           background: var(--accent); color: var(--on-accent); font-size: 11px; line-height: 16px; font-weight: 700; text-align: center;
+           box-shadow: 0 0 0 2px var(--surface); }
+.nav-divider { width: 1px; align-self: center; height: 36px; background: var(--border); margin: 0 4px; }
+
+/* Phone top bar + bottom tab bar (hidden on desktop) */
+.m-topbar, .tabbar { display: none; }
+
+/* ---------- Avatars & program marks ---------- */
+.avatar { display: inline-grid; place-items: center; flex: none; border-radius: 50%; font-weight: 600; letter-spacing: .02em;
+          background: var(--av-1-bg); color: var(--av-1-fg); width: 48px; height: 48px; font-size: 16px; line-height: 1; }
+.avatar.xs { width: 24px; height: 24px; font-size: 10px; }
+.avatar.sm { width: 32px; height: 32px; font-size: 12px; }
+.avatar.md { width: 48px; height: 48px; font-size: 16px; }
+.avatar.lg { width: 64px; height: 64px; font-size: 22px; }
+.avatar.xl { width: 136px; height: 136px; font-size: 44px; letter-spacing: .01em; }
+.av-1 { background: var(--av-1-bg); color: var(--av-1-fg); }
+.av-2 { background: var(--av-2-bg); color: var(--av-2-fg); }
+.av-3 { background: var(--av-3-bg); color: var(--av-3-fg); }
+.av-4 { background: var(--av-4-bg); color: var(--av-4-fg); }
+.av-5 { background: var(--av-5-bg); color: var(--av-5-fg); }
+.av-6 { background: var(--av-6-bg); color: var(--av-6-fg); }
+.org { display: inline-grid; place-items: center; flex: none; width: 48px; height: 48px; border-radius: var(--r-logo);
+       background: var(--org-bg); color: var(--org-fg); font-weight: 700; font-size: 13px; letter-spacing: .03em; line-height: 1; }
+.org.sm { width: 32px; height: 32px; font-size: 10px; border-radius: 4px; }
+.org.xs { width: 24px; height: 24px; font-size: 9px; border-radius: 4px; }
+
+/* ---------- Card ---------- */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); min-width: 0; }
+.card-section { padding: 20px 24px 24px; }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.card-head + * { margin-top: 12px; }
+.card-head .t-caption { white-space: nowrap; }
+.card-foot { border-top: 1px solid var(--divider); }
+.card-foot a { display: flex; align-items: center; justify-content: center; gap: 4px; height: 44px; color: var(--text-2); font-weight: 600;
+               border-radius: 0 0 var(--r-card) var(--r-card); }
+.card-foot a:hover { background: var(--hover); color: var(--text-1); }
+.rail-card .card-section { padding: 16px; }
+.rail-title { font-size: 16px; line-height: 22px; font-weight: 600; }
+
+/* ---------- Buttons ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 16px;
+       border-radius: var(--r-pill); border: 1px solid transparent; font-size: 14px; line-height: 20px; font-weight: 600;
+       white-space: nowrap; transition: background-color .12s ease, color .12s ease, box-shadow .12s ease; }
+.btn .i { width: 16px; height: 16px; stroke-width: 2; }
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-secondary { color: var(--accent); border-color: var(--accent); }
+.btn-secondary:hover { background: var(--accent-tint); color: var(--accent-hover); box-shadow: inset 0 0 0 1px var(--accent-hover); }
+.btn-tertiary { color: var(--text-2); border-color: var(--border-strong); }
+.btn-tertiary:hover { background: var(--hover); color: var(--text-1); box-shadow: inset 0 0 0 1px var(--text-2); }
+.btn-ghost { color: var(--text-2); padding: 0 8px; border-radius: var(--r-badge); }
+.btn-ghost:hover { background: var(--hover); color: var(--text-1); }
+.btn-sm { height: 28px; padding: 0 12px; }
+.icon-btn { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; color: var(--text-2); flex: none; }
+.icon-btn:hover { background: var(--hover); color: var(--text-1); }
+
+/* ---------- Badges & chips ---------- */
+.badge { display: inline-flex; align-items: center; height: 20px; padding: 0 6px; border-radius: var(--r-badge);
+         border: 1px solid var(--border); background: var(--surface); color: var(--text-2);
+         font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .01em; white-space: nowrap; vertical-align: 1px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: var(--r-pill);
+        background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2);
+        font-size: 12px; line-height: 16px; font-weight: 600; white-space: nowrap; }
+.chip .i { width: 12px; height: 12px; stroke-width: 2.25; }
+.chip-sample { background: var(--sample-bg); color: var(--sample-fg); border-color: transparent; }
+.filter-chip { display: inline-flex; align-items: center; height: 32px; padding: 0 14px; border-radius: var(--r-pill);
+               border: 1px solid var(--border-strong); color: var(--text-2); font-weight: 600; white-space: nowrap; }
+.filter-chip:hover { background: var(--hover); color: var(--text-1); }
+.filter-chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+
+/* ---------- Tabs (in-content) ---------- */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--divider); overflow-x: auto; scrollbar-width: none; }
+.tab { position: relative; height: 44px; padding: 0 12px; color: var(--text-2); font-weight: 600; white-space: nowrap; }
+.tab:hover { color: var(--text-1); background: var(--hover); }
+.tab .count { font-weight: 400; margin-left: 4px; }
+.tab[aria-selected="true"] { color: var(--accent); }
+.tab[aria-selected="true"]::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px; background: var(--accent); border-radius: 2px 2px 0 0; }
+
+/* ---------- Person row (rails, tree, PYMK) ---------- */
+.person { display: flex; gap: 12px; align-items: flex-start; min-width: 0; }
+.person-body { min-width: 0; flex: 1; }
+.person-name { font-weight: 600; display: block; }
+.person-name:hover { color: var(--accent); text-decoration: underline; }
+.person-role { color: var(--text-2); }
+.person-ctx { margin-top: 2px; font-size: 12px; line-height: 16px; color: var(--text-2); display: flex; gap: 4px; align-items: flex-start; }
+.person-ctx .i { width: 14px; height: 14px; margin-top: 1px; }
+.person .btn { margin-top: 8px; }
+.clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.rail-list { display: flex; flex-direction: column; }
+.rail-list > li { padding: 12px 0; }
+.rail-list > li + li { border-top: 1px solid var(--divider); }
+.rail-list > li:first-child { padding-top: 4px; }
+.rail-list > li:last-child { padding-bottom: 0; }
+.rail-list .person-role { font-size: 12px; line-height: 16px; }
+
+/* ---------- Footer links ---------- */
+.legal { padding: 16px 8px 0; text-align: center; font-size: 12px; line-height: 20px; color: var(--text-2); }
+.legal a { margin: 0 6px; white-space: nowrap; }
+.legal a:hover { color: var(--accent); text-decoration: underline; }
+.legal .brandline { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px; color: var(--text-1); font-weight: 600; }
+.legal .brandline .brand-mark { width: 16px; height: 16px; border-radius: 3px; }
+.legal .brandline .brand-mark .i { width: 12px; height: 12px; stroke-width: 2.5; }
+.legal .brandline span.c { font-weight: 400; color: var(--text-2); }
+
+/* ==========================================================================
+   Phone ( < 768px ): compact top bar, edge-to-edge cards, bottom tab bar
+   ========================================================================== */
+@media (max-width: 991px) {
+  .shell--feed { grid-template-columns: 225px minmax(0, 1fr); }
+  .shell--feed > .rail-right { display: none; }
+  .shell--profile { grid-template-columns: minmax(0, 1fr); max-width: 760px; margin: 0 auto; }
+  .nav-item { min-width: 56px; }
+  .nav-item .lbl-text { display: none; }
+  .brand-name { display: none; }
+  .search { width: 200px; }
+}
+@media (max-width: 767px) {
+  /* App shell: top bar and tab bar are fixed rows; only the content scrolls. */
+  html, body { height: 100%; }
+  body { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+  .topnav { flex: none; position: relative; }
+  main.shell { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .hide-phone { display: none; }
+  .show-phone { display: inline; }
+  .topnav-inner { display: none; }
+  .m-topbar { display: flex; align-items: center; gap: 12px; height: 52px; padding: 0 16px; }
+  .m-topbar .search { flex: 1; width: auto; height: 36px; border-radius: var(--r-field); }
+  .container { padding: 0; }
+  .shell, .shell--feed, .shell--profile { grid-template-columns: minmax(0, 1fr); gap: 8px; padding-top: 8px; padding-bottom: 16px; }
+  .shell--feed > .rail-left { display: none; }
+  .card { border-radius: 0; border-left: 0; border-right: 0; }
+  .card-foot a { border-radius: 0; }
+  .card-section { padding: 16px; }
+  .t-name { font-size: 20px; line-height: 26px; }
+  .t-title { font-size: 18px; line-height: 24px; }
+  .legal { padding: 8px 16px 8px; }
+  .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); flex: none; position: relative; z-index: 20;
+            height: calc(var(--tab-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
+            background: var(--surface); border-top: 1px solid var(--border); }
+  .tab-item { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+              color: var(--text-2); font-size: 11px; line-height: 14px; font-weight: 500; }
+  .tab-item .i { width: 24px; height: 24px; }
+  .tab-item.is-active { color: var(--text-1); font-weight: 600; }
+  .tab-item.is-active::before { content: ""; position: absolute; top: -1px; left: 50%; width: 32px; margin-left: -16px; height: 2px; background: var(--text-1); }
+  .tab-item .nav-dot { top: 4px; left: calc(50% + 4px); }
+}
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+
+/* ---------- Feed page ---------- */
+/* Left rail: mini profile */
+.mini { overflow: hidden; }
+.mini-cover { height: 56px; background: var(--cover); }
+.mini-body { padding: 0 16px 16px; }
+.mini-body .avatar { margin-top: -32px; box-shadow: 0 0 0 3px var(--surface); }
+.mini-name { display: flex; align-items: center; gap: 4px; margin-top: 8px; }
+.mini-name .i { width: 16px; height: 16px; color: var(--text-2); }
+.mini-headline { margin-top: 2px; font-size: 12px; line-height: 16px; color: var(--text-1); }
+.mini-loc { margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+.mini-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 4px 16px;
+            font-size: 12px; line-height: 16px; color: var(--text-2); font-weight: 600; }
+.mini-row b { color: var(--text-1); }
+.mini-row:hover { background: var(--hover); }
+.mini-group { border-top: 1px solid var(--divider); padding: 8px 0; }
+.otw { display: block; border-top: 1px solid var(--divider); padding: 12px 16px; }
+.otw:hover { background: var(--hover); }
+.otw-title { display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; font-weight: 600; }
+.otw-title .state { margin-left: auto; color: var(--text-2); font-weight: 600; }
+.otw p { margin-top: 2px; }
+.otw .link { font-size: 12px; }
+.shortcuts { padding: 8px 0; }
+.shortcuts a { display: flex; align-items: center; gap: 10px; padding: 8px 16px; font-size: 12px; line-height: 16px; font-weight: 600; }
+.shortcuts a:hover { background: var(--hover); }
+.shortcuts .i { width: 16px; height: 16px; color: var(--text-2); }
+.shortcuts .num { margin-left: auto; color: var(--text-2); }
+
+/* Composer + filters */
+.composer { padding: 12px 16px 4px; }
+.composer-row { display: flex; gap: 8px; align-items: center; }
+.composer-input { flex: 1; display: flex; align-items: center; height: 48px; padding: 0 16px; border: 1px solid var(--border-strong);
+                  border-radius: var(--r-pill); color: var(--text-2); font-weight: 600; }
+.composer-input:hover { background: var(--hover); }
+.composer-actions { display: flex; justify-content: space-around; margin-top: 4px; }
+.composer-actions .btn-ghost { height: 44px; padding: 0 12px; }
+.composer-actions .i { width: 20px; height: 20px; }
+.filters { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.filters .sort { margin-left: auto; display: inline-flex; align-items: center; gap: 2px; font-size: 12px; color: var(--text-2); white-space: nowrap; }
+.filters .sort b { color: var(--text-1); font-weight: 600; }
+.filters .sort .i { width: 14px; height: 14px; }
+.filters-line { flex: 1; height: 1px; background: var(--border); min-width: 16px; }
+
+/* Feed item */
+.fi-context { display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-bottom: 1px solid var(--divider);
+              font-size: 12px; line-height: 16px; color: var(--text-2); }
+.fi-context .i { width: 14px; height: 14px; }
+.fi-context b { color: var(--text-1); font-weight: 600; }
+.fi-body { padding: 12px 16px 0; }
+.fi-actor { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; column-gap: 12px; align-items: start; }
+.fi-actor .icon-btn { margin: -4px -8px 0 0; }
+.fi-headline a { font-weight: 600; }
+.fi-headline a:hover { color: var(--accent); text-decoration: underline; }
+.fi-meta { margin-top: 2px; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 0; }
+.fi-type { color: var(--text-1); font-weight: 600; }
+.fi-src { display: inline-flex; align-items: center; gap: 3px; }
+.fi-src:hover { color: var(--accent); text-decoration: underline; }
+.fi-src .i { width: 12px; height: 12px; stroke-width: 2.25; }
+
+.move { margin-top: 12px; display: grid; grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1fr); gap: 12px; align-items: start;
+        padding: 12px; border: 1px solid var(--border); border-radius: var(--r-card); }
+.move-side { display: flex; gap: 10px; align-items: flex-start; min-width: 0; }
+.move-side > div { min-width: 0; }
+.move-k { display: block; font-size: 12px; line-height: 16px; color: var(--text-2); }
+.move-org { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; font-weight: 600; }
+.move-role { font-size: 12px; line-height: 16px; color: var(--text-2); }
+.move > .i { color: var(--text-3); align-self: center; }
+.move .badge { height: 18px; font-size: 11px; padding: 0 5px; }
+
+.evidence { margin-top: 12px; padding-left: 12px; border-left: 2px solid var(--border); color: var(--text-1); }
+.evidence cite { display: block; margin-top: 2px; font-style: normal; font-size: 12px; line-height: 16px; color: var(--text-2); }
+
+.ladder { margin-top: 12px; padding: 12px; border: 1px solid var(--border); border-radius: var(--r-card); }
+.ladder .role { display: grid; grid-template-columns: 16px minmax(0, 1fr); column-gap: 10px; position: relative; padding-bottom: 10px; }
+.ladder .role:last-child { padding-bottom: 0; }
+.ladder .role::before { content: ""; justify-self: center; width: 8px; height: 8px; margin-top: 6px; border-radius: 50%; background: var(--border-strong); }
+.ladder .role.is-current::before { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+.ladder .role::after { content: ""; position: absolute; left: 7px; top: 20px; bottom: 0; width: 2px; background: var(--divider); }
+.ladder .role:last-child::after { display: none; }
+.ladder .role > div { display: flex; justify-content: space-between; gap: 12px; }
+.ladder .role .yr { color: var(--text-2); flex: none; }
+.ladder .role:not(.is-current) .r { color: var(--text-2); }
+
+.staff-list { margin-top: 12px; border: 1px solid var(--border); border-radius: var(--r-card); }
+.staff-list > li { padding: 12px; display: flex; gap: 12px; align-items: center; }
+.staff-list > li + li { border-top: 1px solid var(--divider); }
+.staff-list .person-body .person-role { font-size: 12px; line-height: 16px; color: var(--text-1); }
+.staff-list .btn { flex: none; }
+
+.tenure { margin-top: 12px; display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--border); border-radius: var(--r-card); }
+.tenure > div { padding: 10px 12px; }
+.tenure > div + div { border-left: 1px solid var(--divider); }
+.tenure b { display: block; font-size: 20px; line-height: 28px; font-weight: 600; }
+
+.job { display: grid; grid-template-columns: 48px minmax(0, 1fr); column-gap: 12px; }
+.job-title { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.job-title a:hover { color: var(--accent); text-decoration: underline; }
+.job-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+.fi-actions { display: flex; margin-top: 12px; border-top: 1px solid var(--divider); padding: 4px 8px; }
+.fi-action { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; height: 40px; border-radius: var(--r-badge);
+             color: var(--text-2); font-weight: 600; }
+.fi-action:hover { background: var(--hover); color: var(--text-1); }
+.fi-pad-b { padding-bottom: 16px; }
+
+/* Right rail: carousel tracker */
+.tstats { margin-top: 12px; display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--divider); border-radius: 6px; }
+.tstats > div { padding: 8px 10px; }
+.tstats > div + div { border-left: 1px solid var(--divider); }
+.tstats b { display: block; font-size: 20px; line-height: 28px; font-weight: 600; }
+.bars-h { margin-top: 16px; display: flex; justify-content: space-between; }
+.bars { margin-top: 6px; }
+.bars li { display: grid; grid-template-columns: 76px minmax(0, 1fr) 16px; align-items: center; gap: 10px; height: 24px; font-size: 12px; line-height: 16px; }
+.bars .bar { height: 6px; border-radius: 3px; background: var(--divider); overflow: hidden; }
+.bars .bar span { display: block; height: 100%; border-radius: 3px; background: var(--border-strong); }
+.bars li.is-mine { font-weight: 600; }
+.bars li.is-mine .bar span { background: var(--accent); }
+.bars .n { text-align: right; }
+.tracker-note { margin-top: 12px; }
+
+/* Phone-only tracker strip */
+.m-tracker { display: none; }
+
+@media (max-width: 991px) {
+  .m-tracker { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
+  .m-tracker .t-strong { display: block; }
+  .m-tracker .i { margin-left: auto; color: var(--text-2); }
+  .filters .sort, .filters-line { display: none; }
+}
+@media (max-width: 767px) {
+  .filters { padding: 4px 16px; overflow-x: auto; scrollbar-width: none; }
+  .filters .sort, .filters-line { display: none; }
+  .composer { display: none; }
+  .move { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .move > .i { transform: rotate(90deg); margin-left: 6px; width: 16px; height: 16px; align-self: start; }
+  .fi-actions { padding: 0 4px; }
+  .fi-action { flex-direction: column; gap: 2px; height: 52px; font-size: 12px; line-height: 16px; }
+  .staff-list .btn .btn-label { display: none; }
+  .staff-list .btn { width: 32px; height: 32px; padding: 0; }
+  .tenure b { font-size: 18px; line-height: 24px; }
+}
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="i-brand" viewBox="0 0 24 24"><circle cx="12" cy="6" r="2.5"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="18" r="2.5"/><path d="M12 8.5V12M6.5 15.5V13a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v2.5"/></symbol><symbol id="i-house" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" /> <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></symbol><symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /> <circle cx="9" cy="7" r="4" /> <path d="M22 21v-2a4 4 0 0 0-3-3.87" /> <path d="M16 3.13a4 4 0 0 1 0 7.75" /></symbol><symbol id="i-briefcase" viewBox="0 0 24 24"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /> <rect width="20" height="14" x="2" y="6" rx="2" /></symbol><symbol id="i-message-square" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></symbol><symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /> <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol><symbol id="i-map-pin" viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" /> <circle cx="12" cy="10" r="3" /></symbol><symbol id="i-external-link" viewBox="0 0 24 24"><path d="M15 3h6v6" /> <path d="M10 14 21 3" /> <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></symbol><symbol id="i-ellipsis" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1" /> <circle cx="19" cy="12" r="1" /> <circle cx="5" cy="12" r="1" /></symbol><symbol id="i-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /> <circle cx="9" cy="7" r="4" /> <line x1="19" x2="19" y1="8" y2="14" /> <line x1="22" x2="16" y1="11" y2="11" /></symbol><symbol id="i-send" viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" /> <path d="m21.854 2.147-10.94 10.939" /></symbol><symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M12 16v-4" /> <path d="M12 8h.01" /></symbol><symbol id="i-graduation-cap" viewBox="0 0 24 24"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" /> <path d="M22 10v6" /> <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" /></symbol><symbol id="i-network" viewBox="0 0 24 24"><rect x="16" y="16" width="6" height="6" rx="1" /> <rect x="2" y="16" width="6" height="6" rx="1" /> <rect x="9" y="2" width="6" height="6" rx="1" /> <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" /> <path d="M12 12V8" /></symbol><symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="m12 5 7 7-7 7" /></symbol><symbol id="i-bookmark" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" /></symbol><symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /> <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="M12 5v14" /></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol><symbol id="i-message-circle" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></symbol><symbol id="i-repeat-2" viewBox="0 0 24 24"><path d="m2 9 3-3 3 3" /> <path d="M13 18H7a2 2 0 0 1-2-2V6" /> <path d="m22 15-3 3-3-3" /> <path d="M11 6h6a2 2 0 0 1 2 2v10" /></symbol><symbol id="i-trending-up" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /> <polyline points="16 7 22 7 22 13" /></symbol><symbol id="i-badge-check" viewBox="0 0 24 24"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" /> <path d="m9 12 2 2 4-4" /></symbol><symbol id="i-square-pen" viewBox="0 0 24 24"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /> <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" /></symbol><symbol id="i-layout-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1" /> <rect width="7" height="7" x="14" y="3" rx="1" /> <rect width="7" height="7" x="14" y="14" rx="1" /> <rect width="7" height="7" x="3" y="14" rx="1" /></symbol><symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></symbol><symbol id="i-handshake" viewBox="0 0 24 24"><path d="m11 17 2 2a1 1 0 1 0 3-3" /> <path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4" /> <path d="m21 3 1 11h-2" /> <path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3" /> <path d="M3 4h8" /></symbol><symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v4" /> <path d="M16 2v4" /> <rect width="18" height="18" x="3" y="4" rx="2" /> <path d="M3 10h18" /></symbol><symbol id="i-quote" viewBox="0 0 24 24"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z" /> <path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z" /></symbol><symbol id="i-share-2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" /> <circle cx="6" cy="12" r="3" /> <circle cx="18" cy="19" r="3" /> <line x1="8.59" x2="15.42" y1="13.51" y2="17.49" /> <line x1="15.41" x2="8.59" y1="6.51" y2="10.49" /></symbol><symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 7h10v10" /> <path d="M7 17 17 7" /></symbol><symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" /></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></symbol><symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /> <circle cx="12" cy="12" r="3" /></symbol><symbol id="i-building-2" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" /> <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" /> <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" /> <path d="M10 6h4" /> <path d="M10 10h4" /> <path d="M10 14h4" /> <path d="M10 18h4" /></symbol><symbol id="i-award" viewBox="0 0 24 24"><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526" /> <circle cx="12" cy="8" r="6" /></symbol></svg>
+
+<header class="topnav">
+  <div class="container topnav-inner">
+    <a class="brand" href="#" aria-label="Home">
+      <span class="brand-mark"><svg class="i"><use href="#i-brand"/></svg></span>
+      <span class="brand-name" data-brand></span>
+    </a>
+    <label class="search">
+      <svg class="i i-16"><use href="#i-search"/></svg>
+      <span class="sr-only">Search</span>
+      <input type="search" placeholder="Search coaches and programs">
+    </label>
+    <nav class="nav" aria-label="Primary">
+      <a class="nav-item is-active" href="feed.html" aria-current="page"><svg class="i"><use href="#i-house"/></svg><span class="lbl lbl-text">Home</span></a>
+      <a class="nav-item" href="#"><svg class="i"><use href="#i-users"/></svg><span class="lbl lbl-text">Network</span></a>
+      <a class="nav-item" href="#"><svg class="i"><use href="#i-briefcase"/></svg><span class="lbl lbl-text">Jobs</span></a>
+      <a class="nav-item" href="#"><svg class="i"><use href="#i-message-square"/></svg><span class="lbl lbl-text">Messaging</span></a>
+      <a class="nav-item" href="#"><svg class="i"><use href="#i-bell"/></svg><span class="nav-dot num">3</span><span class="lbl lbl-text">Notifications</span></a>
+      <a class="nav-item" href="#"><span class="avatar xs av-6">ED</span><span class="lbl">Me<svg class="i"><use href="#i-chevron-down"/></svg></span></a>
+      <span class="nav-divider" aria-hidden="true"></span>
+      <a class="nav-item" href="#"><svg class="i"><use href="#i-layout-grid"/></svg><span class="lbl">For employers<svg class="i"><use href="#i-chevron-down"/></svg></span></a>
+    </nav>
+  </div>
+  <div class="m-topbar">
+    <a href="#" aria-label="Me"><span class="avatar sm av-6">ED</span></a>
+    <label class="search">
+      <svg class="i i-16"><use href="#i-search"/></svg>
+      <span class="sr-only">Search</span>
+      <input type="search" placeholder="Search coaches and programs">
+    </label>
+    <a class="icon-btn" href="#" aria-label="Messaging"><svg class="i i-24"><use href="#i-message-square"/></svg></a>
+  </div>
+</header>
+
+<main class="container shell shell--feed">
+
+  <!-- Left rail -->
+  <aside class="stack rail-left" aria-label="Your profile">
+    <section class="card mini">
+      <div class="mini-cover"></div>
+      <div class="mini-body">
+        <a href="profile.html"><span class="avatar lg av-6">ED</span></a>
+        <p class="mini-name"><a class="t-subtitle" href="#">Evan Durand</a><svg class="i" aria-label="Claimed profile"><use href="#i-badge-check"/></svg></p>
+        <p class="mini-headline">Offensive Coordinator / QB / TE at Kean University</p>
+        <p class="mini-loc t-caption">Union, New Jersey <span class="badge">NJAC</span></p>
+      </div>
+      <div class="mini-group">
+        <a class="mini-row" href="#"><span>Profile viewers</span><b class="num">38</b></a>
+        <a class="mini-row" href="#"><span>Search appearances</span><b class="num">112</b></a>
+      </div>
+      <a class="otw" href="#">
+        <span class="otw-title"><svg class="i i-16"><use href="#i-eye"/></svg>Open to opportunities<span class="state">Off</span></span>
+        <p class="t-caption">Tell chosen employers quietly. Your staff never sees it.</p>
+        <span class="link">Set up</span>
+      </a>
+    </section>
+    <section class="card shortcuts">
+      <a href="#"><svg class="i"><use href="#i-network"/></svg>My coaching tree<span class="num">14</span></a>
+      <a href="#"><svg class="i"><use href="#i-bookmark"/></svg>Saved jobs<span class="num">2</span></a>
+      <a href="#"><svg class="i"><use href="#i-building-2"/></svg>Programs you follow<span class="num">6</span></a>
+    </section>
+  </aside>
+
+  <!-- Center: moves feed -->
+  <div class="stack" style="gap:8px">
+    <section class="card composer" aria-label="Share an update">
+      <div class="composer-row">
+        <span class="avatar md av-6">ED</span>
+        <a class="composer-input" href="#">Share a staff update</a>
+      </div>
+      <div class="composer-actions">
+        <a class="btn btn-ghost" href="#"><svg class="i"><use href="#i-repeat-2"/></svg>Announce a move</a>
+        <a class="btn btn-ghost" href="#"><svg class="i"><use href="#i-briefcase"/></svg>Post a job</a>
+        <a class="btn btn-ghost" href="#"><svg class="i"><use href="#i-square-pen"/></svg>Write</a>
+      </div>
+    </section>
+
+    <a class="card m-tracker" href="#">
+      <div><span class="t-strong">Carousel tracker</span><span class="t-caption num">2026 cycle · 20 hires · 8 promotions · 3 open jobs</span></div>
+      <svg class="i"><use href="#i-chevron-right"/></svg>
+    </a>
+
+    <div class="filters" role="toolbar" aria-label="Filter feed">
+      <button class="filter-chip" aria-pressed="true">All</button>
+      <button class="filter-chip" aria-pressed="false">Hires</button>
+      <button class="filter-chip" aria-pressed="false">Promotions</button>
+      <button class="filter-chip" aria-pressed="false">Jobs</button>
+      <button class="filter-chip" aria-pressed="false">Milestones</button>
+      <span class="filters-line" aria-hidden="true"></span>
+      <button class="sort">Sort by: <b>Recent</b><svg class="i"><use href="#i-chevron-down"/></svg></button>
+    </div>
+
+    <!-- 1. Hire with from/to -->
+    <article class="card">
+      <div class="fi-body">
+        <div class="fi-actor">
+          <span class="avatar md av-1">TK</span>
+          <div>
+            <p class="fi-headline"><a href="#">Tanner Kingsley</a> joined <a href="#">MIT</a> as Offensive Coordinator / Quarterbacks</p>
+            <p class="fi-meta t-caption"><span class="fi-type">Hire</span><span class="sep">·</span>NEWMAC<span class="sep">·</span>2026 season<span class="sep">·</span><a class="fi-src" href="#">mitathletics.com<svg class="i"><use href="#i-external-link"/></svg></a></p>
+          </div>
+          <button class="icon-btn" aria-label="More options"><svg class="i"><use href="#i-ellipsis"/></svg></button>
+        </div>
+        <div class="move">
+          <div class="move-side"><span class="org sm">AM</span><div><span class="move-k">From</span><span class="move-org">Anna Maria College <span class="badge">D-III</span></span><span class="move-role">Head Coach · 2025</span></div></div>
+          <svg class="i"><use href="#i-arrow-right"/></svg>
+          <div class="move-side"><span class="org sm">MIT</span><div><span class="move-k">To</span><span class="move-org">MIT <span class="badge">D-III</span></span><span class="move-role">OC / Quarterbacks · 2026</span></div></div>
+        </div>
+        <blockquote class="evidence">“Kingsley led the AMCats to a share of the 2025 MASCAC regular season championship.”<cite>From his MIT staff bio</cite></blockquote>
+      </div>
+      <div class="fi-actions">
+        <button class="fi-action"><svg class="i"><use href="#i-handshake"/></svg>Congratulate</button>
+        <button class="fi-action"><svg class="i"><use href="#i-message-circle"/></svg>Comment</button>
+        <button class="fi-action"><svg class="i"><use href="#i-repeat-2"/></svg>Repost</button>
+        <button class="fi-action"><svg class="i"><use href="#i-send"/></svg>Send</button>
+      </div>
+    </article>
+
+    <!-- 2. Milestone, with social context -->
+    <article class="card">
+      <div class="fi-context"><svg class="i"><use href="#i-network"/></svg><span><b>Your head coach</b> · you have worked under him since 2022</span></div>
+      <div class="fi-body">
+        <div class="fi-actor">
+          <span class="avatar md av-2">DG</span>
+          <div>
+            <p class="fi-headline"><a href="#">Dan Garrett</a> begins his 21st season as head coach at <a href="#">Kean University</a></p>
+            <p class="fi-meta t-caption"><span class="fi-type">Milestone</span><span class="sep">·</span>NJAC<span class="sep">·</span>2026 season</p>
+          </div>
+          <button class="icon-btn" aria-label="More options"><svg class="i"><use href="#i-ellipsis"/></svg></button>
+        </div>
+        <div class="tenure">
+          <div><b class="num">21</b><span class="t-caption">Seasons as head coach</span></div>
+          <div><b class="num">24</b><span class="t-caption">Seasons at Kean</span></div>
+          <div><b class="num">30</b><span class="t-caption">Seasons in the NJAC</span></div>
+        </div>
+      </div>
+      <div class="fi-actions">
+        <button class="fi-action"><svg class="i"><use href="#i-handshake"/></svg>Congratulate</button>
+        <button class="fi-action"><svg class="i"><use href="#i-message-circle"/></svg>Comment</button>
+        <button class="fi-action"><svg class="i"><use href="#i-repeat-2"/></svg>Repost</button>
+        <button class="fi-action"><svg class="i"><use href="#i-send"/></svg>Send</button>
+      </div>
+    </article>
+
+    <!-- 3. Promotion with ladder -->
+    <article class="card">
+      <div class="fi-body">
+        <div class="fi-actor">
+          <span class="avatar md av-5">ZD</span>
+          <div>
+            <p class="fi-headline"><a href="#">Zac Dysert</a> was promoted to Associate Head Coach-Offense / Quarterbacks at <a href="#">Brevard College</a></p>
+            <p class="fi-meta t-caption"><span class="fi-type">Promotion</span><span class="sep">·</span>USA South<span class="sep">·</span>2026 season<span class="sep">·</span><a class="fi-src" href="#">bctornados.com<svg class="i"><use href="#i-external-link"/></svg></a></p>
+          </div>
+          <button class="icon-btn" aria-label="More options"><svg class="i"><use href="#i-ellipsis"/></svg></button>
+        </div>
+        <ol class="ladder">
+          <li class="role is-current"><div><span class="r t-strong">Associate Head Coach-Offense / Quarterbacks</span><span class="yr">2026</span></div></li>
+          <li class="role"><div><span class="r">Pass Game Coordinator / Quarterbacks</span><span class="yr">2025</span></div></li>
+          <li class="role"><div><span class="r">Futures Head Coach / Senior Offensive Analyst</span><span class="yr">2024</span></div></li>
+        </ol>
+      </div>
+      <div class="fi-actions">
+        <button class="fi-action"><svg class="i"><use href="#i-handshake"/></svg>Congratulate</button>
+        <button class="fi-action"><svg class="i"><use href="#i-message-circle"/></svg>Comment</button>
+        <button class="fi-action"><svg class="i"><use href="#i-repeat-2"/></svg>Repost</button>
+        <button class="fi-action"><svg class="i"><use href="#i-send"/></svg>Send</button>
+      </div>
+    </article>
+
+    <!-- 4. Program staff update (grouped hires) -->
+    <article class="card">
+      <div class="fi-context"><svg class="i"><use href="#i-building-2"/></svg><span><b>NEWMAC</b> · a conference you follow</span></div>
+      <div class="fi-body fi-pad-b">
+        <div class="fi-actor">
+          <span class="org">NU</span>
+          <div>
+            <p class="fi-headline"><a href="#">Norwich University</a> hired two assistant head coaches for 2026</p>
+            <p class="fi-meta t-caption"><span class="fi-type">Staff update</span><span class="sep">·</span>NEWMAC<span class="sep">·</span>Northfield, Vermont</p>
+          </div>
+          <button class="icon-btn" aria-label="More options"><svg class="i"><use href="#i-ellipsis"/></svg></button>
+        </div>
+        <ul class="staff-list">
+          <li><span class="avatar md av-3">RH</span><div class="person-body"><a class="person-name" href="#">Ryan Heasley</a><p class="person-role">Assistant Head Coach for Offense / OC / OL</p><p class="person-ctx">Previously OC / OL, St. John Fisher, 2022–2024</p></div><button class="btn btn-tertiary btn-sm" aria-label="Connect with Ryan Heasley"><svg class="i"><use href="#i-user-plus"/></svg><span class="btn-label">Connect</span></button></li>
+          <li><span class="avatar md av-4">KE</span><div class="person-body"><a class="person-name" href="#">Keith Emery</a><p class="person-role">Assistant Head Coach for Defense / DC / ILB</p><p class="person-ctx">Previously head coach, Charlotte Catholic HS</p></div><button class="btn btn-tertiary btn-sm" aria-label="Connect with Keith Emery"><svg class="i"><use href="#i-user-plus"/></svg><span class="btn-label">Connect</span></button></li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- 5. Job (sample) -->
+    <article class="card">
+      <div class="fi-body fi-pad-b">
+        <div class="job">
+          <span class="org">MLC</span>
+          <div>
+            <p class="job-title"><a class="t-subtitle" href="#">Offensive Line Coach</a><span class="chip chip-sample">Sample listing</span></p>
+            <p class="t-body">Martin Luther College <span class="badge">D-III</span> <span class="badge">UMAC</span></p>
+            <p class="t-caption" style="margin-top:2px"><span class="fi-type">New job</span><span class="sep">·</span>New Ulm, Minnesota<span class="sep">·</span>Full-time<span class="sep">·</span>Posted 2 days ago</p>
+            <div class="job-actions">
+              <a class="btn btn-secondary btn-sm" href="#">View job</a>
+              <button class="btn btn-tertiary btn-sm"><svg class="i"><use href="#i-bookmark"/></svg>Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 6. Hire, pro to college -->
+    <article class="card">
+      <div class="fi-body">
+        <div class="fi-actor">
+          <span class="avatar md av-6">JH</span>
+          <div>
+            <p class="fi-headline"><a href="#">Jarren Horton</a> joined <a href="#">Brevard College</a> as Associate Head Coach-Defense / Defensive Coordinator</p>
+            <p class="fi-meta t-caption"><span class="fi-type">Hire</span><span class="sep">·</span>USA South<span class="sep">·</span>2026 season<span class="sep">·</span><a class="fi-src" href="#">bctornados.com<svg class="i"><use href="#i-external-link"/></svg></a></p>
+          </div>
+          <button class="icon-btn" aria-label="More options"><svg class="i"><use href="#i-ellipsis"/></svg></button>
+        </div>
+        <div class="move">
+          <div class="move-side"><span class="org sm">MEM</span><div><span class="move-k">From</span><span class="move-org">Memphis Showboats <span class="badge">UFL</span></span><span class="move-role">Defensive Coordinator · 2025</span></div></div>
+          <svg class="i"><use href="#i-arrow-right"/></svg>
+          <div class="move-side"><span class="org sm">BC</span><div><span class="move-k">To</span><span class="move-org">Brevard College <span class="badge">D-III</span></span><span class="move-role">Assoc. HC-Defense / DC · 2026</span></div></div>
+        </div>
+      </div>
+      <div class="fi-actions">
+        <button class="fi-action"><svg class="i"><use href="#i-handshake"/></svg>Congratulate</button>
+        <button class="fi-action"><svg class="i"><use href="#i-message-circle"/></svg>Comment</button>
+        <button class="fi-action"><svg class="i"><use href="#i-repeat-2"/></svg>Repost</button>
+        <button class="fi-action"><svg class="i"><use href="#i-send"/></svg>Send</button>
+      </div>
+    </article>
+  </div>
+
+  <!-- Right rail -->
+  <aside class="stack rail-right" aria-label="Carousel and suggestions">
+    <section class="card rail-card">
+      <div class="card-section">
+        <div class="card-head" style="align-items:baseline"><h2 class="rail-title">Carousel tracker</h2><span class="t-caption">2026 cycle</span></div>
+        <div class="tstats">
+          <div><b class="num">20</b><span class="t-caption">Hires</span></div>
+          <div><b class="num">8</b><span class="t-caption">Promotions</span></div>
+          <div><b class="num">3</b><span class="t-caption">Open jobs</span></div>
+        </div>
+        <div class="bars-h"><span class="t-caption" style="color:var(--text-1);font-weight:600">Hires by conference</span></div>
+        <ul class="bars">
+          <li><span>USA South</span><span class="bar"><span style="width:100%"></span></span><span class="n num">5</span></li>
+          <li class="is-mine"><span>NJAC</span><span class="bar"><span style="width:60%"></span></span><span class="n num">3</span></li>
+          <li><span>NEWMAC</span><span class="bar"><span style="width:60%"></span></span><span class="n num">3</span></li>
+          <li><span>Landmark</span><span class="bar"><span style="width:60%"></span></span><span class="n num">3</span></li>
+          <li><span>NESCAC</span><span class="bar"><span style="width:40%"></span></span><span class="n num">2</span></li>
+        </ul>
+        <p class="tracker-note t-caption">Your conference is highlighted. From staff pages at 14 programs; open jobs are sample listings.</p>
+      </div>
+      <div class="card-foot"><a href="#">Open tracker<svg class="i i-16"><use href="#i-arrow-right"/></svg></a></div>
+    </section>
+
+    <section class="card rail-card">
+      <div class="card-section">
+        <h2 class="rail-title">People you may know</h2>
+        <p class="t-caption" style="margin-top:2px">From your coaching tree</p>
+        <ul class="rail-list" style="margin-top:12px">
+          <li class="person"><span class="avatar md av-4">SS</span><div class="person-body"><a class="person-name" href="#">Scott Sperone</a><p class="person-role clamp-2">Special Teams Coordinator / Safeties at Kean University</p><p class="person-ctx"><svg class="i"><use href="#i-network"/></svg>On staff with you since 2023</p><button class="btn btn-tertiary btn-sm"><svg class="i"><use href="#i-user-plus"/></svg>Connect</button></div></li>
+          <li class="person"><span class="avatar md av-5">DG</span><div class="person-body"><a class="person-name" href="#">David Galante</a><p class="person-role clamp-2">Offensive Line Coach at Kean University</p><p class="person-ctx"><svg class="i"><use href="#i-network"/></svg>On staff with you since 2022</p><button class="btn btn-tertiary btn-sm"><svg class="i"><use href="#i-user-plus"/></svg>Connect</button></div></li>
+          <li class="person"><span class="avatar md av-2">IA</span><div class="person-body"><a class="person-name" href="#">Ify Asoluka</a><p class="person-role clamp-2">Cornerbacks Coach at Kean University</p><p class="person-ctx"><svg class="i"><use href="#i-network"/></svg>On staff with you since 2025</p><button class="btn btn-tertiary btn-sm"><svg class="i"><use href="#i-user-plus"/></svg>Connect</button></div></li>
+        </ul>
+      </div>
+      <div class="card-foot"><a href="#">Show all</a></div>
+    </section>
+
+    <footer class="legal">
+      <a href="#">About</a><a href="#">Data sources</a><a href="#">Accessibility</a><a href="#">Privacy</a><a href="#">Terms</a>
+      <p class="brandline"><span class="brand-mark"><svg class="i"><use href="#i-brand"/></svg></span><span data-brand></span><span class="c">© 2026</span></p>
+    </footer>
+  </aside>
+</main>
+
+<nav class="tabbar" aria-label="Primary">
+  <a class="tab-item is-active" href="feed.html" aria-current="page"><svg class="i"><use href="#i-house"/></svg>Home</a>
+  <a class="tab-item" href="#"><svg class="i"><use href="#i-users"/></svg>Network</a>
+  <a class="tab-item" href="#"><svg class="i"><use href="#i-briefcase"/></svg>Jobs</a>
+  <a class="tab-item" href="#"><svg class="i"><use href="#i-message-square"/></svg>Messages</a>
+  <a class="tab-item" href="#"><svg class="i"><use href="#i-bell"/></svg><span class="nav-dot num">3</span>Alerts</a>
+</nav>
+
+<script>
+  /* Product name lives in exactly one place (mirrors BRAND.name in web/src/lib/brand.ts). */
+  const BRAND = { name: "Coach Network" };
+  document.querySelectorAll("[data-brand]").forEach(function (el) { el.textContent = BRAND.name; });
+  document.title = document.title.replace("{brand}", BRAND.name);
+
+</script>
+</body>
+</html>

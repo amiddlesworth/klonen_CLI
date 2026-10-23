@@ -160,10 +160,38 @@ def build_registry() -> list[dict]:
             "school_url": f"https://{(x['webSiteUrl'] or '').replace('https://', '').replace('http://', '').strip('/')}",
             "slug": slugify(short),
         })
+    apply_overrides(out)
     (ROOT / "work" / "registry.json").write_text(json.dumps(out, indent=1))
     unmatched = [p["name"] for p in out if not p["nickname"]]
     print(f"registry: {len(out)} programs, {len(unmatched)} without a Wikipedia match: {unmatched[:12]}")
     return out
+
+
+# Programs the Wikipedia join gets wrong or misses: official name -> (short name, nickname)
+OVERRIDES = {
+    "Massachusetts Institute of Technology": ("MIT", "Engineers"),
+    "Massachusetts Maritime Academy": ("Massachusetts Maritime", "Buccaneers"),
+    "State University of New York Maritime College": ("SUNY Maritime", "Privateers"),
+    "Nebraska Wesleyan University": ("Nebraska Wesleyan", "Prairie Wolves"),
+    "The College of New Jersey": ("TCNJ", "Lions"),
+    "Rensselaer Polytechnic Institute": ("RPI", "Engineers"),
+    "University of the South": ("Sewanee", "Tigers"),
+    "Worcester Polytechnic Institute": ("WPI", "Engineers"),
+    "Worcester State University": ("Worcester State", "Lancers"),
+}
+
+
+def apply_overrides(registry: list[dict]) -> None:
+    for p in registry:
+        p["short_name"] = re.sub(r"\s*\[.*?\]", "", p["short_name"]).strip()
+        if p["name"] in OVERRIDES:
+            p["short_name"], p["nickname"] = OVERRIDES[p["name"]]
+            p["conference_abbr"] = None
+        p["slug"] = slugify(p["short_name"])
+    abbr = {p["conference"]: p["conference_abbr"] for p in registry if p["conference_abbr"] and not p["conference_abbr"].isdigit()}
+    for p in registry:
+        if not p["conference_abbr"] or p["conference_abbr"].isdigit():
+            p["conference_abbr"] = abbr.get(p["conference"])
 
 
 # ---------------------------------------------------------------- staff pages
@@ -235,11 +263,14 @@ def bio_text(html: str) -> tuple[str, str | None]:
     soup = BeautifulSoup(html, "html.parser")
     img = soup.select_one('meta[property="og:image"]')
     photo = img["content"] if img and img.get("content") else None
-    for x in soup(["script", "style", "nav", "header", "footer", "noscript", "form"]):
+    # Note: SIDEARM wraps the whole page in an ASP.NET <form>, so forms are kept.
+    for x in soup(["script", "style", "nav", "header", "footer", "noscript", "aside"]):
         x.decompose()
-    main = (soup.select_one(".sidearm-coach-bio") or soup.select_one(".sidearm-roster-coach-bio")
-            or soup.select_one('[class*="coach-bio"]') or soup.select_one("main") or soup.body)
-    txt = main.get_text("\n", strip=True) if main else ""
+    candidates = [soup.select_one(sel) for sel in (".sidearm-common-bio", ".sidearm-coach-bio", ".sidearm-roster-coach-bio",
+                                                    '[class*="coach-bio"]', '[class*="bio"]', "article", "main")]
+    texts = [c.get_text("\n", strip=True) for c in candidates if c]
+    good = [t for t in texts if len(t) >= 120 and "Ad Blocker Detected" not in t[:400]]
+    txt = good[0] if good else (max(texts, key=len) if texts else (soup.body.get_text("\n", strip=True) if soup.body else ""))
     return re.sub(r"\n{2,}", "\n", txt), photo
 
 
